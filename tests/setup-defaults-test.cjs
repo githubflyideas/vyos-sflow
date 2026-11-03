@@ -1,0 +1,12 @@
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const setup = fs.readFileSync(path.join(root, 'packaging/setup.sh'), 'utf8');
+const env = fs.readFileSync(path.join(root, 'packaging/service.env.example'), 'utf8');
+assert.doesNotMatch(setup, /read -r (?:agent|subagent)|sFlow header agent IP \(required|VYOS_SFLOW_(?:AGENT|SUB_AGENT)=/);
+assert.doesNotMatch(env, /^VYOS_SFLOW_(?:AGENT|SUB_AGENT)=/m);
+assert.match(setup, /Confirm|Continue\?/);
+assert.match(setup, /Existing data requires advanced migration/);
+assert.match(setup, /healthz/);
+console.log('PASS installer needs no sender identity; confirmation, existing-data refusal and health checks retained');

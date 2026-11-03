@@ -1,0 +1,16 @@
+[Unit]
+Description=Wait for the persistent vyos-sflow installation
+# VyOS Router is Type=simple: After alone does not mean /config is mounted.
+# Do not require or start router services on generic Linux installations.
+After=local-fs.target vyos-router.service
+Before=vyos-sflow.service
+
+[Service]
+Type=oneshot
+# This command lives in /etc, not in the possibly unavailable /config.
+# Do not load the product environment or enter its sandbox before this gate.
+ExecStart=/bin/bash -c 'for attempt in {1..300}; do if [[ -r /config/vyos-sflow/service.env && -x /config/vyos-sflow/bin/vyos-sflow && -d /config/vyos-sflow/data ]]; then exit 0; fi; sleep 1; done; echo "Persistent installation unavailable after 300 seconds; inspect /config and restore the installation explicitly" >&2; exit 1'
+TimeoutStartSec=310s
+Restart=no
+UMask=0077
+NoNewPrivileges=true

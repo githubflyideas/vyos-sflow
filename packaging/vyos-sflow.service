@@ -1,0 +1,44 @@
+[Unit]
+Description=vyos-sflow collector and analysis (1.1.0)
+Requires=vyos-sflow-ready.service
+After=network.target vyos-sflow-ready.service
+RequiresMountsFor=/config/vyos-sflow/data
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=vyos-sflow
+Group=vyos-sflow
+EnvironmentFile=/config/vyos-sflow/service.env
+ExecStart=/config/vyos-sflow/bin/vyos-sflow serve
+WorkingDirectory=/config/vyos-sflow/data
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=90s
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/config/vyos-sflow/data
+MemoryHigh=768M
+MemoryMax=1G
+TasksMax=64
+CPUWeight=20
+IOWeight=20
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+[Install]
+WantedBy=multi-user.target

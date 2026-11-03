@@ -1,0 +1,17 @@
+/dist/
+/evidence/
+/node_modules/
+/package-lock.json
+/vyos-sflow
+*.exe
+*.test
+__pycache__/
+*.pyc
+*.duckdb
+*.duckdb.wal
+.env
+/data/
+/initial-password
+/.tui-token
+/service.env
+/vyos-sflow-*.run

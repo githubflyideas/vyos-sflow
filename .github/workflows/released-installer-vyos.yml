@@ -1,0 +1,54 @@
+name: released-installer-vyos
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: released-installer-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  released-run-vyos:
+    if: github.event_name == 'workflow_dispatch' || github.event.release.tag_name == 'v1.1.0'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.9'
+      - name: Install console test runtime
+        run: sudo apt-get update && sudo apt-get install -y expect
+      - name: Helper regression tests
+        run: node tests/vyos_vm_test.cjs
+      - name: Download immutable published installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v1.1.0 --repo githubflyideas/vyos-sflow-new --dir dist --pattern '*.run' --pattern SHA256SUMS
+          digest=$(gh api repos/githubflyideas/vyos-sflow-new/releases/tags/v1.1.0 --jq '.assets[] | select(.name == "vyos-sflow-1.1.0-linux-amd64.run") | .digest')
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          cd dist
+          sha256sum --ignore-missing -c SHA256SUMS
+          printf '%s  %s\n' "${digest#sha256:}" vyos-sflow-1.1.0-linux-amd64.run | sha256sum -c -
+      - name: Install isolated VM runtime
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 p7zip-full expect
+      - name: Published single-file installer and native sFlow
+        timeout-minutes: 35
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node tests/vyos_vm.cjs \
+            --artifact dist/vyos-sflow-1.1.0-linux-amd64.run \
+            --work-dir "$RUNNER_TEMP" --evidence evidence/released-run-vyos \
+            --timeout 1800
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: released-run-vyos-evidence
+          path: evidence/released-run-vyos/
+          if-no-files-found: error

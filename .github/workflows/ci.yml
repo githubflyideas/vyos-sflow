@@ -1,0 +1,143 @@
+name: linux-ci
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: linux-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux-amd64:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      CGO_ENABLED: '1'
+      GOFLAGS: -buildvcs=false
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.9'
+          cache: true
+      - name: Resolve locked dependencies
+        run: |
+          go mod download
+          sudo apt-get update && sudo apt-get install -y expect
+      - name: Formatting and sFlow-only dependency boundary
+        run: |
+          test -z "$(gofmt -l $(git ls-files '*.go'))"
+          go list -deps ./cmd/vyos-sflow > /tmp/vyos-deps.txt
+          if grep -E '/internal/(decode/nf|capture|pcapfile|sandbox|sim|detect|geo|snmp|license)$' /tmp/vyos-deps.txt; then
+            echo 'Excluded input implementation is linked into the product'; exit 1
+          fi
+      - name: Vet and Go tests
+        run: |
+          go vet ./...
+          go test -count=1 ./...
+          go test -race ./internal/collector ./internal/decode/sflow ./internal/auth ./internal/bootstrap ./internal/settings ./internal/pipeline
+      - name: Frontend regression and installer staging tests
+        run: |
+          node --check internal/web/static/app.js
+          node --test internal/web/*.test.cjs
+          node tests/vyos_vm_test.cjs
+          bash packaging/test-install.sh
+          node tests/setup-defaults-test.cjs
+          node tests/release-contract.cjs
+          node tests/self_installer_test.cjs
+          node tests/source-language.cjs --self-test
+          node tests/source-language.cjs
+          node tests/no-registration.cjs
+          node tests/product-boundary.cjs
+          node tests/service-lifecycle-test.cjs
+          node tests/runtime-helpers-test.cjs
+          node tests/installed-service-test.cjs
+          node tests/no-restore.cjs
+      - name: Build static Linux release candidate
+        run: |
+          mkdir -p dist/vyos-sflow-1.1.0-linux-amd64 evidence
+          static_dir="$(mktemp -d)"
+          ln -s "$(g++ -print-file-name=libstdc++.a)" "$static_dir/libstdc++.a"
+          export CGO_LDFLAGS="-L$static_dir"
+          go build -trimpath -tags netgo,osusergo -ldflags "-s -w -X main.version=1.1.0 -X main.commit=${GITHUB_SHA} -linkmode=external -extldflags '-static -Wl,--wrap=getentropy'" -o dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow ./cmd/vyos-sflow
+          file dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
+          ldd dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow 2>&1 | tee evidence/ldd.txt || true
+          grep -Eq 'not a dynamic executable|statically linked' evidence/ldd.txt
+          dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow version
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Real UDP, DuckDB, HTTP, Chromium and restart acceptance
+        run: |
+          node tests/e2e.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow --browser
+          node tests/first-login.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
+          node tests/first-login-browser.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
+          node tests/network-defaults.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
+          node tests/browser-no-registration.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
+      - name: Package tested binary
+        run: |
+          target=dist/vyos-sflow-1.1.0-linux-amd64
+          cp README.md LICENSE LICENSE.md ADDITIONAL-USE-GRANT.md THIRD_PARTY_NOTICES.md upstream-manifest.json "$target/"
+          cp -r packaging docs "$target/"
+          tar -C dist -czf dist/vyos-sflow-1.1.0-linux-amd64.tar.gz vyos-sflow-1.1.0-linux-amd64
+          bash scripts/build-self-installer.sh --archive dist/vyos-sflow-1.1.0-linux-amd64.tar.gz --output dist/vyos-sflow-1.1.0-linux-amd64.run
+          bash dist/vyos-sflow-1.1.0-linux-amd64.run --check
+          cd dist
+          sha256sum vyos-sflow-1.1.0-linux-amd64.tar.gz vyos-sflow-1.1.0-linux-amd64.run > SHA256SUMS
+      - name: Real single-file installation and systemd acceptance
+        run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_TEMP node tests/installed-service.cjs --installer dist/vyos-sflow-1.1.0-linux-amd64.run --binary dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vyos-sflow-1.1.0-linux-amd64
+          path: |
+            dist/*.tar.gz
+            dist/*.run
+            dist/SHA256SUMS
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-evidence
+          path: evidence/
+          if-no-files-found: ignore
+  vyos-native:
+    needs: linux-amd64
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.9'
+      - uses: actions/download-artifact@v4
+        with:
+          name: vyos-sflow-1.1.0-linux-amd64
+          path: dist
+      - name: Verify tested artifact
+        run: cd dist && sha256sum -c SHA256SUMS
+      - name: Install isolated VM runtime
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 p7zip-full expect
+      - name: Native VyOS live-ISO acceptance
+        timeout-minutes: 35
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node tests/vyos_vm.cjs \
+            --artifact dist/vyos-sflow-1.1.0-linux-amd64.run \
+            --work-dir "$RUNNER_TEMP" --evidence evidence/vyos-vm \
+            --timeout 1800
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vyos-native-vm-evidence
+          path: evidence/vyos-vm/
+          if-no-files-found: error
