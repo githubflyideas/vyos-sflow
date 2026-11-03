@@ -14,7 +14,7 @@ assert.deepEqual([...readme.matchAll(/^### (\d)\./gm)].map(m => m[1]), ['1', '2'
 assert.match(readme, /^\.\/vyos-sflow serve$/m);
 assert.match(readme, /\.\/vyso_sflow_data/);
 assert.doesNotMatch(readme, /-agent\b|-sub-agent\b|v1\.0\.[01]/);
-assert.match(readme, /v1\.1\.1/);
+assert.match(readme, /v1\.1\.2/);
 for (const f of ['README.md', ...fs.readdirSync(path.join(root, 'docs')).filter(f => f.endsWith('.md')).map(f => `docs/${f}`)]) {
   const text = fs.readFileSync(path.join(root, f), 'utf8');
   for (const m of text.matchAll(/\]\(([^)]+)\)/g)) {

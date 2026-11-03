@@ -55,7 +55,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 aside{background:var(--side);border-inline-end:1px solid var(--side-line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
 .brand{padding:12px 14px 10px;flex-wrap:wrap;position:relative;font-weight:700;font-size:18px;letter-spacing:-.01em;border-bottom:1px solid var(--side-line);display:flex;align-items:center;gap:8px}
 
-.brand .logo{display:block;flex:1 1 100%;width:100%;max-width:208px;height:auto;max-height:72px;object-fit:contain;object-position:left center}
+.brand .logo{display:block;flex:1 1 100%;width:100%;max-width:208px;height:auto;max-height:128px;object-fit:contain;object-position:left center}
 [dir=rtl] .brand .logo{object-position:right center}
 .brand b{color:var(--accent)}
 nav.dash{padding:8px 10px;overflow-y:auto;flex:1}
@@ -172,7 +172,7 @@ tr.has-fix td{border-bottom:0}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;display:none;z-index:50}
 
 .login{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--bg)}
-.login .logo{width:272px;height:92px;object-fit:contain}
+.login .logo{width:272px;height:auto;object-fit:contain}
 .login form{width:min(360px,92vw);display:grid;gap:12px;padding:24px}
 .login .brand{border:0;padding:0 0 4px}
 .login h2{margin:0;font-size:16px}

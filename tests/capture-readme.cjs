@@ -14,7 +14,7 @@ async function main() {
   const output = path.resolve(process.argv[3] || 'evidence/readme-screenshots');
   fs.mkdirSync(output, {recursive:true});
   const version = h.run(binary, ['version']).trim();
-  assert.match(version, /1\.1\.1/);
+  assert.match(version, /1\.1\.2/);
   const password = h.password();
   const webport = await h.port(), udpport = await h.port('udp');
   const base = `http://127.0.0.1:${webport}`;
@@ -49,10 +49,18 @@ async function main() {
       const page = await browser.newPage({viewport:{width:1360,height:820}});
       const errors=[]; page.on('pageerror', e=>errors.push(e.message));
       await page.goto(base);
+      const logo = await page.request.get(base+'/logo');
+      assert.equal(logo.status(),200);
+      const embedded=(await logo.text()).match(/href="data:image\/png;base64,([A-Za-z0-9+/=]+)"/);
+      assert.ok(embedded,'Expected the real vyos-sflow logo');
+      assert.deepEqual(Buffer.from(embedded[1],'base64'),fs.readFileSync(path.join(__dirname,'../docs/images/vyos-sflow-logo.png')));
+      await page.waitForFunction(()=>{const i=document.querySelector('#login .logo');return i?.complete && i.naturalWidth>0;});
+      await page.screenshot({path:path.join(output,'web-login.png')});
       await page.locator('#loginForm input[name=user]').fill('admin');
       await page.locator('#loginForm input[name=password]').fill(password);
       await page.locator('#loginForm button').click();
       await page.locator('#app').waitFor({state:'visible'});
+      await page.waitForFunction(()=>{const i=document.querySelector('.brand .logo');return i?.complete && i.naturalWidth>0;});
       await page.locator('#range [data-r="15m"]').click();
       await page.locator('#v-overview .panel').first().waitFor({state:'visible'});
       await page.waitForTimeout(1500);
@@ -63,7 +71,7 @@ async function main() {
       assert.deepEqual(errors,[]);
 
       // A real X11 xterm process with a real PTY; screenshot its native window.
-      terminal = spawn('xterm',['-geometry','128x36','-fa','DejaVu Sans Mono','-fs','12','-bg','#10151c','-fg','#dce4ee','-title','vyos-sflow v1.1.1','-e',binary,'tui','-url',base,'-data',data],{env:{...h.cleanEnv(),LANG:'C.UTF-8'},stdio:'ignore'});
+      terminal = spawn('xterm',['-geometry','128x36','-fa','DejaVu Sans Mono','-fs','12','-bg','#10151c','-fg','#dce4ee','-title','vyos-sflow v1.1.2','-e',binary,'tui','-url',base,'-data',data],{env:{...h.cleanEnv(),LANG:'C.UTF-8'},stdio:'ignore'});
       let window;
       await h.waitFor(()=>{
         window=h.run('xdotool',['search','--onlyvisible','--pid',String(terminal.pid)]).trim().split('\n')[0];
@@ -82,7 +90,7 @@ async function main() {
       await h.waitFor(async () => (await h.request(base+'/api/overview?range=15m',{auth:h.basic(password)})).totals.wire===sent*7800,'Final screenshot fixture totals mismatch');
       const overview=await h.request(base+'/api/overview?range=15m',{auth:h.basic(password)});
       assert.equal(overview.totals.wire,sent*7800);
-      fs.writeFileSync(path.join(output,'manifest.json'),JSON.stringify({release:'v1.1.1',version,binarySHA256:h.hash(binary),data:'Synthetic documentation-range sFlow sent by UDP; real collector, storage and API; actual elapsed timestamps.',terminal:'Native X11 xterm window and PTY, attached to same real service.',screenshots:['web-overview.png','web-top.png','tui-overview.png','tui-top.png'].map(name=>({name,sha256:h.hash(path.join(output,name))})),packetsSent:sent,wireBytes:overview.totals.wire,capturedAt:new Date().toISOString()},null,2)+'\n');
+      fs.writeFileSync(path.join(output,'manifest.json'),JSON.stringify({release:'v1.1.2',version,binarySHA256:h.hash(binary),data:'Synthetic documentation-range sFlow sent by UDP; real collector, storage and API; actual elapsed timestamps.',terminal:'Native X11 xterm window and PTY, attached to same real service.',screenshots:['web-login.png','web-overview.png','web-top.png','tui-overview.png','tui-top.png'].map(name=>({name,sha256:h.hash(path.join(output,name))})),packetsSent:sent,wireBytes:overview.totals.wire,capturedAt:new Date().toISOString()},null,2)+'\n');
       console.log('PASS real WebUI and native TUI screenshot capture; byte totals verified');
     } finally {
       sampling=false; if(producer) await producer.catch(()=>{});

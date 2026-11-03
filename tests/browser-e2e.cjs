@@ -16,10 +16,20 @@ const fs = require('node:fs');
       return url.origin === new URL(base).origin || url.protocol === 'data:' ? route.continue() : route.abort();
     });
     await page.goto(base);
+    for (const dark of [0,1]) {
+      const response = await page.request.get(base + '/logo?dark=' + dark);
+      assert.equal(response.status(),200);
+      const svg = await response.text();
+      const image = svg.match(/href="data:image\/png;base64,([A-Za-z0-9+/=]+)"/);
+      assert.ok(image,'Real server did not return the vyos-sflow project logo');
+      assert.deepEqual(Buffer.from(image[1],'base64'),fs.readFileSync(require('node:path').join(__dirname,'../docs/images/vyos-sflow-logo.png')));
+    }
+    await page.waitForFunction(() => {const i=document.querySelector('#login .logo');return i?.complete && i.naturalWidth>0;});
     await page.locator('#loginForm input[name=user]').fill('admin');
     await page.locator('#loginForm input[name=password]').fill(process.env.E2E_PASSWORD);
     await page.locator('#loginForm button').click();
     await page.locator('#app').waitFor({state: 'visible'});
+    await page.waitForFunction(() => {const i=document.querySelector('.brand .logo');return i?.complete && i.naturalWidth>0;});
     await page.locator('#v-overview .panel').first().waitFor({state: 'visible'});
     assert.match(await page.title(), /vyos-sflow/);
     assert.equal(await page.locator('#nav [data-v=sandbox]').count(), 0, 'PCAP import still offered');

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- Use the vyos-sflow project logo on the login screen and dashboard, with proportions preserved.
+
 ## 1.1.1
 
 - Open a temporary terminal dashboard with `./vyos-sflow tui`; no separate service command is required.
