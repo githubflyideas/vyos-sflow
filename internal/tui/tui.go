@@ -175,6 +175,7 @@ var intervals = []time.Duration{2 * time.Second, 5 * time.Second, 10 * time.Seco
 const narrow = 80
 
 type app struct {
+	ctx    context.Context
 	opt    Options
 	tr, en dict
 	cl     *http.Client
@@ -222,6 +223,9 @@ func newApp(opt Options) *app {
 
 // ------------------------------------------------------------ run
 
+// IsTerminal permits callers to reject redirected input before starting resources.
+func IsTerminal() bool { return isTerminal() }
+
 // Run starts the terminal UI and blocks until the user quits or ctx ends.
 func Run(ctx context.Context, opt Options) error {
 	if !isTerminal() {
@@ -230,7 +234,10 @@ func Run(ctx context.Context, opt Options) error {
 	if opt.URL == "" {
 		opt.URL = "http://127.0.0.1:8066"
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	a := newApp(opt)
+	a.ctx = ctx
 	// first contact, before switching the terminal into raw mode
 	var st map[string]any
 	if err := a.get("status", nil, &st); err != nil {
@@ -252,9 +259,11 @@ func Run(ctx context.Context, opt Options) error {
 	}()
 
 	keys := make(chan string, 16)
-	go readKeys(keys)
+	waitKeys := startKeys(ctx, keys)
 	a.w, a.h = size()
-	go a.fetchLoop(ctx)
+	fetchDone := make(chan struct{})
+	go func() { defer close(fetchDone); a.fetchLoop(ctx) }()
+	defer func() { cancel(); waitKeys(); <-fetchDone }()
 	a.kick()
 
 	tick := time.NewTicker(250 * time.Millisecond)
@@ -368,7 +377,11 @@ func (a *app) do(method, path string, q url.Values, body io.Reader, v any) error
 	if len(q) > 0 {
 		u += "?" + q.Encode()
 	}
-	req, err := http.NewRequest(method, u, body)
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u, body)
 	if err != nil {
 		return err
 	}
@@ -404,79 +417,75 @@ func query(rng int, extra map[string]string) url.Values {
 // ------------------------------------------------------------ keys
 
 func readKeys(out chan<- string) {
-	r := bufio.NewReader(os.Stdin)
+	readKeysFrom(context.Background(), os.Stdin, out)
+}
+
+func readKeysFrom(ctx context.Context, input io.Reader, out chan<- string) {
+	defer close(out)
+	r := bufio.NewReader(input)
+	send := func(key string) bool {
+		select {
+		case out <- key:
+			return true
+		case <-ctx.Done():
+			return false
+		}
+	}
 	for {
-		b, err := r.ReadByte()
-		if err != nil {
-			close(out)
+		if ctx.Err() != nil {
 			return
 		}
+		b, err := r.ReadByte()
+		if err != nil {
+			return
+		}
+		key := ""
 		switch {
 		case b == 0x1b:
-			// escape sequence or a lone Esc
 			time.Sleep(15 * time.Millisecond)
 			if r.Buffered() == 0 {
-				out <- "esc"
-				continue
+				key = "esc"
+				break
 			}
 			b2, _ := r.ReadByte()
 			if b2 != '[' && b2 != 'O' {
-				out <- "esc"
-				continue
+				key = "esc"
+				break
 			}
 			seq := ""
-			for {
+			for len(seq) < 32 {
 				c, err := r.ReadByte()
 				if err != nil {
-					break
+					return
 				}
 				seq += string(c)
 				if (c >= 'A' && c <= 'Z') || c == '~' || (c >= 'a' && c <= 'z') {
 					break
 				}
 			}
-			switch seq {
-			case "A":
-				out <- "up"
-			case "B":
-				out <- "down"
-			case "C":
-				out <- "right"
-			case "D":
-				out <- "left"
-			case "H", "1~":
-				out <- "home"
-			case "F", "4~":
-				out <- "end"
-			case "5~":
-				out <- "pgup"
-			case "6~":
-				out <- "pgdn"
-			case "3~":
-				out <- "delete"
-			case "Z":
-				out <- "backtab"
-			}
+			key = map[string]string{"A": "up", "B": "down", "C": "right", "D": "left", "H": "home", "1~": "home", "F": "end", "4~": "end", "5~": "pgup", "6~": "pgdn", "3~": "delete", "Z": "backtab"}[seq]
 		case b == '\r' || b == '\n':
-			out <- "enter"
+			key = "enter"
 		case b == 0x7f || b == 0x08:
-			out <- "backspace"
-		case b == '\t':
-			out <- "tab"
-		case b == 3:
-			out <- "ctrl-c"
+			key = "backspace"
+		case b == '	':
+			key = "tab"
+		case b == 3 || b == 4:
+			key = "ctrl-c"
 		case b < 0x20:
 		default:
-			// UTF-8 rune
 			buf := []byte{b}
 			for !utf8.FullRune(buf) {
 				c, err := r.ReadByte()
 				if err != nil {
-					break
+					return
 				}
 				buf = append(buf, c)
 			}
-			out <- string(buf)
+			key = string(buf)
+		}
+		if key != "" && !send(key) {
+			return
 		}
 	}
 }
@@ -489,7 +498,7 @@ func (a *app) changed() {
 func (a *app) key(k string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	if k == "ctrl-c" {
+	if k == "ctrl-c" || k == "q" {
 		a.quit = true
 		return
 	}

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- Open a temporary terminal dashboard with `./vyos-sflow tui`; no separate service command is required.
+- Stop owned collection and remove session-only data when quitting, without changing existing service history or accounts.
+- Reuse an existing local service when available and preserve explicit connection options.
+
 ## 1.1.0
 
 - Start directly with `./vyos-sflow serve` and an optional Web listen-address prompt.

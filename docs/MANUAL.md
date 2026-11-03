@@ -16,6 +16,14 @@ Select a time range from 15 minutes to 48 hours. The default is one hour. Traffi
 
 The default UDP listener is `0.0.0.0:6343`. Configure the exporter to send sFlow v5 to this machine; on the same VyOS router use `127.0.0.1:6343`. No sender-IP or sub-agent setup is required. Header identities remain available for diagnostics and do not authenticate senders. Restrict UDP access to trusted devices.
 
+## Temporary terminal view
+
+Run `./vyos-sflow tui` over SSH for a one-command session. If no local service is running, it starts a temporary collector, stores session data in a private temporary directory and connects the TUI through a loopback-only API. It still receives sFlow on UDP `0.0.0.0:6343`; configure sampling as described in the README and restrict UDP access to trusted devices.
+
+Press `q` or `Ctrl+C` to exit. The session's collector stops and its temporary data is removed; this does not clear existing persistent history or accounts. If TUI connected to an already running service, that service continues running after you quit. For an explicit service address and account, use `./vyos-sflow tui -url http://ROUTER_IP:8066 -user admin`. Existing account restrictions still apply.
+
+Use `serve` or an installed service for continuous collection and rolling 48-hour history between viewing sessions.
+
 ## Clear history
 
 Administrators can clear all historical flow records and summaries through the cleanup control. Confirm both prompts. This also clears records from the current 48-hour window. Accounts, configuration and existing metadata remain intact. Back up first: this operation cannot be undone by the application.

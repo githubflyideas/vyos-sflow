@@ -91,7 +91,18 @@ func serve(args []string) (result error) {
 	if err := promptWebAddress(&cfg, os.Stdin, os.Stdout); err != nil {
 		return err
 	}
-	checker, err := bootstrap.Ensure(cfg.Data, cfg.User, os.Getenv("VYOS_SFLOW_PASSWORD"))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return serveConfigured(ctx, cfg, os.Getenv("VYOS_SFLOW_PASSWORD"), nil)
+}
+
+// serveConfigured owns every resource it opens, and returns only after the
+// producers have stopped, the pipeline has drained, and storage has closed.
+func serveConfigured(ctx context.Context, cfg settings.Config, initialPassword string, ready chan<- tui.Options) (result error) {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	checker, err := bootstrap.Ensure(cfg.Data, cfg.User, initialPassword)
 	if err != nil {
 		return err
 	}
@@ -195,10 +206,14 @@ func serve(args []string) (result error) {
 	httpDone := make(chan error, 1)
 	go func() { httpDone <- hs.Serve(ln) }()
 	logStartup(scheme, ln.Addr().String(), listener.LocalAddr(), cfg.Data)
-	sig, stopSignal := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stopSignal()
+	if ready != nil {
+		select {
+		case ready <- tui.Options{URL: scheme + "://" + ln.Addr().String(), Token: token}:
+		case <-ctx.Done():
+		}
+	}
 	select {
-	case <-sig.Done():
+	case <-ctx.Done():
 	case err := <-httpDone:
 		if !errors.Is(err, http.ErrServerClosed) {
 			result = err
@@ -221,34 +236,22 @@ func dataDefault() string {
 	return settings.DefaultData
 }
 func runTUI(args []string) error {
-	fs := flag.NewFlagSet("tui", flag.ContinueOnError)
-	url := fs.String("url", "http://127.0.0.1:8066", "running service URL")
-	data := fs.String("data", dataDefault(), "service data directory")
-	user := fs.String("user", "", "use account authentication instead of local token")
-	lang := fs.String("lang", "", "language code")
-	if err := fs.Parse(args); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
+	defer stop()
+	return runTUICommand(ctx, args, commandHooks{
+		sessionHooks: sessionHooks{backend: temporaryBackend, view: tui.Run},
+		terminal:     tui.IsTerminal, getenv: os.Getenv, available: localServiceAvailable, secret: tui.ReadSecret,
+	})
+}
+
+func temporaryBackend(ctx context.Context, dir, listen string, ready chan<- tui.Options) error {
+	// Ignore persistent-service environment settings. Only the newly created
+	// owned directory receives this private, initialized session account.
+	cfg, err := settings.Parse([]string{"-data", dir, "-addr", "127.0.0.1:0", "-listen", listen}, func(string) string { return "" })
+	if err != nil {
 		return err
 	}
-	opt := tui.Options{URL: *url, User: *user, Lang: *lang}
-	if *user != "" {
-		opt.Password = os.Getenv("VYOS_SFLOW_PASSWORD")
-		if opt.Password == "" {
-			pw, err := tui.ReadSecret("password: ")
-			if err != nil {
-				return err
-			}
-			opt.Password = pw
-		}
-	} else {
-		b, err := os.ReadFile(filepath.Join(*data, ".tui-token"))
-		if err != nil {
-			return err
-		}
-		opt.Token = strings.TrimSpace(string(b))
-	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	return tui.Run(ctx, opt)
+	return serveConfigured(ctx, cfg, auth.Generate(), ready)
 }
 func passwd(args []string) error {
 	fs := flag.NewFlagSet("passwd", flag.ContinueOnError)

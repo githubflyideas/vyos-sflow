@@ -29,11 +29,11 @@ exit
 In a writable directory on the router:
 
 ```sh
-curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.1.0/vyos-sflow-1.1.0-linux-amd64.tar.gz &&
-curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.1.0/SHA256SUMS &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.1.1/vyos-sflow-1.1.1-linux-amd64.tar.gz &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.1.1/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
-tar -xzf vyos-sflow-1.1.0-linux-amd64.tar.gz &&
-cd vyos-sflow-1.1.0-linux-amd64 &&
+tar -xzf vyos-sflow-1.1.1-linux-amd64.tar.gz &&
+cd vyos-sflow-1.1.1-linux-amd64 &&
 ./vyos-sflow serve
 ```
 
@@ -47,17 +47,21 @@ Open **`http://ROUTER_IP:8066`** in your browser. Sign in with **`admin` / `tryv
 
 **Keep it private:** Web TCP `8066` and sFlow UDP `6343` listen on all interfaces by default. Restrict them to trusted networks before logging in. HTTP is unencrypted; optional TLS configuration is in the [installation guide](docs/VYOS.md).
 
-## Terminal UI (TUI)
+## Temporary terminal view (TUI)
 
-Prefer SSH? After completing the first-login password change, keep `serve` running and open a **second terminal or SSH session** on the same router, using the same OS account. Change to the directory used in step 2 and run:
+For a quick look over SSH, run one command:
 
 ```sh
 ./vyos-sflow tui
 ```
 
-The TUI connects to the running service at `http://127.0.0.1:8066` and reads its local token from `./vyso_sflow_data`; it does not start another collector. Press `?` for keyboard help and `q` to leave the TUI without stopping the service.
+- **No local service running:** starts a temporary sFlow collector and opens the terminal dashboard. No separate `serve` command, browser or service installation is needed.
+- **Local service already running:** connects to it using its local credentials instead of starting a second collector.
+- **Quit with `q` or `Ctrl+C`:** closes the TUI and any temporary collector it started. An existing service keeps running.
 
-If you selected a specific private Web IP at startup, add `-url http://ROUTER_IP:8066`, using that address. For account-based login instead of the local token, add `-user admin`; the password is prompted without echoing.
+Standalone TUI history lasts only for that session. Its temporary data is removed on exit; existing accounts and `./vyso_sflow_data` are not cleared. Keep using `serve` or the optional system service when you want continuous collection and persistent history.
+
+Press `?` for keyboard help. For an explicitly selected service, use `-url http://ROUTER_IP:8066 -user admin`; the password is prompted without echoing. Explicit connection options never start a replacement collector if the connection fails.
 
 ## Optional setup
 

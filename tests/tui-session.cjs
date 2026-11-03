@@ -45,7 +45,11 @@ async function standalone(binary, ending) {
     const sentinel=path.join(cwd,'vyso_sflow_data','keep-existing-history'); fs.writeFileSync(sentinel,'untouched');
     const s=await launch(root,binary);
     try {
-      await s.bridge.expect('\\x1b\\[\\?1049h',30);
+      try { await s.bridge.expect('\\x1b\\[\\?1049h',30); }
+      catch (error) {
+        if ((error.before || '').includes('.tui-token')) throw new Error('Standalone TUI requires a pre-existing service token instead of starting a temporary session');
+        throw new Error('Standalone TUI did not enter its terminal screen: '+error.name);
+      }
       const tcp=sockets(s.pid,'tcp'), udp=sockets(s.pid,'udp');
       assert.equal(tcp.length,1); assert.equal(tcp[0].address,'0100007F','Temporary API exposed outside loopback');
       assert.ok(udp.some(x=>x.address==='00000000'&&x.port===6343),'Temporary collector not listening on default UDP');
