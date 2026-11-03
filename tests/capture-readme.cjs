@@ -72,6 +72,9 @@ async function main() {
       await h.sleep(4000);
       assert.equal(terminal.exitCode,null);
       h.run('import',['-window',window,path.join(output,'tui-overview.png')]);
+      h.run('xdotool',['windowfocus','--sync',window,'key','2']);
+      await h.sleep(3000);
+      h.run('import',['-window',window,path.join(output,'tui-top.png')]);
       h.run('xdotool',['windowfocus','--sync',window,'key','q']);
       await h.waitFor(()=>terminal.exitCode!==null,'TUI did not quit',{timeout:10000});
       assert.equal(terminal.exitCode,0);
@@ -79,7 +82,7 @@ async function main() {
       await h.waitFor(async () => (await h.request(base+'/api/overview?range=15m',{auth:h.basic(password)})).totals.wire===sent*7800,'Final screenshot fixture totals mismatch');
       const overview=await h.request(base+'/api/overview?range=15m',{auth:h.basic(password)});
       assert.equal(overview.totals.wire,sent*7800);
-      fs.writeFileSync(path.join(output,'manifest.json'),JSON.stringify({release:'v1.1.1',version,binarySHA256:h.hash(binary),data:'Synthetic documentation-range sFlow sent by UDP; real collector, storage and API; actual elapsed timestamps.',terminal:'Native X11 xterm window and PTY, attached to same real service.',screenshots:['web-overview.png','web-top.png','tui-overview.png'].map(name=>({name,sha256:h.hash(path.join(output,name))})),packetsSent:sent,wireBytes:overview.totals.wire,capturedAt:new Date().toISOString()},null,2)+'\n');
+      fs.writeFileSync(path.join(output,'manifest.json'),JSON.stringify({release:'v1.1.1',version,binarySHA256:h.hash(binary),data:'Synthetic documentation-range sFlow sent by UDP; real collector, storage and API; actual elapsed timestamps.',terminal:'Native X11 xterm window and PTY, attached to same real service.',screenshots:['web-overview.png','web-top.png','tui-overview.png','tui-top.png'].map(name=>({name,sha256:h.hash(path.join(output,name))})),packetsSent:sent,wireBytes:overview.totals.wire,capturedAt:new Date().toISOString()},null,2)+'\n');
       console.log('PASS real WebUI and native TUI screenshot capture; byte totals verified');
     } finally {
       sampling=false; if(producer) await producer.catch(()=>{});
