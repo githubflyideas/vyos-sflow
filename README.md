@@ -4,7 +4,7 @@
 
 # vyos-sflow
 
-Your VyOS traffic at a glance: **live trends, Top IPs, ports and protocols**, with **48 hours of local history** powered by DuckDB™. Available in 15 languages.
+Your VyOS traffic at a glance: **live trends, Top IPs, ports and protocols**, with **48 hours of local history** powered by DuckDB™. Use the **Web dashboard** in a browser or the **terminal UI (TUI)** over SSH. Available in 15 languages.
 
 ## Get started in 3 steps
 
@@ -46,6 +46,18 @@ Open **`http://ROUTER_IP:8066`** in your browser. Sign in with **`admin` / `tryv
 **Stop and restart:** keep this terminal or SSH session open while running. Press `Ctrl+C` to stop; run `./vyos-sflow serve` from the same directory to continue. Accounts and history are stored in `./vyso_sflow_data` — keep this folder.
 
 **Keep it private:** Web TCP `8066` and sFlow UDP `6343` listen on all interfaces by default. Restrict them to trusted networks before logging in. HTTP is unencrypted; optional TLS configuration is in the [installation guide](docs/VYOS.md).
+
+## Terminal UI (TUI)
+
+Prefer SSH? After completing the first-login password change, keep `serve` running and open a **second terminal or SSH session** on the same router, using the same OS account. Change to the directory used in step 2 and run:
+
+```sh
+./vyos-sflow tui
+```
+
+The TUI connects to the running service at `http://127.0.0.1:8066` and reads its local token from `./vyso_sflow_data`; it does not start another collector. Press `?` for keyboard help and `q` to leave the TUI without stopping the service.
+
+If you selected a specific private Web IP at startup, add `-url http://ROUTER_IP:8066`, using that address. For account-based login instead of the local token, add `-user admin`; the password is prompted without echoing.
 
 ## Optional setup
 
