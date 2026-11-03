@@ -1,0 +1,28 @@
+{
+  "release": "v1.1.1",
+  "version": "vyos-sflow 1.1.1 (ac3c24ab6e322fe094136d424d81db496c0717b0)",
+  "binarySHA256": "801612b3f417ca2a3d98a4e918e3a0471466b719a39cd4d025d9e2d7986cb7a5",
+  "data": "Synthetic documentation-range sFlow sent by UDP; real collector, storage and API; actual elapsed timestamps.",
+  "terminal": "Native X11 xterm window and PTY, attached to same real service.",
+  "screenshots": [
+    {
+      "name": "web-overview.png",
+      "sha256": "fb74330409d3b52345790269abca41161eb612b83d4d779517333ba51b704528"
+    },
+    {
+      "name": "web-top.png",
+      "sha256": "63f3b91257709eaec68760c5fd1a0274cc58cf9f8482206879a402fc811710fa"
+    },
+    {
+      "name": "tui-overview.png",
+      "sha256": "da348ee9f9dd7906cc26d5f8724445eba5cca1dd5a999a86f759b317820acb07"
+    },
+    {
+      "name": "tui-top.png",
+      "sha256": "0d4dc1cd41f1fe5bb0281f184d90ad4a952c4ce5caf9f6496607ba0a300535a3"
+    }
+  ],
+  "packetsSent": 2855,
+  "wireBytes": 22269000,
+  "capturedAt": "2026-11-03T13:52:16.281Z"
+}
