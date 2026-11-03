@@ -50,9 +50,9 @@ async function standalone(binary, ending) {
         if ((error.before || '').includes('.tui-token')) throw new Error('Standalone TUI requires a pre-existing service token instead of starting a temporary session');
         throw new Error('Standalone TUI did not enter its terminal screen: '+error.name);
       }
-      const tcp=sockets(s.pid,'tcp'), udp=sockets(s.pid,'udp');
+      const tcp=sockets(s.pid,'tcp'), udp=[...sockets(s.pid,'udp'),...sockets(s.pid,'udp6')];
       assert.equal(tcp.length,1); assert.equal(tcp[0].address,'0100007F','Temporary API exposed outside loopback');
-      assert.ok(udp.some(x=>x.address==='00000000'&&x.port===6343),'Temporary collector not listening on default UDP');
+      assert.ok(udp.some(x=>/^0+$/.test(x.address)&&x.port===6343),'Temporary collector not listening on default UDP');
       const files=tokenFiles(s.tmp); assert.equal(files.length,1);
       const token=fs.readFileSync(files[0],'utf8').trim(), base=`http://127.0.0.1:${tcp[0].port}`;
       await h.request(base+'/api/overview?range=1h',{expected:401});
@@ -60,6 +60,7 @@ async function standalone(binary, ending) {
       await h.waitFor(async()=> (await h.request(base+'/api/overview?range=1h',{auth:'Bearer '+token})).totals.wire===7800,'Temporary TUI did not collect real sFlow',{timeout:10000});
       if (ending==='q') await s.bridge.sendline('q');
       else if (ending==='ctrl-c') await s.bridge.sendline('\x03');
+      else if (ending==='ctrl-d') await s.bridge.sendline('\x04');
       else process.kill(s.pid,ending);
       await stopped(s);
       assert.equal(fs.readFileSync(sentinel,'utf8'),'untouched');
@@ -109,7 +110,7 @@ async function main(){
   assert.equal(process.platform,'linux','Real TUI acceptance requires Linux');
   const binary=h.binaryArg(process.argv.slice(2));
   assert.equal(spawnSync('expect',['-v']).status,0,'Expect is required');
-  for(const ending of ['q','ctrl-c','SIGTERM','SIGHUP']) await standalone(binary,ending);
+  for(const ending of ['q','ctrl-c','ctrl-d','SIGTERM','SIGHUP']) await standalone(binary,ending);
   await existing(binary);await failures(binary);
 }
 if(require.main===module) h.cli(main);
