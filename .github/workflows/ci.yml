@@ -75,6 +75,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Real UDP, DuckDB, HTTP, Chromium and restart acceptance
         run: |
+          node tests/tui-session.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
           node tests/e2e.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow --browser
           node tests/first-login.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
           node tests/first-login-browser.cjs dist/vyos-sflow-1.1.0-linux-amd64/vyos-sflow
