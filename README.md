@@ -65,25 +65,25 @@ Press `?` for keyboard help. For an explicitly selected service, use `-url http:
 
 ## Screenshots
 
-Actual **v1.1.1** screens, captured from the released Linux executable. The demonstration traffic is synthetic sFlow sent through the real UDP collector, storage and API—not mocked responses or edited screen contents.
+Actual **v1.1.2** screens, captured from the released Linux executable. The demonstration traffic is synthetic sFlow sent through the real UDP collector, storage and API—not mocked responses or edited screen contents.
 
 ### Web dashboard
 
 Live traffic, recent history and collection health:
 
-![Web dashboard with received sFlow traffic](docs/images/screenshots/v1.1.1/web-overview.png)
+![Web dashboard with received sFlow traffic](docs/images/screenshots/v1.1.2/web-overview.png)
 
 ### Top hosts
 
 Traffic rankings from the same collection session:
 
-![Web Top hosts with demonstration traffic](docs/images/screenshots/v1.1.1/web-top.png)
+![Web Top hosts with demonstration traffic](docs/images/screenshots/v1.1.2/web-top.png)
 
 ### Terminal UI
 
 The real TUI running in a Linux terminal, connected to the same service:
 
-![Terminal UI showing Top hosts](docs/images/screenshots/v1.1.1/tui-top.png)
+![Terminal UI showing Top hosts](docs/images/screenshots/v1.1.2/tui-top.png)
 
 ## Optional setup
 
