@@ -27,12 +27,21 @@ func (s *Server) postCleanup(w http.ResponseWriter, r *http.Request) {
 	disk := s.Store.Usage().DiskBytes
 	var done store.PurgeSize
 	var err error
-	if s.Pipe != nil {
-		// Synchronize queue admission, buffered state and in-flight writes.
-		// Forget followed by Store.PurgeBefore could resurrect old queued records.
-		done, err = s.Pipe.Purge(time.Time{})
+	clearHistory := func() error {
+		if s.Pipe != nil {
+			// Synchronize queue admission, buffered state and in-flight writes.
+			done, err = s.Pipe.Purge(time.Time{})
+		} else {
+			done, err = s.Store.PurgeBefore(time.Time{})
+		}
+		return err
+	}
+	if s.Col != nil {
+		// Take the collector lock first, matching Handle -> Submit. Holding a
+		// pipeline lock while acquiring the collector would invert this order.
+		err = s.Col.ClearHistory(clearHistory)
 	} else {
-		done, err = s.Store.PurgeBefore(time.Time{})
+		err = clearHistory()
 	}
 	if err != nil {
 		fail(w, err)

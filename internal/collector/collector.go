@@ -111,9 +111,15 @@ type sfAgent struct {
 	counters  uint64
 	lostDgram uint64
 	lastSeq   map[uint32]uint32
+	clocks    map[uint32]sfClock
 	lastSeen  time.Time
 	firstSeen time.Time // the agent's first datagram
 	decodeErr uint64
+}
+
+type sfClock struct {
+	uptime uint32
+	seen   time.Time
 }
 
 func New(sink Sink) *Collector {
@@ -305,12 +311,36 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 		return false
 	}
 	ag.datagrams++
-	if last, ok := ag.lastSeq[d.SubAgent]; ok {
-		if gap := d.Seq - last - 1; gap > 0 && gap < 1<<20 {
-			ag.lostDgram += uint64(gap)
+	last, seen := ag.lastSeq[d.SubAgent]
+	clock := ag.clocks[d.SubAgent]
+	seqBack := last - d.Seq
+	// Modular uptime arithmetic keeps the normal 32-bit millisecond wrap
+	// forward. A short backwards sequence/uptime pair can be reordering;
+	// only restart when the rollback is large or the new boot necessarily
+	// happened since the last high-water datagram.
+	restarted := seen && d.Uptime-clock.uptime >= 1<<31 && seqBack > 0 && seqBack < 1<<31 &&
+		(seqBack > 1000 || now.Sub(clock.seen) > time.Duration(d.Uptime)*time.Millisecond)
+	if restarted {
+		for k, st := range c.sf {
+			if k.agent == agentAddr && k.subAgent == d.SubAgent {
+				// Keep cumulative reception diagnostics, not old-boot estimator
+				// calibration or records eligible for loss compensation.
+				*st = sfState{evalAt: now, lost: st.lost, drops: st.drops}
+			}
 		}
 	}
-	ag.lastSeq[d.SubAgent] = d.Seq
+	if !seen || restarted || d.Seq-last > 0 && d.Seq-last < 1<<31 {
+		if seen && !restarted {
+			if gap := d.Seq - last - 1; gap > 0 && gap < 1<<20 {
+				ag.lostDgram += uint64(gap)
+			}
+		}
+		ag.lastSeq[d.SubAgent] = d.Seq
+		if ag.clocks == nil {
+			ag.clocks = make(map[uint32]sfClock)
+		}
+		ag.clocks[d.SubAgent] = sfClock{uptime: d.Uptime, seen: now}
+	}
 
 	recs := make([]flow.Record, 0, len(d.Flows))
 	for i := range d.Flows {
@@ -371,7 +401,18 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 // configured rate where the pool cannot be used; and how many samples were
 // lost just before it.
 func (st *sfState) update(s *sflow.FlowSample, now time.Time) (float64, uint32) {
+	// Repeated delivery of the high-water sample is not a new observation.
+	if st.init && s.Seq == st.refSeq && s.Pool == st.ref {
+		return 0, 0
+	}
+	// Weight and diagnostics share one high-water mark. A late delivery may
+	// still carry its configured weight during pool validation, but must not
+	// rewind the measurement window, drop counters or current configured rate.
+	late := st.init && st.ref-s.Pool < 1<<31 && float64(st.ref-s.Pool) <= float64(max(s.Rate, 1))*1000 && st.refSeq-s.Seq >= 1 && st.refSeq-s.Seq <= 1000
 	w, gap := st.weight(s)
+	if late {
+		return w, gap
+	}
 	if st.init && s.Rate != st.rate {
 		// The agent's configured rate changed. Everything measured so far
 		// was measured against the old one, and the effective rate is only

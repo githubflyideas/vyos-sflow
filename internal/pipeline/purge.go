@@ -34,6 +34,14 @@ func (p *Pipeline) Purge(before time.Time) (store.PurgeSize, error) {
 	defer p.ioMu.Unlock()
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	// Keep all accepted in-memory history and its generation intact unless
+	// downstream deletion succeeds. In particular, a catalog/permission
+	// failure must not silently discard queued or already-dequeued records.
+	result, err := p.st.PurgeBefore(time.Time{})
+	if err != nil {
+		p.fail(err)
+		return result, err
+	}
 	p.epoch.Add(1)
 	for {
 		select {
@@ -47,9 +55,5 @@ drained:
 	p.forgetLocked(time.Time{})
 	clear(p.dedup)
 	p.newest = time.Time{}
-	result, err := p.st.PurgeBefore(time.Time{})
-	if err != nil {
-		p.fail(err)
-	}
-	return result, err
+	return result, nil
 }

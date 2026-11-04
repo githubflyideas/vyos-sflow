@@ -78,6 +78,7 @@ jobs:
         run: |
           node tests/tui-session.cjs dist/vyos-sflow-1.2.0-linux-amd64/vyos-sflow
           node tests/e2e.cjs dist/vyos-sflow-1.2.0-linux-amd64/vyos-sflow --browser
+          node tests/sampling-lifecycle.cjs dist/vyos-sflow-1.2.0-linux-amd64/vyos-sflow
           node tests/first-login.cjs dist/vyos-sflow-1.2.0-linux-amd64/vyos-sflow
           node tests/first-login-browser.cjs dist/vyos-sflow-1.2.0-linux-amd64/vyos-sflow
           node tests/network-defaults.cjs dist/vyos-sflow-1.2.0-linux-amd64/vyos-sflow
