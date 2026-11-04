@@ -107,7 +107,13 @@ async function verify(page) {
       }
       // Await translated business content, not the old view or the shell language.
       await page.waitForFunction(({selector,text}) => document.querySelector(selector)?.textContent === text, {selector,text:catalog[key]});
-      if (view === 'overview') assert.ok((await page.locator('#directionScope').innerText()).includes(catalog['ov.direction_scope']));
+      if (view === 'overview') {
+        assert.ok((await page.locator('#directionScope').innerText()).includes(catalog['ov.direction_scope']));
+        for (const [dir, key] of [['in', 'ov.bw_in'], ['out', 'ov.bw_out']]) {
+          await page.locator(`#v-overview [data-od="${dir}"]`).click();
+          await page.waitForFunction(text => document.querySelector('#v-overview .ph h2')?.textContent === text, catalog[key]);
+        }
+      }
       if (view === 'topn') for (const text of await page.locator('#v-topn .sum').allTextContents()) assert.ok(text.includes(catalog['topn.global_total']));
       if (view === 'records') {
         assert.equal(await page.locator('.rec thead th:last-child').innerText(), catalog['rc.sampling']);

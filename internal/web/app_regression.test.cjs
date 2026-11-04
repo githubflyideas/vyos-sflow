@@ -197,6 +197,9 @@ test('semantic explanations are translated in every catalog without English plac
     }
     assert.doesNotMatch(dict['ov.direction_scope'], /WAN/);
     assert.notEqual(dict['rc.sampling'], dict['col.sampling'], `${file}: record multiplier header still says sampling`);
+    const portTerms = {ar: /المنفذ/, hi: /पोर्ट/, ko: /포트/, ru: /порт/iu, ur: /پورٹ/, vi: /cổng/};
+    const portTerm = portTerms[file.slice(0, -5)];
+    if (portTerm) for (const key of ['ov.bw_in', 'ov.bw_out']) assert.match(dict[key], portTerm, `${file}: ${key} must identify port services`);
   }
 });
 test('product has no offline or non-sFlow entry points', () => {
