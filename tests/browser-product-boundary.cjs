@@ -1,6 +1,6 @@
 // Shared real-service browser acceptance; imported by both browser entry points.
 const assert = require('node:assert/strict');
-const removed = /\/(?:api\/(?:ifaces|recon|findings|threats|records|geo|geolines|rings|sankey|racks|inventory|names|resolve|report|export|syslog|embeds|license|registration|activation)|world\.json|embed\.(?:js|css)|sponsor\.js)(?:[/?]|$)/;
+const removed = /\/(?:api\/(?:ifaces|recon|findings|threats|geo|geolines|rings|sankey|racks|inventory|names|resolve|report|export|syslog|embeds|license|registration|activation)|world\.json|embed\.(?:js|css)|sponsor\.js)(?:[/?]|$)/;
 function observe(page, base) {
   const requests = [], errors = [], failedAssets = [];
   page.on('request', request => requests.push(request.url()));
@@ -16,11 +16,11 @@ function observe(page, base) {
   };
 }
 async function verify(page) {
-  assert.deepEqual(await page.locator('#nav [data-v]').evaluateAll(xs => xs.map(x => x.dataset.v).sort()), ['cleanup','help','overview','sources','topn','traffic']);
+  assert.deepEqual(await page.locator('#nav [data-v]').evaluateAll(xs => xs.map(x => x.dataset.v).sort()), ['cleanup','help','overview','records','sources','topn']);
   assert.equal(await page.locator('#lang option').count(), 15);
   assert.equal(await page.locator('#range [data-r="1h"]').getAttribute('aria-pressed'), 'true');
   assert.equal(await page.locator('[type=datetime-local], #embNew, #slSave, #ifsel, #sponsor, #lic').count(), 0);
-  for (const view of ['overview', 'topn', 'traffic', 'sources', 'cleanup', 'help']) {
+  for (const view of ['overview', 'topn', 'records', 'sources', 'cleanup', 'help']) {
     await page.locator(`#nav [data-v=${view}]`).click();
     await page.locator(`#v-${view}.on`).waitFor({state:'visible'});
     await page.waitForFunction(v => document.querySelector('#v-' + v)?.textContent.trim().length > 0, view);
@@ -29,6 +29,7 @@ async function verify(page) {
   await page.locator('#acct').click();
   await page.locator('#pwForm').waitFor({state:'visible'});
   await page.locator('#nav [data-v=topn]').click();
+  await page.locator('#v-topn [data-tm=table]').click();
   await page.locator('#topDim').waitFor({state:'visible'});
   assert.deepEqual(await page.locator('#topDim option').evaluateAll(xs => xs.map(x=>x.value)), ['host','app','proto']);
   for (const dim of ['app','proto','host']) {
@@ -37,7 +38,7 @@ async function verify(page) {
     assert.equal((await response).status(),200);
     await page.locator('#topDim').waitFor({state:'visible'});
   }
-  for (const [view,endpoint] of [['overview','overview'],['traffic','series'],['topn','topn']]) {
+  for (const [view,endpoint] of [['overview','overview'],['topn','topn']]) {
     await page.locator(`#nav [data-v=${view}]`).click();
     await page.locator(`#v-${view}.on .panel`).first().waitFor({state:'visible'});
     for (const range of ['15m','1h','6h','24h','48h']) {
