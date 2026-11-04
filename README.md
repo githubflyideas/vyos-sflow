@@ -32,8 +32,8 @@ In a writable directory on the router:
 curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.1.2/vyos-sflow-1.1.2-linux-amd64.tar.gz &&
 curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.1.2/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
-tar -xzf vyos-sflow-1.1.2-linux-amd64.tar.gz &&
-cd vyos-sflow-1.1.2-linux-amd64 &&
+tar -xzf vyos-sflow-1.2.0-linux-amd64.tar.gz &&
+cd vyos-sflow-1.2.0-linux-amd64 &&
 ./vyos-sflow serve
 ```
 

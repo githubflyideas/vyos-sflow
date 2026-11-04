@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- Overview: total, inbound and outbound bandwidth.
+- Top 66: main talkers are back.
+- Flow records page; the trends page is removed.
+- More accurate traffic figures when sFlow samples are lost.
+
 ## 1.1.2
 
 - Use the vyos-sflow project logo on the login screen and dashboard, with proportions preserved.
