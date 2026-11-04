@@ -4,7 +4,7 @@
 
 # vyos-sflow
 
-Your VyOS traffic at a glance: **live trends, Top IPs, ports and protocols**, with **48 hours of local history** powered by DuckDB™. Use the **Web dashboard** in a browser or the **terminal UI (TUI)** over SSH. Available in 15 languages.
+Your VyOS traffic at a glance: **live bandwidth in and out, top talkers, flow records, ports and protocols**, with **48 hours of local history** powered by DuckDB™. Use the **Web dashboard** in a browser or the **terminal UI (TUI)** over SSH. Available in 15 languages.
 
 ## Get started in 3 steps
 
@@ -65,23 +65,29 @@ Press `?` for keyboard help. For an explicitly selected service, use `-url http:
 
 ## Screenshots
 
-Actual **v1.1.2** screens, captured from the released Linux executable. The demonstration traffic is synthetic sFlow sent through the real UDP collector, storage and API—not mocked responses or edited screen contents.
+Captured on VyOS (2026.10.30 rolling, live ISO in a VM) with vyos-sflow running on the router and the router's own sFlow (`set system sflow …`) sampling real downloads, 1 in 1000. Nothing is mocked or edited.
 
-### Web dashboard
+### Overview
 
-Live traffic, recent history and collection health:
+Bandwidth by application (total, inbound or outbound) and collection health:
 
-![Web dashboard with received sFlow traffic](docs/images/screenshots/v1.1.2/web-overview.png)
+![Overview on VyOS](docs/images/screenshots/vyos/web-overview.png)
 
-### Top hosts
+### Top 66
 
-Traffic rankings from the same collection session:
+The main talkers, top clients and top servers side by side:
 
-![Web Top hosts with demonstration traffic](docs/images/screenshots/v1.1.2/web-top.png)
+![Top 66 main talkers on VyOS](docs/images/screenshots/vyos/web-top.png)
+
+### Flow records
+
+The newest records, with ports, interfaces and the sampling rate:
+
+![Flow records on VyOS](docs/images/screenshots/vyos/web-records.png)
 
 ### Terminal UI
 
-The real TUI running in a Linux terminal, connected to the same service:
+The real TUI running in a Linux terminal (captured from v1.1.2 with synthetic sFlow):
 
 ![Terminal UI showing Top hosts](docs/images/screenshots/v1.1.2/tui-top.png)
 
