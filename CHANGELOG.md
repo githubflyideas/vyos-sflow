@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1
+
+- Ignore repeated samples and keep sampling diagnostics stable when samples arrive out of order.
+- Isolate loss compensation across exporter restarts and manual history cleanup.
+- Preserve accepted in-memory history when downstream cleanup fails.
+- Explain chart direction, ranking totals, estimated record multipliers and effective record windows in all 15 languages.
+- Keep download, verification and extraction instructions consistent with the release.
+
 ## 1.2.0
 
 - Overview: total, inbound and outbound bandwidth.

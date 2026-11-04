@@ -287,5 +287,13 @@
   "rc.sampling": "Lấy mẫu",
   "rec.filter": "Lọc",
   "rec.all": "Tất cả",
-  "rc.local": "cục bộ"
+  "rc.local": "cục bộ",
+  "ov.kpi_scope": "Toàn bộ lưu lượng · Các chỉ số chính không thay đổi theo hướng trên biểu đồ",
+  "ov.direction_scope": "Hướng tại bộ xuất/giao diện được lấy mẫu có lưu lượng lớn nhất",
+  "ov.direction_empty": "Không có giao diện được lấy mẫu",
+  "topn.perspectives": "Vai trò máy khách/máy chủ được suy luận. Đây là hai góc nhìn của cùng một lưu lượng: không cộng chúng lại. Tổng ở cuối bao gồm toàn bộ lưu lượng, không chỉ 30 mục đứng đầu.",
+  "topn.global_total": "Toàn bộ lưu lượng (không phải tổng của 30 mục đứng đầu)",
+  "rec.window": "Khoảng thời gian thực tế: {from} — {to} · Tối đa {limit} dòng · Tối đa 24 giờ",
+  "rec.estimates": "Lưu lượng và số gói tin là các giá trị ước tính. Hệ số nhân là giá trị ước tính hiệu dụng, không phải tỷ lệ lấy mẫu đã cấu hình.",
+  "rec.multiplier": "Ước tính ×{n}"
 }

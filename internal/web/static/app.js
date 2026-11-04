@@ -466,12 +466,13 @@ const dirSeg = () => `<div class="seg" role="group">${[['', 'ov.dir_total'], ['i
 views.overview = async el => {
  const d = await api('overview', state.od ? {dir: state.od} : {}), total = d.totals || {};
  const title = state.od ? t(state.od === 'in' ? 'ov.bw_in' : 'ov.bw_out') : t('ov.bw_title');
- el.innerHTML = `<div class="grid"><div class="panel c12"><div class="kpis">
+ el.innerHTML = `<div class="grid"><div class="panel c12"><p class="muted" id="kpiScope">${esc(t('ov.kpi_scope'))}</p><div class="kpis">
  <div class="kpi"><div class="lab">${t('kpi.now')}</div><div class="n">${fmtBps(d.now_bps)}</div></div>
  <div class="kpi"><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><div class="n">${fmtBytes(total.wire)}</div></div>
  <div class="kpi"><div class="lab">${t('col.pkts')}</div><div class="n">${nf(total.pkts || 0)}</div></div>
  <div class="kpi"><div class="lab">${t('col.flows')}</div><div class="n">${nf(total.flows || 0)}</div></div>
  </div></div><div class="panel c12"><div class="ph"><h2>${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
+ ${state.od ? `<p class="muted" id="directionScope">${esc(t('ov.direction_scope'))} · <span id="directionIface">${d.dir_iface ? esc(d.dir_iface) : esc(t('ov.direction_empty'))}</span></p>` : ''}
  <div class="chart" id="chStack"></div></div>
  ${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}</div>`;
  drawSeries($('#chStack'), state.od ? d.dir_series : d.series); fillSelf();
@@ -486,8 +487,8 @@ async function talkers(el) {
  const tot = ov.totals || {};
  const table = (rows, head) => `<table><thead><tr><th></th><th>${t(head)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
   ${(rows || []).map((r, i) => `<tr><td class="rank">${i + 1}</td><td>${esc(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">${emptyText()}</td></tr>`}
-  <tr class="sum"><td></td><td>${t('topn.all')}</td><td>${fmtBytes(tot.wire)}</td><td>${nf(tot.pkts || 0)}</td><td>${nf(tot.flows || 0)}</td></tr></tbody></table>`;
- el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}</div>
+  <tr class="sum"><td></td><td>${t('topn.global_total')}</td><td>${fmtBytes(tot.wire)}</td><td>${nf(tot.pkts || 0)}</td><td>${nf(tot.flows || 0)}</td></tr></tbody></table>`;
+ el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}<p class="muted" id="topPerspectives">${esc(t('topn.perspectives'))}</p></div>
   ${panel('c6', t('ov.top_clients'), esc(t('topn.top_n', {n: 30})), table(cl.rows, 'col.client'))}
   ${panel('c6', t('topn.top_servers'), esc(t('topn.top_n', {n: 30})), table(sv.rows, 'col.server'))}</div>`;
  bindMode(el);
@@ -509,9 +510,9 @@ const ifLabel = i => i === 0x3FFFFFFF ? esc(t('rc.local')) : String(i);
 views.records = async el => {
  const d = await api('records', {limit: REC_MAX}, state.ip ? [{f: 'ip', v: state.ip, neg: false}] : []), rows = d.rows || [];
  const tf = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
- el.innerHTML = panel('c12', t('rec.title'), esc(t('rec.latest', {n: nf(rows.length)})) + ' · ' + esc(t('rec.sorted')), `<form class="recf" id="recF"><input id="recIP" value="${esc(state.ip)}" placeholder="${esc(t('field.ip'))} (192.0.2.10)" spellcheck="false" autocomplete="off"><button class="btn">${esc(t('rec.filter'))}</button>${state.ip ? `<button type="button" class="btn" id="recClr">${esc(t('rec.all'))}</button>` : ''}</form>
+ el.innerHTML = panel('c12', t('rec.title'), esc(t('rec.latest', {n: nf(rows.length)})) + ' · ' + esc(t('rec.sorted')), `<p class="muted" id="recordWindow" data-from="${esc(d.from || '')}" data-to="${esc(d.to || '')}" data-limit="${esc(d.limit ?? '')}">${esc(t('rec.window', {from: d.from ? new Date(d.from).toLocaleString(LANG, {timeZone: 'UTC'}) + ' UTC' : '—', to: d.to ? new Date(d.to).toLocaleString(LANG, {timeZone: 'UTC'}) + ' UTC' : '—', limit: d.limit == null ? '—' : nf(d.limit)}))}</p><p class="muted" id="recordEstimates">${esc(t('rec.estimates'))}</p><form class="recf" id="recF"><input id="recIP" value="${esc(state.ip)}" placeholder="${esc(t('field.ip'))} (192.0.2.10)" spellcheck="false" autocomplete="off"><button class="btn">${esc(t('rec.filter'))}</button>${state.ip ? `<button type="button" class="btn" id="recClr">${esc(t('rec.all'))}</button>` : ''}</form>
  <div class="tablewrap"><table class="rec"><thead><tr><th>${t('rc.time')}</th><th>${t('rc.client')}</th><th>${t('rc.server')}</th><th>${t('rc.proto')}</th><th>${t('rc.app')}</th><th>${t('rc.traffic')}</th><th>${t('rc.packets')}</th><th>${t('rc.in_if')} → ${t('rc.out_if')}</th><th>${t('rc.sampling')}</th></tr></thead><tbody>
- ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>1:${nf(Math.round(r.mult || 1))}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>`);
+ ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>${Number.isFinite(r.mult) && r.mult > 0 ? esc(t('rec.multiplier', {n: nf(r.mult, 2)})) : '—'}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>`);
  $('#recF').onsubmit = e => { e.preventDefault(); state.ip = $('#recIP').value.trim(); render(true); };
  if ($('#recClr')) $('#recClr').onclick = () => { state.ip = ''; render(true); };
 };

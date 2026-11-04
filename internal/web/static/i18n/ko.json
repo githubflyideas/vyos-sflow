@@ -287,5 +287,13 @@
   "rc.sampling": "샘플링",
   "rec.filter": "필터",
   "rec.all": "전체",
-  "rc.local": "로컬"
+  "rc.local": "로컬",
+  "ov.kpi_scope": "전체 트래픽 · 핵심 지표는 차트의 방향 선택에 영향을 받지 않습니다",
+  "ov.direction_scope": "샘플링된 내보내기 장치/인터페이스 중 트래픽이 가장 많은 곳의 방향",
+  "ov.direction_empty": "샘플링된 인터페이스가 없습니다",
+  "topn.perspectives": "클라이언트/서버 역할은 추론된 것입니다. 동일한 트래픽을 두 관점에서 보여 주므로 합산하지 마세요. 하단 합계는 상위 30개뿐 아니라 전체 트래픽을 포함합니다.",
+  "topn.global_total": "전체 트래픽 (상위 30개 소계 아님)",
+  "rec.window": "실제 적용 기간: {from} — {to} · 최대 {limit}행 · 최대 24시간",
+  "rec.estimates": "트래픽과 패킷 수는 추정치입니다. 배율은 실제 적용된 추정 배율이며, 설정된 샘플링 비율이 아닙니다.",
+  "rec.multiplier": "추정 ×{n}"
 }

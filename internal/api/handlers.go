@@ -427,10 +427,11 @@ func (s *Server) records(w http.ResponseWriter, r *http.Request) {
 	if q.To.Sub(q.From) > 24*time.Hour {
 		q.From = q.To.Add(-24 * time.Hour)
 	}
-	rows, err := s.Store.Records(q, min(limitParam(r, 200), 500))
+	limit := min(limitParam(r, 200), 500)
+	rows, err := s.Store.Records(q, limit)
 	if err != nil {
 		fail(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"rows": rows})
+	writeJSON(w, http.StatusOK, map[string]any{"rows": rows, "from": q.From, "to": q.To, "limit": limit})
 }

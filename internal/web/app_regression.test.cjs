@@ -12,7 +12,7 @@ function harness() {
   const pending = [];
   const context = {document, console, URLSearchParams, Intl, Date, Map, Set, Math, JSON, Error, setTimeout() {}, setInterval() {}, clearInterval() {}, clearTimeout() {}, location: {hash: '', hostname: 'localhost'}, history: {replaceState() {}, pushState() {}}, navigator: {language: 'en'}, localStorage: {getItem() {return null;}, setItem() {}}, matchMedia: () => ({matches: false, addEventListener() {}}), fetch: (url, options) => new Promise(resolve => pending.push({url, options, resolve}))};
   context.window = context; context.addEventListener = () => {};
-  vm.runInNewContext(source.replace(/init\(\);\s*\}\)\(\);\s*$/, 'globalThis.testing = {state, views, topTable, tsChart, api, readHash, LANGS, t, pickLang, loadLang, next: () => ++loadSeq};\n})();'), context);
+  vm.runInNewContext(source.replace(/init\(\);\s*\}\)\(\);\s*$/, 'globalThis.testing = {setCatalog: d => {DICT = d;}, state, views, topTable, tsChart, api, readHash, LANGS, t, pickLang, loadLang, next: () => ++loadSeq};\n})();'), context);
   return {context, elements, pending, element, testing: context.testing};
 }
 const reply = (req, key) => req.resolve({status: 200, ok: true, json: async () => ({rows: [{key, wire: 100, pkts: 1, flows: 1}]})});
@@ -145,6 +145,58 @@ test('empty series shows an explicit empty state rather than a blank chart', () 
   h.context.ResizeObserver = class { observe() {} };
   h.testing.tsChart(el, {times:[], areas:[]});
   assert.match(el.innerHTML, /empty.nodata/);
+});
+test('direction identifies the selected exporter/interface and leaves KPI scope explicit', async () => {
+  for (const dir of ['in', 'out']) for (const iface of ['192.0.2.1/7', '']) {
+    const h = harness(), el = h.element();
+    h.context.ResizeObserver = class { observe() {} };
+    h.testing.state.od = dir;
+    const rendering = h.testing.views.overview(el);
+    h.pending[0].resolve({ok:true, json:async () => ({totals:{wire:123}, dir_iface:iface, dir_series:{times:[],names:[],values:[]}})});
+    await rendering;
+    assert.match(el.innerHTML, /ov.kpi_scope/);
+    assert.match(el.innerHTML, /ov.direction_scope/);
+    assert.ok(el.innerHTML.includes(iface || 'ov.direction_empty'));
+  }
+});
+test('Top explains overlapping inferred roles and global rather than displayed-row totals', async () => {
+  const h = harness(), el = h.element();
+  h.testing.state.tm = 'talkers';
+  const rendering = h.testing.views.topn(el);
+  for (const req of h.pending) req.resolve({ok:true, json:async () => req.url.includes('overview') ? {totals:{wire:900}} : {rows:[{key:'192.0.2.10',wire:100}]}});
+  await rendering;
+  assert.match(el.innerHTML, /topn.perspectives/);
+  assert.equal((el.innerHTML.match(/topn.global_total/g) || []).length, 2);
+  assert.equal((el.innerHTML.match(/900 B/g) || []).length, 2);
+});
+test('records show fractional estimated multipliers and actual bounded windows even when filtered empty', async () => {
+  for (const empty of [false, true]) {
+    const h = harness(), el = h.element();
+    h.testing.setCatalog({'rec.window':'Effective {from} — {to}; limit {limit}', 'rec.multiplier':'Estimated ×{n}'});
+    h.testing.state.r = '48h'; h.testing.state.ip = empty ? '203.0.113.9' : '';
+    const rendering = h.testing.views.records(el);
+    const from = '2026-01-02T00:00:00Z', to = '2026-01-03T00:00:00Z';
+    h.pending[0].resolve({ok:true, json:async () => ({from,to,limit:500,rows:empty ? [] : [{ts:to,client:'192.0.2.10',server:'198.51.100.20',mult:9.090909,wire:100,pkts:3}]})});
+    await rendering;
+    assert.match(el.innerHTML, /Effective/); assert.match(el.innerHTML, /limit 500/);
+    assert.ok(el.innerHTML.includes(from)); assert.ok(el.innerHTML.includes(to));
+    assert.match(el.innerHTML, /rec.estimates/);
+    if (empty) {assert.match(el.innerHTML, /203.0.113.9/); assert.match(el.innerHTML, /empty.nodata/);}
+    else {assert.match(el.innerHTML, /Estimated ×9.09/); assert.doesNotMatch(el.innerHTML, /1:9/);}
+  }
+});
+test('semantic explanations are translated in every catalog without English placeholders', () => {
+  const dir = path.join(__dirname, 'static/i18n');
+  const en = JSON.parse(fs.readFileSync(path.join(dir, 'en.json'), 'utf8'));
+  const keys = ['ov.kpi_scope','ov.direction_scope','ov.direction_empty','topn.perspectives','topn.global_total','rec.window','rec.estimates','rec.multiplier'];
+  for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
+    const dict = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+    for (const key of keys) {
+      assert.ok(dict[key], `${file}: missing ${key}`);
+      if (file !== 'en.json') assert.notEqual(dict[key], en[key], `${file}: English fallback ${key}`);
+    }
+    assert.doesNotMatch(dict['ov.direction_scope'], /WAN/);
+  }
 });
 test('product has no offline or non-sFlow entry points', () => {
   const html = fs.readFileSync(path.join(__dirname, 'static/index.html'), 'utf8');
