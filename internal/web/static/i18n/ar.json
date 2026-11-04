@@ -286,5 +286,6 @@
   "rc.out_if": "واجهة الخروج",
   "rc.sampling": "أخذ العينات",
   "rec.filter": "تصفية",
-  "rec.all": "الكل"
+  "rec.all": "الكل",
+  "rc.local": "محلي"
 }

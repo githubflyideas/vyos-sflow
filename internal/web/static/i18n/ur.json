@@ -286,5 +286,6 @@
   "rc.out_if": "خارجی انٹرفیس",
   "rc.sampling": "سیمپلنگ",
   "rec.filter": "فلٹر",
-  "rec.all": "سب"
+  "rec.all": "سب",
+  "rc.local": "مقامی"
 }

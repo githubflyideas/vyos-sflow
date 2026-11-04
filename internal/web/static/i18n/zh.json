@@ -286,5 +286,6 @@
   "rc.out_if": "出接口",
   "rc.sampling": "采样率",
   "rec.filter": "筛选",
-  "rec.all": "全部"
+  "rec.all": "全部",
+  "rc.local": "本机"
 }

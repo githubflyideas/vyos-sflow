@@ -286,5 +286,6 @@
   "rc.out_if": "Interface de saída",
   "rc.sampling": "Amostragem",
   "rec.filter": "Filtrar",
-  "rec.all": "Todos"
+  "rec.all": "Todos",
+  "rc.local": "local"
 }

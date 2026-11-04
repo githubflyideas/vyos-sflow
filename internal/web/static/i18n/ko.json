@@ -286,5 +286,6 @@
   "rc.out_if": "출력 인터페이스",
   "rc.sampling": "샘플링",
   "rec.filter": "필터",
-  "rec.all": "전체"
+  "rec.all": "전체",
+  "rc.local": "로컬"
 }

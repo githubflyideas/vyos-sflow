@@ -504,12 +504,14 @@ async function topTable(el, dim) {
 // The newest flow records, at most 500, over at most a day; one address
 // can be picked out.
 const REC_MAX = 500;
+// sFlow's interface number for the router itself
+const ifLabel = i => i === 0x3FFFFFFF ? esc(t('rc.local')) : String(i);
 views.records = async el => {
  const d = await api('records', {limit: REC_MAX}, state.ip ? [{f: 'ip', v: state.ip, neg: false}] : []), rows = d.rows || [];
  const tf = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
  el.innerHTML = panel('c12', t('rec.title'), esc(t('rec.latest', {n: nf(rows.length)})) + ' · ' + esc(t('rec.sorted')), `<form class="recf" id="recF"><input id="recIP" value="${esc(state.ip)}" placeholder="${esc(t('field.ip'))} (192.0.2.10)" spellcheck="false" autocomplete="off"><button class="btn">${esc(t('rec.filter'))}</button>${state.ip ? `<button type="button" class="btn" id="recClr">${esc(t('rec.all'))}</button>` : ''}</form>
  <div class="tablewrap"><table class="rec"><thead><tr><th>${t('rc.time')}</th><th>${t('rc.client')}</th><th>${t('rc.server')}</th><th>${t('rc.proto')}</th><th>${t('rc.app')}</th><th>${t('rc.traffic')}</th><th>${t('rc.packets')}</th><th>${t('rc.in_if')} → ${t('rc.out_if')}</th><th>${t('rc.sampling')}</th></tr></thead><tbody>
- ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${r.in_if} → ${r.out_if}</td><td>1:${nf(Math.round(r.mult || 1))}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>`);
+ ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>1:${nf(Math.round(r.mult || 1))}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>`);
  $('#recF').onsubmit = e => { e.preventDefault(); state.ip = $('#recIP').value.trim(); render(true); };
  if ($('#recClr')) $('#recClr').onclick = () => { state.ip = ''; render(true); };
 };

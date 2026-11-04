@@ -286,5 +286,6 @@
   "rc.out_if": "出力 IF",
   "rc.sampling": "サンプリング",
   "rec.filter": "絞り込む",
-  "rec.all": "すべて"
+  "rec.all": "すべて",
+  "rc.local": "ローカル"
 }

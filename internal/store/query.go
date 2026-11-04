@@ -612,6 +612,10 @@ func (s *Store) Records(q Query, limit int) ([]Record, error) {
 	return out, rows.Err()
 }
 
+// LocalIf is the interface sFlow names for traffic to or from the router
+// itself, not a port.
+const LocalIf = 0x3FFFFFFF
+
 // BusiestIface is the interface most of the traffic in q went in or out
 // through, as "exporter/ifindex": the one sFlow samples on.
 func (s *Store) BusiestIface(q Query) (string, error) {
@@ -622,9 +626,9 @@ func (s *Store) BusiestIface(q Query) (string, error) {
 	var exp string
 	var idx uint32
 	err = s.DB.QueryRow(fmt.Sprintf(`SELECT exporter, i FROM (
-			SELECT exporter, in_if AS i, wire FROM %[1]s WHERE %[2]s AND in_if <> 0
-			UNION ALL SELECT exporter, out_if, wire FROM %[1]s WHERE %[2]s AND out_if <> 0)
-		GROUP BY 1, 2 ORDER BY sum(wire) DESC LIMIT 1`, s.Source(q.From, q.To), where), append(append([]any{}, args...), args...)...).Scan(&exp, &idx)
+			SELECT exporter, in_if AS i, wire FROM %[1]s WHERE %[2]s AND in_if NOT IN (0, %[3]d)
+			UNION ALL SELECT exporter, out_if, wire FROM %[1]s WHERE %[2]s AND out_if NOT IN (0, %[3]d))
+		GROUP BY 1, 2 ORDER BY sum(wire) DESC LIMIT 1`, s.Source(q.From, q.To), where, LocalIf), append(append([]any{}, args...), args...)...).Scan(&exp, &idx)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", nil
 	}

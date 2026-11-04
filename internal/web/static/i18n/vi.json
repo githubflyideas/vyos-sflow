@@ -286,5 +286,6 @@
   "rc.out_if": "Giao diện ra",
   "rc.sampling": "Lấy mẫu",
   "rec.filter": "Lọc",
-  "rec.all": "Tất cả"
+  "rec.all": "Tất cả",
+  "rc.local": "cục bộ"
 }
