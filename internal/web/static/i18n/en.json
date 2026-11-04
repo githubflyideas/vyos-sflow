@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow agent {a} / sub-agent {s}",
-
   "stream.rejected": "Rejected stream datagrams: {n}",
   "lang.name": "English",
   "nav.overview": "Overview",
@@ -150,7 +149,6 @@
   "src.ex_device": "Core router",
   "src.ex_iface": "ISP uplink",
   "ov.findings_all": "All open findings ({n})",
-  "nav.traffic": "Trends",
   "ch.bps": "bits/s",
   "ch.pps": "packets/s",
   "topn.talkers": "Talkers",
@@ -270,5 +268,23 @@
   "nav.help": "Help",
   "self.counter_samples": "Counter samples",
   "self.dropped_counters": "Counter queue drops",
-  "self.write_errors": "Storage write errors"
+  "self.write_errors": "Storage write errors",
+  "nav.records": "Flow records",
+  "if.in": "Inbound",
+  "if.out": "Outbound",
+  "rec.title": "Flow records",
+  "rec.latest": "Latest {n}",
+  "rec.sorted": "Newest first",
+  "rc.time": "Time",
+  "rc.client": "Client",
+  "rc.server": "Server",
+  "rc.proto": "Protocol",
+  "rc.app": "Application",
+  "rc.traffic": "Traffic",
+  "rc.packets": "Packets",
+  "rc.in_if": "In interface",
+  "rc.out_if": "Out interface",
+  "rc.sampling": "Sampling",
+  "rec.filter": "Filter",
+  "rec.all": "All"
 }

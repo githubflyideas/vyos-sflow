@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/netip"
 	"sort"
@@ -77,7 +78,7 @@ func v4range(p netip.Prefix) (uint32, uint32, bool) {
 // device they are its own traffic and count.
 func (q Query) oneDevice() bool {
 	for _, f := range q.Filters {
-		if !f.Neg && f.Field == "exporter" {
+		if !f.Neg && (f.Field == "exporter" || strings.HasPrefix(f.Field, "iface")) {
 			return true
 		}
 	}
@@ -86,7 +87,7 @@ func (q Query) oneDevice() bool {
 
 // where builds the WHERE clause and its arguments.
 func (q Query) where() (string, []any, error) {
-	if err := ValidateFilters(q.Filters); err != nil {
+	if err := validateFilters(q.Filters, true); err != nil {
 		return "", nil, err
 	}
 	conds := []string{"ts >= ?", "ts < ?"}
@@ -165,6 +166,28 @@ func (q Query) where() (string, []any, error) {
 		case "exporter":
 			c = "exporter = ?"
 			args = append(args, v)
+		case "iface", "iface_in", "iface_out":
+			// exporter/ifindex: either direction, or only what came in
+			// through it, or only what went out through it
+			i := strings.LastIndexByte(v, '/')
+			if i <= 0 {
+				return "", nil, fmt.Errorf("bad interface %q", v)
+			}
+			n, err := strconv.Atoi(v[i+1:])
+			if err != nil {
+				return "", nil, fmt.Errorf("bad interface %q", v)
+			}
+			switch f.Field {
+			case "iface_in":
+				c = "(exporter = ? AND in_if = ?)"
+				args = append(args, v[:i], n)
+			case "iface_out":
+				c = "(exporter = ? AND out_if = ?)"
+				args = append(args, v[:i], n)
+			default:
+				c = "(exporter = ? AND (in_if = ? OR out_if = ?))"
+				args = append(args, v[:i], n, n)
+			}
 		default:
 			return "", nil, fmt.Errorf("unknown filter field %q", f.Field)
 		}
@@ -189,9 +212,11 @@ type TopRow struct {
 type dimDef struct{ expr, rollup string }
 
 var dims = map[string]dimDef{
-	"host":  {expr: "unnest(list_distinct([client, server]))"},
-	"app":   {expr: "app", rollup: "app"},
-	"proto": {expr: "CAST(proto AS VARCHAR)", rollup: "proto"},
+	"host":   {expr: "unnest(list_distinct([client, server]))"},
+	"client": {expr: "client"},
+	"server": {expr: "server"},
+	"app":    {expr: "app", rollup: "app"},
+	"proto":  {expr: "CAST(proto AS VARCHAR)", rollup: "proto"},
 }
 var topOrder = map[string]string{"wire": "wire", "bytes": "bytes", "pkts": "pkts", "flows": "flows"}
 
@@ -525,13 +550,86 @@ func (s *Store) hostCounts(q Query, where string) string {
 }
 
 // ValidateFilters rejects removed dimensions before any storage operation.
-func ValidateFilters(filters []Filter) error {
+func ValidateFilters(filters []Filter) error { return validateFilters(filters, false) }
+
+// validateFilters also lets through, where internal is set, the interface
+// filters the server adds itself (inbound and outbound on the overview);
+// a request cannot ask for them.
+func validateFilters(filters []Filter, internal bool) error {
 	for _, f := range filters {
 		switch f.Field {
 		case "ip", "src", "dst", "port", "proto", "app", "exporter":
+		case "iface", "iface_in", "iface_out":
+			if !internal {
+				return fmt.Errorf("unknown filter field %q", f.Field)
+			}
 		default:
 			return fmt.Errorf("unknown filter field %q", f.Field)
 		}
 	}
 	return nil
+}
+
+// Record is one flow record for the records page.
+type Record struct {
+	TS      int64   `json:"ts"`
+	Client  string  `json:"client"`
+	Server  string  `json:"server"`
+	CPort   uint16  `json:"cport"`
+	SvcPort uint16  `json:"port"`
+	Proto   uint8   `json:"proto"`
+	App     string  `json:"app"`
+	Wire    uint64  `json:"wire"`
+	Pkts    uint64  `json:"pkts"`
+	InIf    uint32  `json:"in_if"`
+	OutIf   uint32  `json:"out_if"`
+	Flags   uint8   `json:"tcp_flags"`
+	Mult    float32 `json:"mult"`
+}
+
+// Records returns the newest flow records, at most limit.
+func (s *Store) Records(q Query, limit int) ([]Record, error) {
+	where, args, err := q.where()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.DB.Query(fmt.Sprintf(`SELECT ts, client, server, CASE WHEN client = src THEN sport ELSE dport END, svc_port, proto, app,
+		wire, pkts, in_if, out_if, tcp_flags, mult FROM %s WHERE %s ORDER BY ts DESC, wire DESC LIMIT %d`, s.Source(q.From, q.To), where, limit), args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Record{}
+	for rows.Next() {
+		var r Record
+		var ts time.Time
+		if err := rows.Scan(&ts, &r.Client, &r.Server, &r.CPort, &r.SvcPort, &r.Proto, &r.App, &r.Wire, &r.Pkts, &r.InIf, &r.OutIf, &r.Flags, &r.Mult); err != nil {
+			return nil, err
+		}
+		r.TS = ts.UnixMilli()
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
+// BusiestIface is the interface most of the traffic in q went in or out
+// through, as "exporter/ifindex": the one sFlow samples on.
+func (s *Store) BusiestIface(q Query) (string, error) {
+	where, args, err := q.where()
+	if err != nil {
+		return "", err
+	}
+	var exp string
+	var idx uint32
+	err = s.DB.QueryRow(fmt.Sprintf(`SELECT exporter, i FROM (
+			SELECT exporter, in_if AS i, wire FROM %[1]s WHERE %[2]s AND in_if <> 0
+			UNION ALL SELECT exporter, out_if, wire FROM %[1]s WHERE %[2]s AND out_if <> 0)
+		GROUP BY 1, 2 ORDER BY sum(wire) DESC LIMIT 1`, s.Source(q.From, q.To), where), append(append([]any{}, args...), args...)...).Scan(&exp, &idx)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return exp + "/" + strconv.FormatUint(uint64(idx), 10), nil
 }

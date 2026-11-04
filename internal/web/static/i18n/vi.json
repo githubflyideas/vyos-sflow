@@ -1,6 +1,5 @@
 {
   "stream.identity": "Tác nhân sFlow {a} / tác nhân phụ {s}",
-
   "stream.rejected": "Gói dữ liệu luồng bị từ chối: {n}",
   "lang.name": "Tiếng Việt",
   "nav.overview": "Tổng quan",
@@ -150,7 +149,6 @@
   "src.ex_device": "Router lõi",
   "src.ex_iface": "Uplink ISP",
   "ov.findings_all": "Tất cả phát hiện đang mở ({n})",
-  "nav.traffic": "Xu hướng",
   "ch.bps": "bit/s",
   "ch.pps": "gói/s",
   "topn.talkers": "Máy trao đổi nhiều",
@@ -270,5 +268,23 @@
   "nav.help": "Trợ giúp",
   "self.counter_samples": "Mẫu bộ đếm",
   "self.dropped_counters": "Mẫu bị loại khỏi hàng đợi bộ đếm",
-  "self.write_errors": "Lỗi ghi lưu trữ"
+  "self.write_errors": "Lỗi ghi lưu trữ",
+  "nav.records": "Bản ghi luồng",
+  "if.in": "Đi vào",
+  "if.out": "Đi ra",
+  "rec.title": "Bản ghi luồng",
+  "rec.latest": "{n} mới nhất",
+  "rec.sorted": "Mới nhất trước",
+  "rc.time": "Thời gian",
+  "rc.client": "Client",
+  "rc.server": "Server",
+  "rc.proto": "Giao thức",
+  "rc.app": "Ứng dụng",
+  "rc.traffic": "Lưu lượng",
+  "rc.packets": "Gói tin",
+  "rc.in_if": "Giao diện vào",
+  "rc.out_if": "Giao diện ra",
+  "rc.sampling": "Lấy mẫu",
+  "rec.filter": "Lọc",
+  "rec.all": "Tất cả"
 }

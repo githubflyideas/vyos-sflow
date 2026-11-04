@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow एजेंट {a} / उप-एजेंट {s}",
-
   "stream.rejected": "अस्वीकृत स्ट्रीम डेटाग्राम: {n}",
   "lang.name": "हिन्दी",
   "nav.overview": "सारांश",
@@ -150,7 +149,6 @@
   "src.ex_device": "कोर राउटर",
   "src.ex_iface": "ISP अपलिंक",
   "ov.findings_all": "सभी लंबित संदिग्ध गतिविधियाँ ({n})",
-  "nav.traffic": "रुझान",
   "ch.bps": "बिट/से",
   "ch.pps": "पैकेट/से",
   "topn.talkers": "सबसे सक्रिय होस्ट",
@@ -270,5 +268,23 @@
   "nav.help": "सहायता",
   "self.counter_samples": "काउंटर नमूने",
   "self.dropped_counters": "काउंटर कतार से हटाए गए नमूने",
-  "self.write_errors": "भंडारण लेखन त्रुटियाँ"
+  "self.write_errors": "भंडारण लेखन त्रुटियाँ",
+  "nav.records": "फ़्लो रिकॉर्ड",
+  "if.in": "अंदर",
+  "if.out": "बाहर",
+  "rec.title": "फ़्लो रिकॉर्ड",
+  "rec.latest": "नवीनतम {n}",
+  "rec.sorted": "नए पहले",
+  "rc.time": "समय",
+  "rc.client": "क्लाइंट",
+  "rc.server": "सर्वर",
+  "rc.proto": "प्रोटोकॉल",
+  "rc.app": "ऐप्लिकेशन",
+  "rc.traffic": "ट्रैफ़िक",
+  "rc.packets": "पैकेट",
+  "rc.in_if": "इनपुट इंटरफ़ेस",
+  "rc.out_if": "आउटपुट इंटरफ़ेस",
+  "rc.sampling": "सैंपलिंग",
+  "rec.filter": "फ़िल्टर",
+  "rec.all": "सभी"
 }

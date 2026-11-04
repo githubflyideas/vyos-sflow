@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow 代理 {a} / 子代理 {s}",
-
   "stream.rejected": "拒绝的流数据报：{n}",
   "lang.name": "中文",
   "nav.overview": "概览",
@@ -150,7 +149,6 @@
   "src.ex_device": "核心路由器",
   "src.ex_iface": "运营商上联",
   "ov.findings_all": "全部未处理的发现（{n}）",
-  "nav.traffic": "趋势",
   "ch.bps": "比特/秒",
   "ch.pps": "包/秒",
   "topn.talkers": "主要通信方",
@@ -270,5 +268,23 @@
   "nav.help": "帮助",
   "self.counter_samples": "计数器样本",
   "self.dropped_counters": "计数器队列丢弃",
-  "self.write_errors": "存储写入错误"
+  "self.write_errors": "存储写入错误",
+  "nav.records": "流记录",
+  "if.in": "入向",
+  "if.out": "出向",
+  "rec.title": "流记录",
+  "rec.latest": "最近 {n} 条",
+  "rec.sorted": "最新的在前",
+  "rc.time": "时间",
+  "rc.client": "客户端",
+  "rc.server": "服务端",
+  "rc.proto": "协议",
+  "rc.app": "应用",
+  "rc.traffic": "流量",
+  "rc.packets": "包数",
+  "rc.in_if": "入接口",
+  "rc.out_if": "出接口",
+  "rc.sampling": "采样率",
+  "rec.filter": "筛选",
+  "rec.all": "全部"
 }

@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow エージェント {a} / サブエージェント {s}",
-
   "stream.rejected": "拒否したストリームデータグラム: {n}",
   "lang.name": "日本語",
   "nav.overview": "概要",
@@ -150,7 +149,6 @@
   "src.ex_device": "コアルーター",
   "src.ex_iface": "ISP上位回線",
   "ov.findings_all": "未対応の検知をすべて表示（{n}）",
-  "nav.traffic": "推移",
   "ch.bps": "ビット/秒",
   "ch.pps": "パケット/秒",
   "topn.talkers": "主な通信相手",
@@ -270,5 +268,23 @@
   "nav.help": "ヘルプ",
   "self.counter_samples": "カウンターサンプル",
   "self.dropped_counters": "カウンターキューの破棄",
-  "self.write_errors": "ストレージ書き込みエラー"
+  "self.write_errors": "ストレージ書き込みエラー",
+  "nav.records": "フローレコード",
+  "if.in": "受信方向",
+  "if.out": "送信方向",
+  "rec.title": "フローレコード",
+  "rec.latest": "最新 {n} 件",
+  "rec.sorted": "新しい順",
+  "rc.time": "時刻",
+  "rc.client": "クライアント",
+  "rc.server": "サーバー",
+  "rc.proto": "プロトコル",
+  "rc.app": "アプリケーション",
+  "rc.traffic": "トラフィック",
+  "rc.packets": "パケット数",
+  "rc.in_if": "入力 IF",
+  "rc.out_if": "出力 IF",
+  "rc.sampling": "サンプリング",
+  "rec.filter": "絞り込む",
+  "rec.all": "すべて"
 }

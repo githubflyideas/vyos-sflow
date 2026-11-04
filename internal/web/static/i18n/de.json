@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow-Agent {a} / Sub-Agent {s}",
-
   "stream.rejected": "Abgelehnte Stream-Datagramme: {n}",
   "lang.name": "Deutsch",
   "nav.overview": "Übersicht",
@@ -150,7 +149,6 @@
   "src.ex_device": "Core-Router",
   "src.ex_iface": "ISP-Uplink",
   "ov.findings_all": "Alle offenen Befunde ({n})",
-  "nav.traffic": "Verlauf",
   "ch.bps": "Bit/s",
   "ch.pps": "Pakete/s",
   "topn.talkers": "Talker",
@@ -270,5 +268,23 @@
   "nav.help": "Hilfe",
   "self.counter_samples": "Zähler-Samples",
   "self.dropped_counters": "Verworfene Zähler-Samples",
-  "self.write_errors": "Speicherschreibfehler"
+  "self.write_errors": "Speicherschreibfehler",
+  "nav.records": "Flow-Datensätze",
+  "if.in": "Eingehend",
+  "if.out": "Ausgehend",
+  "rec.title": "Flow-Datensätze",
+  "rec.latest": "Neueste {n}",
+  "rec.sorted": "Neueste zuerst",
+  "rc.time": "Zeit",
+  "rc.client": "Client",
+  "rc.server": "Server",
+  "rc.proto": "Protokoll",
+  "rc.app": "Anwendung",
+  "rc.traffic": "Traffic",
+  "rc.packets": "Pakete",
+  "rc.in_if": "Eingangsschnittstelle",
+  "rc.out_if": "Ausgangsschnittstelle",
+  "rc.sampling": "Sampling",
+  "rec.filter": "Filtern",
+  "rec.all": "Alle"
 }

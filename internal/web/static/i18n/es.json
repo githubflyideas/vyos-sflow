@@ -1,6 +1,5 @@
 {
   "stream.identity": "Agente sFlow {a} / subagente {s}",
-
   "stream.rejected": "Datagramas de flujo rechazados: {n}",
   "lang.name": "Español",
   "nav.overview": "Resumen",
@@ -150,7 +149,6 @@
   "src.ex_device": "Router de núcleo",
   "src.ex_iface": "Enlace al ISP",
   "ov.findings_all": "Todos los hallazgos pendientes ({n})",
-  "nav.traffic": "Tendencias",
   "ch.bps": "bits/s",
   "ch.pps": "paquetes/s",
   "topn.talkers": "Interlocutores principales",
@@ -270,5 +268,23 @@
   "nav.help": "Ayuda",
   "self.counter_samples": "Muestras de contadores",
   "self.dropped_counters": "Descartes en la cola de contadores",
-  "self.write_errors": "Errores de escritura"
+  "self.write_errors": "Errores de escritura",
+  "nav.records": "Registros de flujo",
+  "if.in": "Entrante",
+  "if.out": "Saliente",
+  "rec.title": "Registros de flujo",
+  "rec.latest": "Últimos {n}",
+  "rec.sorted": "Más recientes primero",
+  "rc.time": "Hora",
+  "rc.client": "Cliente",
+  "rc.server": "Servidor",
+  "rc.proto": "Protocolo",
+  "rc.app": "Aplicación",
+  "rc.traffic": "Tráfico",
+  "rc.packets": "Paquetes",
+  "rc.in_if": "Interfaz de entrada",
+  "rc.out_if": "Interfaz de salida",
+  "rc.sampling": "Muestreo",
+  "rec.filter": "Filtrar",
+  "rec.all": "Todos"
 }

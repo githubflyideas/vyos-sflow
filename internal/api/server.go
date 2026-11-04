@@ -127,6 +127,7 @@ func (s *Server) Handler() http.Handler {
 	api("GET /api/overview", s.data((*Server).overview))
 	api("GET /api/topn", s.data((*Server).topn))
 	api("GET /api/series", s.data((*Server).series))
+	api("GET /api/records", s.data((*Server).records))
 	api("GET /api/sources", s.sources)
 	adminAPI("POST /api/sources/block", s.postBlock)
 	adminAPI("DELETE /api/sources/block", s.deleteBlock)

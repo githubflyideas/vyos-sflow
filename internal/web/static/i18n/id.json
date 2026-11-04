@@ -1,6 +1,5 @@
 {
   "stream.identity": "Agen sFlow {a} / subagen {s}",
-
   "stream.rejected": "Datagram aliran ditolak: {n}",
   "lang.name": "Bahasa Indonesia",
   "nav.overview": "Ringkasan",
@@ -150,7 +149,6 @@
   "src.ex_device": "Router inti",
   "src.ex_iface": "Uplink ISP",
   "ov.findings_all": "Semua temuan yang belum ditangani ({n})",
-  "nav.traffic": "Tren",
   "ch.bps": "bit/dtk",
   "ch.pps": "paket/dtk",
   "topn.talkers": "Pihak teratas",
@@ -270,5 +268,23 @@
   "nav.help": "Bantuan",
   "self.counter_samples": "Sampel penghitung",
   "self.dropped_counters": "Sampel antrean penghitung dibuang",
-  "self.write_errors": "Kesalahan penulisan penyimpanan"
+  "self.write_errors": "Kesalahan penulisan penyimpanan",
+  "nav.records": "Catatan flow",
+  "if.in": "Masuk",
+  "if.out": "Keluar",
+  "rec.title": "Catatan flow",
+  "rec.latest": "{n} terakhir",
+  "rec.sorted": "Terbaru dulu",
+  "rc.time": "Waktu",
+  "rc.client": "Klien",
+  "rc.server": "Server",
+  "rc.proto": "Protokol",
+  "rc.app": "Aplikasi",
+  "rc.traffic": "Trafik",
+  "rc.packets": "Paket",
+  "rc.in_if": "Antarmuka masuk",
+  "rc.out_if": "Antarmuka keluar",
+  "rc.sampling": "Sampling",
+  "rec.filter": "Saring",
+  "rec.all": "Semua"
 }

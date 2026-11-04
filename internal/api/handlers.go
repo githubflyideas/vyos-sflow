@@ -94,6 +94,27 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	out["series"] = se
+	// Inbound and outbound are what came in and what went out through
+	// the interface sFlow samples on, the busiest one.
+	if dir := r.URL.Query().Get("dir"); dir == "in" || dir == "out" {
+		ifk, err := s.Store.BusiestIface(q)
+		if err != nil {
+			fail(w, err)
+			return
+		}
+		out["dir_iface"] = ifk
+		ds := &store.Series{Times: se.Times, Step: se.Step, SettledTo: se.SettledTo, DataFrom: se.DataFrom}
+		if ifk != "" {
+			qd := q
+			qd.IncludeDup = true
+			qd.Filters = append(append([]store.Filter{}, q.Filters...), store.Filter{Field: map[string]string{"in": "iface_in", "out": "iface_out"}[dir], Value: ifk})
+			if ds, err = s.Store.SeriesByApp(qd, 8); err != nil {
+				fail(w, err)
+				return
+			}
+		}
+		out["dir_series"] = ds
+	}
 	peak, peakAt := 0.0, int64(0)
 	for i := range se.Times {
 		sum := 0.0
@@ -395,3 +416,21 @@ func (s *Server) certInfo() any {
 }
 
 // putIface names, tags or marks one interface as the default.
+
+// records is the newest flow records: at most 500, over at most a day.
+func (s *Server) records(w http.ResponseWriter, r *http.Request) {
+	q, err := parseQuery(r)
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	if q.To.Sub(q.From) > 24*time.Hour {
+		q.From = q.To.Add(-24 * time.Hour)
+	}
+	rows, err := s.Store.Records(q, min(limitParam(r, 200), 500))
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"rows": rows})
+}

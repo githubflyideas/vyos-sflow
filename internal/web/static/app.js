@@ -142,21 +142,24 @@ const status = (kind, text) => `<span class="st ${kind}">${ICON[kind]}${esc(text
 const bar = (x, max, col) => `<div class="sb"><span style="width:${Math.max(1.5, max > 0 ? x / max * 100 : 0)}%${col ? ';background:' + col : ''}"></span></div>`;
 
 
-const VIEWS = ['overview', 'topn', 'traffic', 'sources', 'account', 'cleanup', 'help'];
+const VIEWS = ['overview', 'topn', 'records', 'sources', 'account', 'cleanup', 'help'];
 const DIMS = ['host', 'app', 'proto'];
 const RANGES = ['15m', '1h', '6h', '24h', '48h'];
 const REFRESH_MS = {'15m': 20000, '1h': 30000, '6h': 60000, '24h': 60000, '48h': 300000};
-const LIVE_VIEWS = new Set(['overview', 'topn', 'traffic', 'sources']);
-const state = {v: 'overview', r: '1h', dim: 'host', f: []};
+const LIVE_VIEWS = new Set(['overview', 'topn', 'records', 'sources']);
+const state = {v: 'overview', r: '1h', dim: 'host', f: [], od: '', tm: 'talkers', ip: ''};
 function readHash() {
  const p = new URLSearchParams(location.hash.slice(1));
  state.v = VIEWS.includes(p.get('v')) ? p.get('v') : 'overview';
  state.r = RANGES.includes(p.get('r')) ? p.get('r') : '1h';
  state.dim = DIMS.includes(p.get('dim')) ? p.get('dim') : 'host';
+ state.od = ['in', 'out'].includes(p.get('od')) ? p.get('od') : '';
+ state.tm = p.get('tm') === 'table' ? 'table' : 'talkers';  // Top 66 opens on the two ends
+ state.ip = p.get('ip') || '';
  state.f = [];
 }
 function writeHash(push) {
- const h = '#' + new URLSearchParams({v: state.v, r: state.r, dim: state.dim});
+ const h = '#' + new URLSearchParams({v: state.v, r: state.r, dim: state.dim, ...(state.od ? {od: state.od} : {}), ...(state.tm === 'table' ? {tm: 'table'} : {}), ...(state.ip ? {ip: state.ip} : {})});
  if (push && h !== location.hash) history.pushState(null, '', h); else history.replaceState(null, '', h);
 }
 let clockSkew = 0, waiting = null, setup = null;
@@ -456,30 +459,59 @@ function drawSeries(el, series) {
  series = series || {times: [], names: [], values: []};
  tsChart(el, {times: series.times || [], areas: (series.names || []).map((n,i) => ({name: appLabel(n), color: color(i,n), data: series.values[i]})), settledTo: series.settled_to, dataFrom: series.data_from});
 }
+// the series of the overview: everything, or only what came in or only
+// what went out through the interface sFlow samples on
+const dirSeg = () => `<div class="seg" role="group">${[['', 'ov.dir_total'], ['in', 'if.in'], ['out', 'if.out']].map(([k, l]) =>
+  `<button data-od="${k}" aria-pressed="${state.od === k}">${esc(t(l))}</button>`).join('')}</div>`;
 views.overview = async el => {
- const d = await api('overview'), total = d.totals || {};
+ const d = await api('overview', state.od ? {dir: state.od} : {}), total = d.totals || {};
+ const title = state.od ? t(state.od === 'in' ? 'ov.bw_in' : 'ov.bw_out') : t('ov.bw_title');
  el.innerHTML = `<div class="grid"><div class="panel c12"><div class="kpis">
  <div class="kpi"><div class="lab">${t('kpi.now')}</div><div class="n">${fmtBps(d.now_bps)}</div></div>
  <div class="kpi"><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><div class="n">${fmtBytes(total.wire)}</div></div>
  <div class="kpi"><div class="lab">${t('col.pkts')}</div><div class="n">${nf(total.pkts || 0)}</div></div>
  <div class="kpi"><div class="lab">${t('col.flows')}</div><div class="n">${nf(total.flows || 0)}</div></div>
- </div></div>${panel('c12', t('ov.bw_title'), '', '<div class="chart" id="chStack"></div>')}
+ </div></div><div class="panel c12"><div class="ph"><h2>${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
+ <div class="chart" id="chStack"></div></div>
  ${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}</div>`;
- drawSeries($('#chStack'), d.series); fillSelf();
+ drawSeries($('#chStack'), state.od ? d.dir_series : d.series); fillSelf();
+ el.querySelectorAll('[data-od]').forEach(b => b.onclick = () => { state.od = b.dataset.od; render(true); });
 };
-views.topn = el => topTable(el, state.dim);
+const modeSeg = () => `<div class="seg" role="group"><button data-tm="talkers" aria-pressed="${state.tm === 'talkers'}">${esc(t('topn.talkers'))}</button><button data-tm="table" aria-pressed="${state.tm !== 'talkers'}">${esc(t('topn.table'))}</button></div>`;
+const bindMode = el => el.querySelectorAll('[data-tm]').forEach(b => b.onclick = () => { state.tm = b.dataset.tm; render(true); });
+views.topn = el => state.tm === 'talkers' ? talkers(el) : topTable(el, state.dim);
+// the two ends: who sent and fetched the most, and who served the most
+async function talkers(el) {
+ const [cl, sv, ov] = await Promise.all([api('topn', {dim: 'client', limit: 30}), api('topn', {dim: 'server', limit: 30}), api('overview')]);
+ const tot = ov.totals || {};
+ const table = (rows, head) => `<table><thead><tr><th></th><th>${t(head)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
+  ${(rows || []).map((r, i) => `<tr><td class="rank">${i + 1}</td><td>${esc(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">${emptyText()}</td></tr>`}
+  <tr class="sum"><td></td><td>${t('topn.all')}</td><td>${fmtBytes(tot.wire)}</td><td>${nf(tot.pkts || 0)}</td><td>${nf(tot.flows || 0)}</td></tr></tbody></table>`;
+ el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}</div>
+  ${panel('c6', t('ov.top_clients'), esc(t('topn.top_n', {n: 30})), table(cl.rows, 'col.client'))}
+  ${panel('c6', t('topn.top_servers'), esc(t('topn.top_n', {n: 30})), table(sv.rows, 'col.server'))}</div>`;
+ bindMode(el);
+}
 async function topTable(el, dim) {
  dim = DIMS.includes(dim) ? dim : 'host';
  const d = await api('topn', {dim, limit: 66}), rows = d.rows || [];
- el.innerHTML = panel('c12', t('nav.topn'), '', `<label>${t('nav.topn')} <select id="topDim">${DIMS.map(k => `<option value="${k}" ${dim === k ? 'selected' : ''}>${dimLabel(k)}</option>`).join('')}</select></label>
+ el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}</div>` + panel('c12', t('nav.topn'), '', `<label>${t('nav.topn')} <select id="topDim">${DIMS.map(k => `<option value="${k}" ${dim === k ? 'selected' : ''}>${dimLabel(k)}</option>`).join('')}</select></label>
  <table><thead><tr><th>${dimLabel(dim)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
- ${rows.map(r => `<tr><td>${esc(dim === 'proto' ? proto(r.key) : r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="4" class="empty">${emptyText()}</td></tr>`}</tbody></table>`);
+ ${rows.map(r => `<tr><td>${esc(dim === 'proto' ? proto(r.key) : r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="4" class="empty">${emptyText()}</td></tr>`}</tbody></table>`) + '</div>';
  $('#topDim').onchange = e => { state.dim = e.target.value; render(true); };
+ bindMode(el);
 }
-views.traffic = async el => {
- const d = await api('series', {by: 'app', measure: 'wire', top: 8});
- el.innerHTML = panel('c12', t('nav.traffic'), t('col.service'), '<div class="chart" id="chTraffic"></div>');
- drawSeries($('#chTraffic'), d);
+// The newest flow records, at most 500, over at most a day; one address
+// can be picked out.
+const REC_MAX = 500;
+views.records = async el => {
+ const d = await api('records', {limit: REC_MAX}, state.ip ? [{f: 'ip', v: state.ip, neg: false}] : []), rows = d.rows || [];
+ const tf = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
+ el.innerHTML = panel('c12', t('rec.title'), esc(t('rec.latest', {n: nf(rows.length)})) + ' · ' + esc(t('rec.sorted')), `<form class="recf" id="recF"><input id="recIP" value="${esc(state.ip)}" placeholder="${esc(t('field.ip'))} (192.0.2.10)" spellcheck="false" autocomplete="off"><button class="btn">${esc(t('rec.filter'))}</button>${state.ip ? `<button type="button" class="btn" id="recClr">${esc(t('rec.all'))}</button>` : ''}</form>
+ <div class="tablewrap"><table class="rec"><thead><tr><th>${t('rc.time')}</th><th>${t('rc.client')}</th><th>${t('rc.server')}</th><th>${t('rc.proto')}</th><th>${t('rc.app')}</th><th>${t('rc.traffic')}</th><th>${t('rc.packets')}</th><th>${t('rc.in_if')} → ${t('rc.out_if')}</th><th>${t('rc.sampling')}</th></tr></thead><tbody>
+ ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${r.in_if} → ${r.out_if}</td><td>1:${nf(Math.round(r.mult || 1))}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>`);
+ $('#recF').onsubmit = e => { e.preventDefault(); state.ip = $('#recIP').value.trim(); render(true); };
+ if ($('#recClr')) $('#recClr').onclick = () => { state.ip = ''; render(true); };
 };
 function streamHint(s) {
  if (!s?.enforced || !s.configured) return '';

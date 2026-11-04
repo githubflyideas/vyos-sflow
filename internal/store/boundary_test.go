@@ -84,22 +84,25 @@ func TestBasicDimensionsAndNoAdvancedFilters(t *testing.T) {
 		t.Fatal(err)
 	}
 	q := Query{From: now, To: now.Add(time.Minute)}
-	for _, dim := range []string{"host", "app", "proto"} {
+	for _, dim := range []string{"host", "client", "server", "app", "proto"} {
 		top, err := s.TopN(q, dim, 10)
 		if err != nil || len(top) == 0 {
 			t.Fatalf("%s: %+v %v", dim, top, err)
+		}
+		if dim == "client" || dim == "server" {
+			continue // ranked, not drawn
 		}
 		se, err := s.SeriesBy(q, dim, "wire", 8)
 		if err != nil || len(se.Names) == 0 {
 			t.Fatalf("%s: %+v %v", dim, se, err)
 		}
 	}
-	for _, dim := range []string{"client", "server", "conv", "service", "country", "asn", "org", "threat", "segment", "dir", "exporter", "port", "vlan", "encap"} {
+	for _, dim := range []string{"conv", "service", "country", "asn", "org", "threat", "segment", "dir", "exporter", "port", "vlan", "encap"} {
 		if _, err := s.TopN(q, dim, 10); err == nil {
 			t.Errorf("removed top dimension accepted: %s", dim)
 		}
 	}
-	for _, field := range []string{"country", "asn", "org", "threat", "segment", "iface", "iface_in", "iface_out", "client", "server", "dir", "bytes", "vlan", "encap"} {
+	for _, field := range []string{"country", "asn", "org", "threat", "segment", "client", "server", "dir", "bytes", "vlan", "encap"} {
 		qq := q
 		qq.Filters = []Filter{{Field: field, Value: "x"}}
 		if _, err := s.Totals(qq); err == nil {

@@ -1,6 +1,5 @@
 {
   "stream.identity": "Агент sFlow {a} / субагент {s}",
-
   "stream.rejected": "Отклонённые дейтаграммы потока: {n}",
   "lang.name": "Русский",
   "nav.overview": "Обзор",
@@ -150,7 +149,6 @@
   "src.ex_device": "Ядровой маршрутизатор",
   "src.ex_iface": "Аплинк провайдера",
   "ov.findings_all": "Все открытые обнаружения ({n})",
-  "nav.traffic": "Динамика",
   "ch.bps": "бит/с",
   "ch.pps": "пакетов/с",
   "topn.talkers": "Основные собеседники",
@@ -270,5 +268,23 @@
   "nav.help": "Справка",
   "self.counter_samples": "Образцы счётчиков",
   "self.dropped_counters": "Отброшено из очереди счётчиков",
-  "self.write_errors": "Ошибки записи хранилища"
+  "self.write_errors": "Ошибки записи хранилища",
+  "nav.records": "Записи потоков",
+  "if.in": "Входящий",
+  "if.out": "Исходящий",
+  "rec.title": "Записи потоков",
+  "rec.latest": "Последние {n}",
+  "rec.sorted": "Сначала новые",
+  "rc.time": "Время",
+  "rc.client": "Клиент",
+  "rc.server": "Сервер",
+  "rc.proto": "Протокол",
+  "rc.app": "Приложение",
+  "rc.traffic": "Трафик",
+  "rc.packets": "Пакеты",
+  "rc.in_if": "Входной интерфейс",
+  "rc.out_if": "Выходной интерфейс",
+  "rc.sampling": "Сэмплирование",
+  "rec.filter": "Фильтр",
+  "rec.all": "Все"
 }

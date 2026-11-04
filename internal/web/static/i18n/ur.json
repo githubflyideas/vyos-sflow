@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow ایجنٹ {a} / ذیلی ایجنٹ {s}",
-
   "stream.rejected": "مسترد کردہ اسٹریم ڈیٹاگرام: {n}",
   "lang.name": "اردو",
   "nav.overview": "جائزہ",
@@ -150,7 +149,6 @@
   "src.ex_device": "کور راؤٹر",
   "src.ex_iface": "ISP اپ لنک",
   "ov.findings_all": "تمام زیرِ التوا مشتبہ سرگرمیاں ({n})",
-  "nav.traffic": "رجحانات",
   "ch.bps": "بٹ/سیکنڈ",
   "ch.pps": "پیکٹ/سیکنڈ",
   "topn.talkers": "سب سے فعال ہوسٹ",
@@ -270,5 +268,23 @@
   "nav.help": "مدد",
   "self.counter_samples": "کاؤنٹر کے نمونے",
   "self.dropped_counters": "کاؤنٹر قطار سے خارج شدہ نمونے",
-  "self.write_errors": "ذخیرے میں لکھنے کی غلطیاں"
+  "self.write_errors": "ذخیرے میں لکھنے کی غلطیاں",
+  "nav.records": "فلو ریکارڈ",
+  "if.in": "اندر آنے والی",
+  "if.out": "باہر جانے والی",
+  "rec.title": "فلو ریکارڈ",
+  "rec.latest": "تازہ ترین {n}",
+  "rec.sorted": "نئے پہلے",
+  "rc.time": "وقت",
+  "rc.client": "کلائنٹ",
+  "rc.server": "سرور",
+  "rc.proto": "پروٹوکول",
+  "rc.app": "ایپلیکیشن",
+  "rc.traffic": "ٹریفک",
+  "rc.packets": "پیکٹ",
+  "rc.in_if": "داخلی انٹرفیس",
+  "rc.out_if": "خارجی انٹرفیس",
+  "rc.sampling": "سیمپلنگ",
+  "rec.filter": "فلٹر",
+  "rec.all": "سب"
 }

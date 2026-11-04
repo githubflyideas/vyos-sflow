@@ -1,6 +1,5 @@
 {
   "stream.identity": "Agent sFlow {a} / sous-agent {s}",
-
   "stream.rejected": "Datagrammes de flux rejetés : {n}",
   "lang.name": "Français",
   "nav.overview": "Vue d'ensemble",
@@ -150,7 +149,6 @@
   "src.ex_device": "Routeur de cœur",
   "src.ex_iface": "Lien opérateur",
   "ov.findings_all": "Toutes les détections à traiter ({n})",
-  "nav.traffic": "Tendances",
   "ch.bps": "bits/s",
   "ch.pps": "paquets/s",
   "topn.talkers": "Interlocuteurs principaux",
@@ -270,5 +268,23 @@
   "nav.help": "Aide",
   "self.counter_samples": "Échantillons de compteurs",
   "self.dropped_counters": "Rejets de la file de compteurs",
-  "self.write_errors": "Erreurs d’écriture du stockage"
+  "self.write_errors": "Erreurs d’écriture du stockage",
+  "nav.records": "Enregistrements de flux",
+  "if.in": "Entrant",
+  "if.out": "Sortant",
+  "rec.title": "Enregistrements de flux",
+  "rec.latest": "{n} derniers",
+  "rec.sorted": "Plus récents d'abord",
+  "rc.time": "Heure",
+  "rc.client": "Client",
+  "rc.server": "Serveur",
+  "rc.proto": "Protocole",
+  "rc.app": "Application",
+  "rc.traffic": "Trafic",
+  "rc.packets": "Paquets",
+  "rc.in_if": "Interface d'entrée",
+  "rc.out_if": "Interface de sortie",
+  "rc.sampling": "Échantillonnage",
+  "rec.filter": "Filtrer",
+  "rec.all": "Tous"
 }

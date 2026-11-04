@@ -12,7 +12,7 @@ import (
 func TestRemovedProductRoutes(t *testing.T) {
 	s := &Server{Static: fstest.MapFS{"index.html": {Data: []byte("SPA")}}, Users: map[string]string{"admin": "secret"}}
 	h := s.Handler()
-	for _, path := range []string{"report", "records", "sankey", "rings", "geolines", "ifaces", "recon", "threats", "threats/lists", "findings", "racks", "racks/device", "racks/iface", "inventory", "iface", "geo", "geo/dbip", "logo"} {
+	for _, path := range []string{"report", "sankey", "rings", "geolines", "ifaces", "recon", "threats", "threats/lists", "findings", "racks", "racks/device", "racks/iface", "inventory", "iface", "geo", "geo/dbip", "logo"} {
 		for _, method := range []string{"GET", "POST", "DELETE"} {
 			req := httptest.NewRequest(method, "/api/"+path, nil)
 			req.SetBasicAuth("admin", "secret")

@@ -126,7 +126,7 @@ test('catalog loading updates direction and falls back to English and then the k
 });
 test('unsupported deep links cannot restore advanced views, ranges or dimensions', () => {
   const h = harness();
-  for (const hash of ['#v=records&r=30d&dim=country', '#v=ifaces&r=custom&from=1&to=2&dim=conv']) {
+  for (const hash of ['#v=sankey&r=30d&dim=country', '#v=ifaces&r=custom&from=1&to=2&dim=conv', '#v=traffic&r=7d']) {
     h.context.location.hash = hash; h.testing.readHash();
     assert.equal(h.testing.state.v, 'overview'); assert.equal(h.testing.state.r, '1h'); assert.equal(h.testing.state.dim, 'host');
   }

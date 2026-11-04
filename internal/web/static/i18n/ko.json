@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow 에이전트 {a} / 하위 에이전트 {s}",
-
   "stream.rejected": "거부된 스트림 데이터그램: {n}",
   "lang.name": "한국어",
   "nav.overview": "개요",
@@ -150,7 +149,6 @@
   "src.ex_device": "코어 라우터",
   "src.ex_iface": "ISP 업링크",
   "ov.findings_all": "미처리 탐지 모두 보기({n})",
-  "nav.traffic": "추세",
   "ch.bps": "비트/초",
   "ch.pps": "패킷/초",
   "topn.talkers": "주요 통신 상대",
@@ -270,5 +268,23 @@
   "nav.help": "도움말",
   "self.counter_samples": "카운터 샘플",
   "self.dropped_counters": "카운터 대기열 삭제",
-  "self.write_errors": "저장소 쓰기 오류"
+  "self.write_errors": "저장소 쓰기 오류",
+  "nav.records": "플로 레코드",
+  "if.in": "인바운드",
+  "if.out": "아웃바운드",
+  "rec.title": "플로 레코드",
+  "rec.latest": "최근 {n}건",
+  "rec.sorted": "최신순",
+  "rc.time": "시간",
+  "rc.client": "클라이언트",
+  "rc.server": "서버",
+  "rc.proto": "프로토콜",
+  "rc.app": "애플리케이션",
+  "rc.traffic": "트래픽",
+  "rc.packets": "패킷",
+  "rc.in_if": "입력 인터페이스",
+  "rc.out_if": "출력 인터페이스",
+  "rc.sampling": "샘플링",
+  "rec.filter": "필터",
+  "rec.all": "전체"
 }

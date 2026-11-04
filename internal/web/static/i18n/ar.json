@@ -1,6 +1,5 @@
 {
   "stream.identity": "وكيل sFlow ‏{a} / الوكيل الفرعي {s}",
-
   "stream.rejected": "مخططات بيانات التدفق المرفوضة: {n}",
   "lang.name": "العربية",
   "nav.overview": "نظرة عامة",
@@ -150,7 +149,6 @@
   "src.ex_device": "الموجّه الرئيسي",
   "src.ex_iface": "وصلة مزوّد الخدمة",
   "ov.findings_all": "كل الاكتشافات غير المعالَجة ({n})",
-  "nav.traffic": "الاتجاهات",
   "ch.bps": "بت/ث",
   "ch.pps": "حزمة/ث",
   "topn.talkers": "أكثر الأطراف نشاطًا",
@@ -270,5 +268,23 @@
   "nav.help": "المساعدة",
   "self.counter_samples": "عينات العدادات",
   "self.dropped_counters": "العينات المسقطة من طابور العدادات",
-  "self.write_errors": "أخطاء الكتابة إلى التخزين"
+  "self.write_errors": "أخطاء الكتابة إلى التخزين",
+  "nav.records": "سجلات التدفق",
+  "if.in": "وارد",
+  "if.out": "صادر",
+  "rec.title": "سجلات التدفق",
+  "rec.latest": "آخر {n}",
+  "rec.sorted": "الأحدث أولًا",
+  "rc.time": "الوقت",
+  "rc.client": "العميل",
+  "rc.server": "الخادم",
+  "rc.proto": "البروتوكول",
+  "rc.app": "التطبيق",
+  "rc.traffic": "الحركة",
+  "rc.packets": "الحزم",
+  "rc.in_if": "واجهة الدخول",
+  "rc.out_if": "واجهة الخروج",
+  "rc.sampling": "أخذ العينات",
+  "rec.filter": "تصفية",
+  "rec.all": "الكل"
 }

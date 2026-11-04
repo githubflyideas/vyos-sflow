@@ -1,6 +1,5 @@
 {
   "stream.identity": "sFlow এজেন্ট {a} / সাব-এজেন্ট {s}",
-
   "stream.rejected": "প্রত্যাখ্যাত স্ট্রিম ডেটাগ্রাম: {n}",
   "lang.name": "বাংলা",
   "nav.overview": "সারসংক্ষেপ",
@@ -150,7 +149,6 @@
   "src.ex_device": "কোর রাউটার",
   "src.ex_iface": "ISP আপলিংক",
   "ov.findings_all": "সব অমীমাংসিত সন্দেহজনক কার্যকলাপ ({n})",
-  "nav.traffic": "প্রবণতা",
   "ch.bps": "বিট/সে",
   "ch.pps": "প্যাকেট/সে",
   "topn.talkers": "সবচেয়ে সক্রিয় হোস্ট",
@@ -270,5 +268,23 @@
   "nav.help": "সহায়তা",
   "self.counter_samples": "কাউন্টার নমুনা",
   "self.dropped_counters": "কাউন্টার সারি থেকে বাদ পড়া নমুনা",
-  "self.write_errors": "সংরক্ষণে লেখার ত্রুটি"
+  "self.write_errors": "সংরক্ষণে লেখার ত্রুটি",
+  "nav.records": "ফ্লো রেকর্ড",
+  "if.in": "আগত",
+  "if.out": "বহির্গামী",
+  "rec.title": "ফ্লো রেকর্ড",
+  "rec.latest": "সর্বশেষ {n}টি",
+  "rec.sorted": "নতুনগুলো আগে",
+  "rc.time": "সময়",
+  "rc.client": "ক্লায়েন্ট",
+  "rc.server": "সার্ভার",
+  "rc.proto": "প্রোটোকল",
+  "rc.app": "অ্যাপ্লিকেশন",
+  "rc.traffic": "ট্রাফিক",
+  "rc.packets": "প্যাকেট",
+  "rc.in_if": "ইনপুট ইন্টারফেস",
+  "rc.out_if": "আউটপুট ইন্টারফেস",
+  "rc.sampling": "স্যাম্পলিং",
+  "rec.filter": "ফিল্টার",
+  "rec.all": "সব"
 }
