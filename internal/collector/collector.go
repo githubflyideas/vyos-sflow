@@ -314,12 +314,17 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 	last, seen := ag.lastSeq[d.SubAgent]
 	clock := ag.clocks[d.SubAgent]
 	seqBack := last - d.Seq
-	// Modular uptime arithmetic keeps the normal 32-bit millisecond wrap
-	// forward. A short backwards sequence/uptime pair can be reordering;
-	// only restart when the rollback is large or the new boot necessarily
-	// happened since the last high-water datagram.
-	restarted := seen && d.Uptime-clock.uptime >= 1<<31 && seqBack > 0 && seqBack < 1<<31 &&
-		(seqBack > 1000 || now.Sub(clock.seen) > time.Duration(d.Uptime)*time.Millisecond)
+	// A lower uptime can be a 32-bit millisecond wrap or a restart. Compare
+	// the modular advance with elapsed receive time: the half-range rule
+	// alone misses resets after more than half the uptime counter's period.
+	// Allow one second of clock/arrival jitter when judging a plausible wrap.
+	elapsed := max(now.Sub(clock.seen), 0)
+	uptimeAdvance := time.Duration(d.Uptime-clock.uptime) * time.Millisecond
+	implausibleWrap := d.Uptime < clock.uptime && uptimeAdvance > elapsed+time.Second
+	// A short backwards sequence/uptime pair can also be reordering. Require
+	// a large rollback or evidence that the new boot followed the last sample.
+	restarted := seen && implausibleWrap && seqBack > 0 && seqBack < 1<<31 &&
+		(seqBack > 1000 || elapsed > time.Duration(d.Uptime)*time.Millisecond)
 	if restarted {
 		for k, st := range c.sf {
 			if k.agent == agentAddr && k.subAgent == d.SubAgent {

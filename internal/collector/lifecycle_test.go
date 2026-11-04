@@ -49,6 +49,27 @@ func TestRestartIsolatesReservoirAndEstimator(t *testing.T) {
 		}
 	}
 }
+func TestLongUptimeRestartIsolatesReservoir(t *testing.T) {
+	sink := &lifecycleSink{}
+	c := New(sink)
+	for i := uint32(1); i <= 11; i++ {
+		sendLifecycle(t, c, 0, 50000+i, i*100, uint32(30*24*time.Hour/time.Millisecond)+i*1000, "10.0.0.1", samplingEpoch.Add(time.Duration(i)*time.Second))
+	}
+	boundary := samplingEpoch.Add(time.Hour)
+	sendLifecycle(t, c, 0, 1, 100, 1000, "10.0.0.2", boundary)
+	st := c.sf[sfKey{netip.MustParseAddr("192.0.2.1"), 0, 1}]
+	if st.poolOK || st.checks != 0 || len(st.recent) != 1 {
+		t.Errorf("long-uptime restart retained calibration or reservoir: poolOK=%v checks=%d recent=%d", st.poolOK, st.checks, len(st.recent))
+	}
+	sink.records = nil
+	sendLifecycle(t, c, 0, 3, 300, 3000, "10.0.0.2", boundary.Add(2*time.Second))
+	for _, r := range sink.records {
+		if r.Start.Before(boundary) {
+			t.Errorf("long-uptime restart re-emitted old record at %s", r.Start)
+		}
+	}
+}
+
 func TestDatagramReorderKeepsHighWater(t *testing.T) {
 	sink := &lifecycleSink{}
 	c := New(sink)
