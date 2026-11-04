@@ -284,7 +284,7 @@
   "rc.packets": "पैकेट",
   "rc.in_if": "इनपुट इंटरफ़ेस",
   "rc.out_if": "आउटपुट इंटरफ़ेस",
-  "rc.sampling": "सैंपलिंग",
+  "rc.sampling": "अनुमानित गुणक",
   "rec.filter": "फ़िल्टर",
   "rec.all": "सभी",
   "rc.local": "स्थानीय",

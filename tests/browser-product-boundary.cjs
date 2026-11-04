@@ -110,6 +110,8 @@ async function verify(page) {
       if (view === 'overview') assert.ok((await page.locator('#directionScope').innerText()).includes(catalog['ov.direction_scope']));
       if (view === 'topn') for (const text of await page.locator('#v-topn .sum').allTextContents()) assert.ok(text.includes(catalog['topn.global_total']));
       if (view === 'records') {
+        assert.equal(await page.locator('.rec thead th:last-child').innerText(), catalog['rc.sampling']);
+        assert.notEqual(catalog['rc.sampling'], catalog['col.sampling']);
         assert.doesNotMatch(await page.locator('#recordWindow').innerText(), /\{(?:from|to|limit)\}/);
         assert.equal(await page.locator('#recordWindow').getAttribute('data-limit'), '500');
       }

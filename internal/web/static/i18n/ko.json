@@ -284,7 +284,7 @@
   "rc.packets": "패킷",
   "rc.in_if": "입력 인터페이스",
   "rc.out_if": "출력 인터페이스",
-  "rc.sampling": "샘플링",
+  "rc.sampling": "추정 배율",
   "rec.filter": "필터",
   "rec.all": "전체",
   "rc.local": "로컬",

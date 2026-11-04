@@ -284,7 +284,7 @@
   "rc.packets": "پیکٹ",
   "rc.in_if": "داخلی انٹرفیس",
   "rc.out_if": "خارجی انٹرفیس",
-  "rc.sampling": "سیمپلنگ",
+  "rc.sampling": "تخمینی ضارب",
   "rec.filter": "فلٹر",
   "rec.all": "سب",
   "rc.local": "مقامی",

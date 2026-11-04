@@ -196,6 +196,7 @@ test('semantic explanations are translated in every catalog without English plac
       if (file !== 'en.json') assert.notEqual(dict[key], en[key], `${file}: English fallback ${key}`);
     }
     assert.doesNotMatch(dict['ov.direction_scope'], /WAN/);
+    assert.notEqual(dict['rc.sampling'], dict['col.sampling'], `${file}: record multiplier header still says sampling`);
   }
 });
 test('product has no offline or non-sFlow entry points', () => {

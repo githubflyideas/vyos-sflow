@@ -284,7 +284,7 @@
   "rc.packets": "الحزم",
   "rc.in_if": "واجهة الدخول",
   "rc.out_if": "واجهة الخروج",
-  "rc.sampling": "أخذ العينات",
+  "rc.sampling": "المضاعف التقديري",
   "rec.filter": "تصفية",
   "rec.all": "الكل",
   "rc.local": "محلي",

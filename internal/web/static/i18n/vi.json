@@ -284,7 +284,7 @@
   "rc.packets": "Gói tin",
   "rc.in_if": "Giao diện vào",
   "rc.out_if": "Giao diện ra",
-  "rc.sampling": "Lấy mẫu",
+  "rc.sampling": "Hệ số ước tính",
   "rec.filter": "Lọc",
   "rec.all": "Tất cả",
   "rc.local": "cục bộ",
