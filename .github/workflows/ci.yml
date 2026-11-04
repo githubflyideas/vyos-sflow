@@ -144,29 +144,34 @@ jobs:
           path: evidence/vyos-vm/
           if-no-files-found: error
   release:
-    # a pushed version tag publishes the tested files as that tag's release
-    if: startsWith(github.ref, 'refs/tags/v')
+    # a push to main publishes the newest CHANGELOG.md version once, as a
+    # release with the files tested above; a pushed version tag does the same
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: [linux-amd64, vyos-native]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v5
-      - name: Release notes from CHANGELOG.md
+      - name: Version and release notes
+        id: v
         run: |
-          v="${GITHUB_REF_NAME#v}"
-          grep -q "^## $v\$" CHANGELOG.md || { echo "::error::no section '## $v' in CHANGELOG.md"; exit 1; }
+          v=$(sed -n 's/^## \([0-9][0-9.]*\)[[:space:]]*$/\1/p' CHANGELOG.md | head -1)
+          if [[ "$GITHUB_REF" == refs/tags/* && "${GITHUB_REF_NAME#v}" != "$v" ]]; then echo "::error::tag $GITHUB_REF_NAME is not the newest CHANGELOG.md version $v"; exit 1; fi
+          if gh release view "v$v" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "v$v is already released"; echo "new=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           awk -v h="## $v" '$0==h{on=1;next} /^## /{if(on)exit} on' CHANGELOG.md > notes.md
+          echo "ver=$v" >> "$GITHUB_OUTPUT"; echo "new=true" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
+        if: steps.v.outputs.new == 'true'
         with:
           name: vyos-sflow-1.2.0-linux-amd64
           path: dist
-      - name: Files match the tag
-        run: |
-          v="${GITHUB_REF_NAME#v}"
-          test -f "dist/vyos-sflow-$v-linux-amd64.run" || { echo "::error::built files are not version $v"; ls dist; exit 1; }
-          cd dist && sha256sum -c SHA256SUMS
       - name: Publish
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --verify-tag --title "vyos-sflow ${GITHUB_REF_NAME#v}" --notes-file notes.md dist/*.tar.gz dist/*.run dist/SHA256SUMS
+        if: steps.v.outputs.new == 'true'
+        run: |
+          v=${{ steps.v.outputs.ver }}
+          test -f "dist/vyos-sflow-$v-linux-amd64.run" || { echo "::error::built files are not version $v"; ls dist; exit 1; }
+          (cd dist && sha256sum -c SHA256SUMS)
+          gh release create "v$v" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "vyos-sflow $v" --notes-file notes.md dist/*.tar.gz dist/*.run dist/SHA256SUMS
