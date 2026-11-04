@@ -2,6 +2,7 @@ name: linux-ci
 on:
   push:
     branches: [main, 'feat/**', 'fix/**']
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -142,3 +143,30 @@ jobs:
           name: vyos-native-vm-evidence
           path: evidence/vyos-vm/
           if-no-files-found: error
+  release:
+    # a pushed version tag publishes the tested files as that tag's release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux-amd64, vyos-native]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Release notes from CHANGELOG.md
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          grep -q "^## $v\$" CHANGELOG.md || { echo "::error::no section '## $v' in CHANGELOG.md"; exit 1; }
+          awk -v h="## $v" '$0==h{on=1;next} /^## /{if(on)exit} on' CHANGELOG.md > notes.md
+      - uses: actions/download-artifact@v4
+        with:
+          name: vyos-sflow-1.2.0-linux-amd64
+          path: dist
+      - name: Files match the tag
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          test -f "dist/vyos-sflow-$v-linux-amd64.run" || { echo "::error::built files are not version $v"; ls dist; exit 1; }
+          cd dist && sha256sum -c SHA256SUMS
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --title "vyos-sflow ${GITHUB_REF_NAME#v}" --notes-file notes.md dist/*.tar.gz dist/*.run dist/SHA256SUMS
