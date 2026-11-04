@@ -2,7 +2,7 @@ package main
 
 import "log"
 
-var version = "1.2.1"
+var version = "1.2.2"
 var commit = "unknown"
 
 func logStartup(scheme, addr, listen, data string) {

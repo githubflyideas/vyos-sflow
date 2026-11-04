@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2
+
+- sFlow: traffic is counted in full from devices that send two samplers' samples under one interface.
+
 ## 1.2.1
 
 - Ignore repeated samples and keep sampling diagnostics stable when samples arrive out of order.

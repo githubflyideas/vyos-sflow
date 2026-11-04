@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vyos-sflow v1.2.1: offline install/upgrade; never downloads or executes input.
+# vyos-sflow v1.2.2: offline install/upgrade; never downloads or executes input.
 set -euo pipefail
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$here/common.sh"
@@ -54,5 +54,5 @@ if [[ -z $root ]]; then
         systemctl is-active --quiet vyos-sflow.service || fail 'Updated service is not active; inspect journal'
     fi
 fi
-printf 'Installed vyos-sflow v1.2.1. Existing environment and data retained.\n'
+printf 'Installed vyos-sflow v1.2.2. Existing environment and data retained.\n'
 printf 'Start vyos-sflow.service when ready. First login requires a password change; existing credentials are never reset.\n'
