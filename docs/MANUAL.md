@@ -6,8 +6,9 @@ Follow the three steps in the repository README: configure your exporter, extrac
 
 ## Read your traffic
 
-- **Overview:** traffic totals and trends.
-- **Top:** IP, port/application and protocol rankings.
+- **Overview:** traffic totals and bandwidth by application: all of it, or only what came in or went out through the sampled interface.
+- **Top 66:** the main talkers (top clients and top servers side by side), or a table by host, application or protocol.
+- **Flow records:** the newest records, at most 500 over at most 24 hours, optionally for one host.
 - **Sources:** received samples, configured stream identity and reception diagnostics.
 
 Select a time range from 15 minutes to 48 hours. The default is one hour. Traffic values are estimates derived from samples, not exact interface counters. Port/application labels describe service ports rather than deep packet inspection. Choose your preferred interface language from the language selector.
