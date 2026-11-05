@@ -6,12 +6,12 @@ Follow the three steps in the repository README: configure your exporter, extrac
 
 ## Read your traffic
 
-- **Overview:** the top indicators describe all traffic in the selected range. The chart can show all traffic, inbound or outbound. Direction is relative to the exporter/interface shown beside the chart, selected as the busiest interface in that range; it is not automatically the WAN interface and may change with the range.
+- **Overview:** the top indicators describe all traffic in the selected range. The chart can show all traffic, inbound or outbound. Direction is relative to the exporter/interface shown beside the chart, selected as the busiest interface in that range; it is not automatically the WAN interface and may change with the range. Below it, the device card and the interface table: each interface's speed, utilisation and traffic in and out as the device itself counts them, busiest first, with whether the samples match.
 - **Top 66:** the main talkers show the top 30 clients and top 30 servers side by side, or a table by host, application or protocol. Client/server roles are inferred, not necessarily the packet source and destination. Both lists describe the same traffic from different perspectives: do not add their totals. The all-traffic total includes entries outside the displayed ranking.
-- **Flow records:** the newest records, at most 500 over at most 24 hours, optionally for one host. The page shows its effective time window even when the global selection is 48 hours. Traffic and packet counts are estimates; the multiplier includes sampling/loss compensation and is not the exporter's configured sampling ratio.
-- **Sources:** received samples, configured stream identity and reception diagnostics.
+- **Flow records:** the newest records first, 100 to a page (use Previous/Next), over at most 24 hours, optionally for one host. The page shows its effective time window even when the global selection is 48 hours. Traffic and packet counts are estimates; the multiplier is the measured effective sampling rate and is not the exporter's configured sampling ratio.
+- **Diagnostics:** received samples, configured stream identity, reception diagnostics and interface reconciliation: each interface's own counters against what the samples add up to. A direction far below 100% is usually not sampled on the device; enable sFlow counter polling for this table.
 
-Select a time range from 15 minutes to 48 hours. The default is one hour. Traffic values are estimates derived from samples, not exact interface counters. Port/application labels describe service ports rather than deep packet inspection. Choose your preferred interface language from the language selector.
+Select a time range from 15 minutes to 48 hours. The default is one hour. Traffic values are estimates derived from samples, not exact interface counters. Port/application labels describe service ports rather than deep packet inspection. Choose your preferred interface language from the language selector, and one of five themes, from light to dark, with the dots at the top right.
 
 ## Receiving samples
 

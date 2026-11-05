@@ -10,7 +10,7 @@ Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and
 
 | Feature | Details |
 | --- | --- |
-| Web | Traffic trends, client/server rankings and recent flow records |
+| Web | Bandwidth, interface traffic from the device’s own counters, client/server rankings and flow records; five themes from light to dark |
 | TUI | One command for a temporary view over SSH |
 | History | The latest 48 hours, stored with DuckDB™ |
 | UI text | 15 interface languages |
@@ -78,30 +78,35 @@ Press `?` for keyboard help. For an explicitly selected service, use `-url http:
 
 | View | What the numbers mean |
 | --- | --- |
-| Overview | Top indicators cover all traffic in the selected range. Inbound/outbound chart directions are relative to the displayed exporter and interface, not automatically a WAN link. |
+| Overview | Top indicators cover all traffic in the selected range. Inbound/outbound chart directions are relative to the displayed exporter and interface, not automatically a WAN link. Interface traffic comes from the device’s own interface counters (the same values SNMP reads). |
 | Top 66 | The top 30 clients and top 30 servers are two perspectives on the same traffic. Roles are inferred; do not add the two lists together. The all-traffic total also includes entries outside the ranking. |
-| Flow records | Up to 500 recent records over at most 24 hours, even with a global 48-hour selection. The page shows the effective window. The estimated multiplier includes sampling/loss compensation; it is not the router's configured sampling ratio. |
+| Flow records | The newest records first, 100 to a page, over at most 24 hours, even with a global 48-hour selection. The page shows the effective window. The estimated multiplier is the measured effective sampling rate; it is not the router's configured sampling ratio. |
+| Diagnostics | Interface reconciliation compares each interface’s own counters with what the samples add up to; a direction far from 100% is usually not sampled on the device. |
 
 ## Screenshots
 
-These earlier captures show the application running, rather than UI mockups. Current labels and layout may differ.
+These captures show the application running, rather than UI mockups.
 
 ### Web dashboard
 
-Native VyOS capture: the router's own sFlow samples real downloads at 1 in 1000. The Overview capture displays v1.1.2, running on a VyOS 2026.10.30 rolling live ISO in a VM.
+Native VyOS capture of v1.2.4: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. Nothing is mocked or edited.
 
-![Overview on VyOS, earlier v1.1.2 capture](docs/images/screenshots/vyos/web-overview.png)
+![Overview on VyOS](docs/images/screenshots/vyos/web-overview.png)
 
 <details>
-<summary>View client/server rankings and recent flow records</summary>
+<summary>View client/server rankings, flow records and interface reconciliation</summary>
 
 **Client and server rankings**
 
-![Top 66 main talkers on VyOS, earlier capture](docs/images/screenshots/vyos/web-top.png)
+![Top 66 main talkers on VyOS](docs/images/screenshots/vyos/web-top.png)
 
 **Recent flow records**
 
-![Flow records on VyOS, earlier capture](docs/images/screenshots/vyos/web-records.png)
+![Flow records on VyOS](docs/images/screenshots/vyos/web-records.png)
+
+**Interface reconciliation**
+
+![Diagnostics with interface reconciliation on VyOS](docs/images/screenshots/vyos/web-sources.png)
 
 </details>
 
