@@ -287,8 +287,7 @@
   "rc.sampling": "Multiplicador estimado",
   "rec.filter": "Filtrar",
   "rec.all": "Todos",
-  "rc.local": "local"
-,
+  "rc.local": "local",
   "ov.kpi_scope": "Todo el tráfico · Los indicadores no siguen la dirección del gráfico",
   "ov.direction_scope": "Dirección en el exportador/interfaz muestreado con más tráfico",
   "ov.direction_empty": "No hay interfaz muestreada disponible",
@@ -296,5 +295,14 @@
   "topn.global_total": "Todo el tráfico (no el subtotal de los 30 primeros)",
   "rec.window": "Intervalo efectivo: {from} — {to} · Hasta {limit} filas · Máximo 24 horas",
   "rec.estimates": "El tráfico y los paquetes son estimaciones. El multiplicador es una estimación efectiva, no la proporción de muestreo configurada.",
-  "rec.multiplier": "Estimado ×{n}"
+  "rec.multiplier": "Estimado ×{n}",
+  "ic.title": "Comprobación de interfaces",
+  "ic.sub": "Tráfico que cada interfaz contó, frente a lo que suman las muestras",
+  "ic.iface": "Interfaz",
+  "ic.dev_in": "Equipo entrada",
+  "ic.est_in": "Muestras entrada",
+  "ic.dev_out": "Equipo salida",
+  "ic.est_out": "Muestras salida",
+  "ic.note": "Últimos {m} min. Los contadores de interfaz del equipo son lo que lee SNMP; una dirección muy por debajo del 100 % normalmente no se muestrea en este equipo.",
+  "ic.none": "Aún no se reciben contadores de interfaz. Active el sondeo de contadores sFlow en el equipo para comparar."
 }

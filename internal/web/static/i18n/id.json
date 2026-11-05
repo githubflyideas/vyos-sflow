@@ -295,5 +295,14 @@
   "topn.global_total": "Semua lalu lintas (bukan subtotal 30 teratas)",
   "rec.window": "Rentang efektif: {from} — {to} · Hingga {limit} baris · Maksimum 24 jam",
   "rec.estimates": "Lalu lintas dan paket adalah perkiraan. Pengali adalah perkiraan efektif, bukan rasio pengambilan sampel yang dikonfigurasi.",
-  "rec.multiplier": "Perkiraan ×{n}"
+  "rec.multiplier": "Perkiraan ×{n}",
+  "ic.title": "Pemeriksaan antarmuka",
+  "ic.sub": "Lalu lintas yang dihitung tiap antarmuka, dibanding jumlah sampel",
+  "ic.iface": "Antarmuka",
+  "ic.dev_in": "Perangkat masuk",
+  "ic.est_in": "Sampel masuk",
+  "ic.dev_out": "Perangkat keluar",
+  "ic.est_out": "Sampel keluar",
+  "ic.note": "{m} menit terakhir. Penghitung antarmuka perangkat adalah yang dibaca SNMP; arah yang jauh di bawah 100% biasanya tidak disampel pada perangkat ini.",
+  "ic.none": "Belum ada penghitung antarmuka. Aktifkan polling penghitung sFlow di perangkat untuk membandingkan."
 }

@@ -287,8 +287,7 @@
   "rc.sampling": "Estimated multiplier",
   "rec.filter": "Filter",
   "rec.all": "All",
-  "rc.local": "local"
-,
+  "rc.local": "local",
   "ov.kpi_scope": "All traffic · KPIs do not follow the chart direction",
   "ov.direction_scope": "Direction at the busiest sampled exporter/interface",
   "ov.direction_empty": "No sampled interface available",
@@ -296,5 +295,14 @@
   "topn.global_total": "All traffic (not Top 30 subtotal)",
   "rec.window": "Effective window: {from} — {to} · Up to {limit} rows · Maximum 24 hours",
   "rec.estimates": "Traffic and packets are estimates. The multiplier is an effective estimate, not the configured sampling ratio.",
-  "rec.multiplier": "Estimated ×{n}"
+  "rec.multiplier": "Estimated ×{n}",
+  "ic.title": "Interface check",
+  "ic.sub": "Traffic each interface counted itself, against what the samples add up to",
+  "ic.iface": "Interface",
+  "ic.dev_in": "Device in",
+  "ic.est_in": "Sampled in",
+  "ic.dev_out": "Device out",
+  "ic.est_out": "Sampled out",
+  "ic.note": "Over the last {m} min. The device's own interface counters are what SNMP reads; a direction far below 100% is usually not sampled on this device.",
+  "ic.none": "No interface counters received yet. Enable sFlow counter polling on the device to compare."
 }

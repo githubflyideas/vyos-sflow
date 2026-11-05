@@ -295,5 +295,14 @@
   "topn.global_total": "Todo o tráfego (não o subtotal dos 30 primeiros)",
   "rec.window": "Intervalo efetivo: {from} — {to} · Até {limit} linhas · Máximo de 24 horas",
   "rec.estimates": "O tráfego e os pacotes são estimativas. O multiplicador é uma estimativa efetiva, não a razão de amostragem configurada.",
-  "rec.multiplier": "Estimado em ×{n}"
+  "rec.multiplier": "Estimado em ×{n}",
+  "ic.title": "Verificação de interfaces",
+  "ic.sub": "Tráfego que cada interface contou, comparado com a soma das amostras",
+  "ic.iface": "Interface",
+  "ic.dev_in": "Equipamento entrada",
+  "ic.est_in": "Amostras entrada",
+  "ic.dev_out": "Equipamento saída",
+  "ic.est_out": "Amostras saída",
+  "ic.note": "Últimos {m} min. Os contadores de interface do equipamento são o que o SNMP lê; uma direção muito abaixo de 100% geralmente não é amostrada neste equipamento.",
+  "ic.none": "Nenhum contador de interface recebido ainda. Ative a coleta de contadores sFlow no equipamento para comparar."
 }

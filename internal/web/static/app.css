@@ -244,3 +244,4 @@ tr.sum td{font-weight:600;border-top:1px solid var(--line-2)}
 .tablewrap{overflow-x:auto}
 table.rec td,table.rec th{font-size:12.5px}
 .c12>.seg{display:inline-flex}
+table.ifcheck td.good{color:var(--good)}table.ifcheck td.warn{color:var(--warn-ink)}table.ifcheck td.bad{color:var(--crit);font-weight:600}

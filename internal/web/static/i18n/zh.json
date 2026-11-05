@@ -287,8 +287,7 @@
   "rc.sampling": "估算倍数",
   "rec.filter": "筛选",
   "rec.all": "全部",
-  "rc.local": "本机"
-,
+  "rc.local": "本机",
   "ov.kpi_scope": "全部流量 · 上方指标不随图表方向切换",
   "ov.direction_scope": "方向基于最繁忙的采样导出器/接口",
   "ov.direction_empty": "暂无采样接口",
@@ -296,5 +295,14 @@
   "topn.global_total": "全部流量（非前 30 项小计）",
   "rec.window": "实际窗口：{from} — {to} · 最多 {limit} 行 · 最长 24 小时",
   "rec.estimates": "流量和数据包数均为估算值。倍数是有效估算倍数，不是配置的采样比率。",
-  "rec.multiplier": "估算 ×{n}"
+  "rec.multiplier": "估算 ×{n}",
+  "ic.title": "接口核对",
+  "ic.sub": "每个接口设备自己计数的流量，与采样估算的对比",
+  "ic.iface": "接口",
+  "ic.dev_in": "设备 入",
+  "ic.est_in": "采样 入",
+  "ic.dev_out": "设备 出",
+  "ic.est_out": "采样 出",
+  "ic.note": "最近 {m} 分钟。设备接口计数与 SNMP 读到的相同；某个方向远低于 100%，通常是设备上这个方向没有开采样。",
+  "ic.none": "还没收到接口计数。在设备上开启 sFlow 计数采集（counter polling）后即可对比。"
 }

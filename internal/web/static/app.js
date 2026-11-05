@@ -526,9 +526,20 @@ views.sources = async el => {
  el.innerHTML = `<div class="grid">${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}
  ${panel('c12', t('src.title'), t('src.sub'), `${streamHint(d.stream)}<table><tr><th>${t('col.device')}</th><th>${t('col.proto')}</th><th>${t('col.rate')}</th><th>${t('col.sampling')}</th><th>${t('col.lost')}</th><th>${t('col.status')}</th></tr>
  ${rows.map(s => `<tr><td>${esc(s.exporter)}</td><td>${esc(s.proto)}</td><td>${nf(s.rec_per_sec || 0,1)}</td><td>${esc(s.sampling || s.sampling_state || '—')}${s.effective ? ' (1:' + nf(s.effective) + ')' : ''}</td><td>${nf(s.lost_pct || 0,2)}%</td><td>${esc(t('st.' + s.status))}${(s.issues || []).map(k => `<div class="issue">${esc(t('issue.' + k,{a:s.exporter,n:nf(s.pending||0),p:nf((k === 'agent_drops' ? s.drop_pct : k === 'loss' ? (s.transit_pct ?? s.lost_pct) : s.lost_pct) || 0,1)+'%',s:Math.round(Math.abs(s.clock_skew_ns||0)/1e9)+' s'}))}</div>`).join('')}</td></tr>`).join('') || `<tr><td colspan="6" class="empty">${emptyText()}</td></tr>`}</table>
- <p>${t('src.listeners')} ${(d.listeners || []).map(l => `<span class="tag">UDP ${esc(l.addr)} · ${esc(l.proto)} · ${nf(l.packets || 0)}</span>`).join(' ')}</p>`)}</div>`;
+ <p>${t('src.listeners')} ${(d.listeners || []).map(l => `<span class="tag">UDP ${esc(l.addr)} · ${esc(l.proto)} · ${nf(l.packets || 0)}</span>`).join(' ')}</p>`)}
+ ${panel('c12', t('ic.title'), t('ic.sub'), ifaceCheck(d.ifaces || []))}</div>`;
  fillSelf();
 };
+// Each interface as the device counts it against what the samples add up
+// to; far apart in one direction usually means it is not sampled there.
+const icPct = (est, dev) => {
+  if (!(dev > 0)) return '<td>—</td>';
+  const p = est / dev * 100, off = Math.abs(p - 100);
+  return `<td class="${off > 20 ? 'bad' : off > 8 ? 'warn' : 'good'}">${nf(p, 1)}%</td>`;
+};
+const ifaceCheck = rows => rows.length ? `<div class="tablewrap"><table class="ifcheck"><tr><th>${t('ic.iface')}</th><th>${t('ic.dev_in')}</th><th>${t('ic.est_in')}</th><th></th><th>${t('ic.dev_out')}</th><th>${t('ic.est_out')}</th><th></th></tr>
+ ${rows.map(r => `<tr><td class="nw">${esc(r.exporter)} / ${r.ifindex}${r.speed ? ` <span class="muted">${fmtBps(r.speed)}</span>` : ''}</td><td>${fmtBps(r.dev_in_bps)}</td><td>${fmtBps(r.est_in_bps)}</td>${icPct(r.est_in_bps, r.dev_in_bps)}<td>${fmtBps(r.dev_out_bps)}</td><td>${fmtBps(r.est_out_bps)}</td>${icPct(r.est_out_bps, r.dev_out_bps)}</tr>`).join('')}</table></div>
+ <p class="muted" style="font-size:12.5px">${esc(t('ic.note', {m: nf(Math.round((rows[0].seconds || 0) / 60))}))}</p>` : `<div class="empty">${esc(t('ic.none'))}</div>`;
 views.cleanup = async (el) => {
   // Every control here deletes stored data, so there is nothing of this
   // page to show someone who may not.

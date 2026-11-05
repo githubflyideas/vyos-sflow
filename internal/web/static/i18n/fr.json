@@ -287,8 +287,7 @@
   "rc.sampling": "Multiplicateur estimé",
   "rec.filter": "Filtrer",
   "rec.all": "Tous",
-  "rc.local": "local"
-,
+  "rc.local": "local",
   "ov.kpi_scope": "Tout le trafic · Les indicateurs ne suivent pas le sens du graphique",
   "ov.direction_scope": "Sens sur l’exportateur/interface échantillonné le plus actif",
   "ov.direction_empty": "Aucune interface échantillonnée disponible",
@@ -296,5 +295,14 @@
   "topn.global_total": "Tout le trafic (pas le sous-total des 30 premiers)",
   "rec.window": "Période effective : {from} — {to} · Au plus {limit} lignes · Maximum 24 heures",
   "rec.estimates": "Le trafic et les paquets sont estimés. Le multiplicateur est une estimation effective, pas le taux d’échantillonnage configuré.",
-  "rec.multiplier": "Estimé ×{n}"
+  "rec.multiplier": "Estimé ×{n}",
+  "ic.title": "Contrôle des interfaces",
+  "ic.sub": "Trafic compté par chaque interface, face à la somme des échantillons",
+  "ic.iface": "Interface",
+  "ic.dev_in": "Équipement entrée",
+  "ic.est_in": "Échantillons entrée",
+  "ic.dev_out": "Équipement sortie",
+  "ic.est_out": "Échantillons sortie",
+  "ic.note": "{m} dernières min. Les compteurs d’interface de l’équipement sont ceux que lit SNMP ; un sens très en dessous de 100 % n’est généralement pas échantillonné sur cet équipement.",
+  "ic.none": "Aucun compteur d’interface reçu. Activez la collecte des compteurs sFlow sur l’équipement pour comparer."
 }

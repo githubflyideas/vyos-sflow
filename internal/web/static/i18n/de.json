@@ -287,8 +287,7 @@
   "rc.sampling": "Geschätzter Multiplikator",
   "rec.filter": "Filtern",
   "rec.all": "Alle",
-  "rc.local": "lokal"
-,
+  "rc.local": "lokal",
   "ov.kpi_scope": "Gesamter Verkehr · Kennzahlen bleiben unabhängig von der Diagrammrichtung",
   "ov.direction_scope": "Richtung am verkehrsreichsten erfassten Exporter/Interface",
   "ov.direction_empty": "Keine erfasste Schnittstelle verfügbar",
@@ -296,5 +295,14 @@
   "topn.global_total": "Gesamter Verkehr (keine Top-30-Teilsumme)",
   "rec.window": "Effektiver Zeitraum: {from} — {to} · Höchstens {limit} Zeilen · Maximal 24 Stunden",
   "rec.estimates": "Verkehr und Pakete sind Schätzungen. Der Multiplikator ist ein effektiver Schätzwert, nicht das konfigurierte Sampling-Verhältnis.",
-  "rec.multiplier": "Geschätzt ×{n}"
+  "rec.multiplier": "Geschätzt ×{n}",
+  "ic.title": "Schnittstellenabgleich",
+  "ic.sub": "Verkehr, den jede Schnittstelle selbst gezählt hat, gegen die Summe der Stichproben",
+  "ic.iface": "Schnittstelle",
+  "ic.dev_in": "Gerät ein",
+  "ic.est_in": "Stichprobe ein",
+  "ic.dev_out": "Gerät aus",
+  "ic.est_out": "Stichprobe aus",
+  "ic.note": "Letzte {m} Min. Die Schnittstellenzähler des Geräts sind die Werte, die SNMP liest; eine Richtung weit unter 100 % wird meist auf diesem Gerät nicht abgetastet.",
+  "ic.none": "Noch keine Schnittstellenzähler empfangen. Aktivieren Sie sFlow-Counter-Polling am Gerät, um zu vergleichen."
 }

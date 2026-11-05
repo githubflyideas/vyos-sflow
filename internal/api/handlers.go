@@ -277,7 +277,7 @@ func (s *Server) sources(w http.ResponseWriter, r *http.Request) {
 		ls = append(ls, map[string]any{"addr": l.Addr, "proto": l.Proto, "packets": l.Packets.Load(),
 			"undecoded": l.Undecoded.Load(), "dropped": l.Dropped.Load(), "panics": l.Panics.Load(), "rcvbuf": l.RcvBuf})
 	}
-	res := map[string]any{"sources": out, "listeners": ls, "stale": stale, "stream": s.Col.StreamStatus()}
+	res := map[string]any{"sources": out, "listeners": ls, "stale": stale, "stream": s.Col.StreamStatus(), "ifaces": s.Col.IfaceChecks(now)}
 	if s.Col != nil && s.Col.Block != nil {
 		bl := s.Col.Block.List()
 		res["blocked"] = bl

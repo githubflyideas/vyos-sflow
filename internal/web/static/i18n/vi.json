@@ -295,5 +295,14 @@
   "topn.global_total": "Toàn bộ lưu lượng (không phải tổng của 30 mục đứng đầu)",
   "rec.window": "Khoảng thời gian thực tế: {from} — {to} · Tối đa {limit} dòng · Tối đa 24 giờ",
   "rec.estimates": "Lưu lượng và số gói tin là các giá trị ước tính. Hệ số nhân là giá trị ước tính hiệu dụng, không phải tỷ lệ lấy mẫu đã cấu hình.",
-  "rec.multiplier": "Ước tính ×{n}"
+  "rec.multiplier": "Ước tính ×{n}",
+  "ic.title": "Đối chiếu giao diện",
+  "ic.sub": "Lưu lượng mỗi giao diện tự đếm, so với tổng các mẫu",
+  "ic.iface": "Giao diện",
+  "ic.dev_in": "Thiết bị vào",
+  "ic.est_in": "Mẫu vào",
+  "ic.dev_out": "Thiết bị ra",
+  "ic.est_out": "Mẫu ra",
+  "ic.note": "{m} phút gần nhất. Bộ đếm giao diện của thiết bị là giá trị SNMP đọc; một chiều thấp hơn nhiều so với 100% thường không được lấy mẫu trên thiết bị này.",
+  "ic.none": "Chưa nhận được bộ đếm giao diện. Bật thu thập bộ đếm sFlow trên thiết bị để so sánh."
 }

@@ -41,6 +41,7 @@ type Listener struct {
 // Collector owns listeners and decoder state.
 type Collector struct {
 	sink            Sink
+	ifc             map[ifKey]*ifState // per interface: device counters against samples
 	streamEnforced  bool
 	allowedAgent    netip.Addr
 	allowedSubAgent uint32
@@ -229,6 +230,11 @@ const (
 
 func (c *Collector) Tick(now time.Time) {
 	c.mu.Lock()
+	for k, st := range c.ifc {
+		if now.Sub(st.cur.t) > time.Hour {
+			delete(c.ifc, k)
+		}
+	}
 	for a, ag := range c.sfAgents {
 		if now.Sub(ag.lastSeen) > agentIdle {
 			delete(c.sfAgents, a)
@@ -393,6 +399,8 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 		d.Counters[i].Exporter = agentAddr
 	}
 	ag.counters += uint64(len(d.Counters))
+	c.noteFlows(agentAddr, recs)
+	c.noteCounters(agentAddr, d.Counters, now)
 	c.sink.Submit(recs)
 	c.sink.SubmitCounters(d.Counters)
 	return true
