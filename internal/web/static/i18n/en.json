@@ -296,7 +296,7 @@
   "rec.window": "Effective window: {from} — {to} · Up to {limit} rows · Maximum 24 hours",
   "rec.estimates": "Traffic and packets are estimates. The multiplier is an effective estimate, not the configured sampling ratio.",
   "rec.multiplier": "Estimated ×{n}",
-  "ic.title": "Interface check",
+  "ic.title": "Interface reconciliation",
   "ic.sub": "Traffic each interface counted itself, against what the samples add up to",
   "ic.iface": "Interface",
   "ic.dev_in": "Device in",
