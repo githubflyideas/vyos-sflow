@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.4
+
+- New look: navigation at the top, device and interface traffic on the overview, five themes from light to dark.
+- Flow records are shown 100 to a page.
+
 ## 1.2.3
 
 - Traffic is counted as in 1.1.2 again.

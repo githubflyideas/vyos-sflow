@@ -9,7 +9,7 @@ import (
 )
 
 func TestEthernetVLANTCP(t *testing.T) {
-	src, dst := netip.MustParseAddr("10.1.2.3"), netip.MustParseAddr("198.51.100.7")
+	src, dst := netip.MustParseAddr("10.1.2.4"), netip.MustParseAddr("198.51.100.7")
 	hdr, flen := encode.Frame(src, dst, 50000, 443, 6, 120, 1500, 0x18)
 	var r flow.Record
 	if !Ethernet(hdr, &r) {
