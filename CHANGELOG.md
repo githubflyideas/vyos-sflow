@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.5
+
+- The top bar fits narrower windows: account and sign-out are never cut off.
+
 ## 1.2.4
 
 - New look: navigation at the top, device and interface traffic on the overview, five themes from light to dark.

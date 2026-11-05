@@ -39,11 +39,11 @@ exit
 In a writable directory on the router:
 
 ```sh
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.4/vyos-sflow-1.2.4-linux-amd64.tar.gz &&
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.4/SHA256SUMS &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.5/vyos-sflow-1.2.5-linux-amd64.tar.gz &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.5/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
-tar -xzf vyos-sflow-1.2.4-linux-amd64.tar.gz &&
-cd vyos-sflow-1.2.4-linux-amd64 &&
+tar -xzf vyos-sflow-1.2.5-linux-amd64.tar.gz &&
+cd vyos-sflow-1.2.5-linux-amd64 &&
 ./vyos-sflow serve
 ```
 
@@ -89,12 +89,12 @@ These captures show the application running, rather than UI mockups.
 
 ### Web dashboard
 
-Native VyOS capture of v1.2.4: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. Nothing is mocked or edited.
+Native VyOS capture: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. These captures show an earlier layout; new ones follow.
 
 ![Overview on VyOS](docs/images/screenshots/vyos/web-overview.png)
 
 <details>
-<summary>View client/server rankings, flow records and interface reconciliation</summary>
+<summary>View client/server rankings and flow records</summary>
 
 **Client and server rankings**
 
@@ -104,9 +104,6 @@ Native VyOS capture of v1.2.4: the router's own sFlow samples real downloads at 
 
 ![Flow records on VyOS](docs/images/screenshots/vyos/web-records.png)
 
-**Interface reconciliation**
-
-![Diagnostics with interface reconciliation on VyOS](docs/images/screenshots/vyos/web-sources.png)
 
 </details>
 
