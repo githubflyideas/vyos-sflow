@@ -315,5 +315,8 @@
   "ov.if_idle": "ট্রাফিক নেই",
   "theme.gray": "ধূসর",
   "theme.slate": "স্লেট",
-  "theme.navy": "গাঢ় নীল"
+  "theme.navy": "গাঢ় নীল",
+  "rec.prev": "আগের",
+  "rec.next": "পরের",
+  "rec.page": "পৃষ্ঠা {n}"
 }

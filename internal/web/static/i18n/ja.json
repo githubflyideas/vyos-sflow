@@ -315,5 +315,8 @@
   "ov.if_idle": "通信なし",
   "theme.gray": "グレー",
   "theme.slate": "スレート",
-  "theme.navy": "ネイビー"
+  "theme.navy": "ネイビー",
+  "rec.prev": "前へ",
+  "rec.next": "次へ",
+  "rec.page": "{n} ページ"
 }

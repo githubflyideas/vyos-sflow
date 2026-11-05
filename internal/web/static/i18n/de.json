@@ -315,5 +315,8 @@
   "ov.if_idle": "Kein Verkehr",
   "theme.gray": "Grau",
   "theme.slate": "Schiefer",
-  "theme.navy": "Marine"
+  "theme.navy": "Marine",
+  "rec.prev": "Zurück",
+  "rec.next": "Weiter",
+  "rec.page": "Seite {n}"
 }

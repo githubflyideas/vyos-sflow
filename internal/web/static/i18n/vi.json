@@ -315,5 +315,8 @@
   "ov.if_idle": "Không có lưu lượng",
   "theme.gray": "Xám",
   "theme.slate": "Đá phiến",
-  "theme.navy": "Xanh đậm"
+  "theme.navy": "Xanh đậm",
+  "rec.prev": "Trước",
+  "rec.next": "Sau",
+  "rec.page": "Trang {n}"
 }

@@ -291,7 +291,7 @@
   "ov.direction_empty": "No sampled interface available",
   "topn.perspectives": "Client/server roles are inferred. These are two views of the same traffic: do not add them. Bottom totals cover all traffic, not just the Top 30.",
   "topn.global_total": "All traffic (not Top 30 subtotal)",
-  "rec.window": "Effective window: {from} — {to} · Up to {limit} rows · Maximum 24 hours",
+  "rec.window": "Effective window: {from} — {to} · {limit} rows per page · Maximum 24 hours",
   "rec.estimates": "Traffic and packets are estimates. The multiplier is an effective estimate, not the configured sampling ratio.",
   "rec.multiplier": "Estimated ×{n}",
   "ic.title": "Interface reconciliation",
@@ -315,5 +315,8 @@
   "ov.if_idle": "No traffic",
   "theme.gray": "Grey",
   "theme.slate": "Slate",
-  "theme.navy": "Navy"
+  "theme.navy": "Navy",
+  "rec.prev": "Previous",
+  "rec.next": "Next",
+  "rec.page": "Page {n}"
 }

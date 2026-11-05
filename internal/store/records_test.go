@@ -45,7 +45,7 @@ func TestRecordsDirectionsAndEnds(t *testing.T) {
 	if err != nil || len(sv) != 1 || sv[0].Wire != 60500 {
 		t.Fatalf("servers %+v %v", sv, err)
 	}
-	rs, err := s.Records(q, 2)
+	rs, err := s.Records(q, 2, 0)
 	if err != nil || len(rs) != 2 || rs[0].Wire != 1000 || rs[0].Client != "192.0.2.10" || rs[0].SvcPort != 443 {
 		t.Fatalf("records %+v %v", rs, err)
 	}

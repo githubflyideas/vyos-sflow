@@ -315,5 +315,8 @@
   "ov.if_idle": "کوئی ٹریفک نہیں",
   "theme.gray": "سرمئی",
   "theme.slate": "سلیٹ",
-  "theme.navy": "گہرا نیلا"
+  "theme.navy": "گہرا نیلا",
+  "rec.prev": "پچھلا",
+  "rec.next": "اگلا",
+  "rec.page": "صفحہ {n}"
 }

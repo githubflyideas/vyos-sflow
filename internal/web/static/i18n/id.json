@@ -315,5 +315,8 @@
   "ov.if_idle": "Tidak ada lalu lintas",
   "theme.gray": "Abu-abu",
   "theme.slate": "Batu tulis",
-  "theme.navy": "Biru tua"
+  "theme.navy": "Biru tua",
+  "rec.prev": "Sebelumnya",
+  "rec.next": "Berikutnya",
+  "rec.page": "Halaman {n}"
 }

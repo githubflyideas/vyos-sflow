@@ -417,7 +417,9 @@ func (s *Server) certInfo() any {
 
 // putIface names, tags or marks one interface as the default.
 
-// records is the newest flow records: at most 500, over at most a day.
+// records is the newest flow records, a page at a time (at most 500 rows,
+// 100 by default), over at most a day; offset is how many newer ones to
+// skip, and more says whether another page follows.
 func (s *Server) records(w http.ResponseWriter, r *http.Request) {
 	q, err := parseQuery(r)
 	if err != nil {
@@ -427,11 +429,17 @@ func (s *Server) records(w http.ResponseWriter, r *http.Request) {
 	if q.To.Sub(q.From) > 24*time.Hour {
 		q.From = q.To.Add(-24 * time.Hour)
 	}
-	limit := min(limitParam(r, 200), 500)
-	rows, err := s.Store.Records(q, limit)
+	limit := min(limitParam(r, 100), 500)
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	offset = min(max(offset, 0), 100000)
+	rows, err := s.Store.Records(q, limit+1, offset)
 	if err != nil {
 		fail(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"rows": rows, "from": q.From, "to": q.To, "limit": limit})
+	more := len(rows) > limit
+	if more {
+		rows = rows[:limit]
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"rows": rows, "from": q.From, "to": q.To, "limit": limit, "offset": offset, "more": more})
 }

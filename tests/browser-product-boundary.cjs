@@ -46,7 +46,7 @@ async function verifySemantics(page) {
   const res = await response;
   assert.equal(res.status(),200);
   const data = await res.json();
-  assert.equal(data.limit,500);
+  assert.equal(data.limit,100);
   assert.equal(Date.parse(data.to)-Date.parse(data.from),24*60*60*1000);
   await page.waitForFunction(d => {const el=document.querySelector('#recordWindow');return el?.dataset.from===d.from && el?.dataset.to===d.to && el?.dataset.limit===String(d.limit);}, data);
   assert.match(await page.locator('#recordWindow').innerText(), /Maximum 24 hours/);
@@ -111,7 +111,7 @@ async function verify(page) {
         assert.ok((await page.locator('#directionScope').innerText()).includes(catalog['ov.direction_scope']));
         for (const [dir, key] of [['in', 'ov.bw_in'], ['out', 'ov.bw_out']]) {
           await page.locator(`#v-overview [data-od="${dir}"]`).click();
-          await page.waitForFunction(text => document.querySelector('#v-overview .ph h2')?.textContent === text, catalog[key]);
+          await page.waitForFunction(text => document.querySelector('#bwTitle')?.textContent === text, catalog[key]);
         }
       }
       if (view === 'topn') for (const text of await page.locator('#v-topn .sum').allTextContents()) assert.ok(text.includes(catalog['topn.global_total']));
@@ -119,7 +119,7 @@ async function verify(page) {
         assert.equal(await page.locator('.rec thead th:last-child').innerText(), catalog['rc.sampling']);
         assert.notEqual(catalog['rc.sampling'], catalog['col.sampling']);
         assert.doesNotMatch(await page.locator('#recordWindow').innerText(), /\{(?:from|to|limit)\}/);
-        assert.equal(await page.locator('#recordWindow').getAttribute('data-limit'), '500');
+        assert.equal(await page.locator('#recordWindow').getAttribute('data-limit'), '100');
       }
       await page.setViewportSize({width:390,height:844});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth),true,`${code}/${view}: mobile horizontal overflow`);

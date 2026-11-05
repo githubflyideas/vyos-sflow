@@ -315,5 +315,8 @@
   "ov.if_idle": "कोई ट्रैफ़िक नहीं",
   "theme.gray": "धूसर",
   "theme.slate": "स्लेट",
-  "theme.navy": "गहरा नीला"
+  "theme.navy": "गहरा नीला",
+  "rec.prev": "पिछला",
+  "rec.next": "अगला",
+  "rec.page": "पृष्ठ {n}"
 }

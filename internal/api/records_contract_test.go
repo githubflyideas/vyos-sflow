@@ -23,7 +23,7 @@ func TestRecordsEffectiveWindowMetadata(t *testing.T) {
 		hours, limit, wantLimit int
 		filter                  bool
 	}{
-		{47, 999, 500, false}, {47, 500, 500, true}, {6, 12, 12, false}, {1, 0, 200, true},
+		{47, 999, 500, false}, {47, 500, 500, true}, {6, 12, 12, false}, {1, 0, 100, true},
 	} {
 		t.Run(fmt.Sprintf("%dh_limit%d_filter%t", tc.hours, tc.limit, tc.filter), func(t *testing.T) {
 			from := to.Add(-time.Duration(tc.hours) * time.Hour)

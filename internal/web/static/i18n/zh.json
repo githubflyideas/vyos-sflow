@@ -291,7 +291,7 @@
   "ov.direction_empty": "暂无采样接口",
   "topn.perspectives": "客户端/服务器角色为推断结果。这是同一流量的两个视角，不可相加。底部合计涵盖全部流量，并非前 30 项小计。",
   "topn.global_total": "全部流量（非前 30 项小计）",
-  "rec.window": "实际窗口：{from} — {to} · 最多 {limit} 行 · 最长 24 小时",
+  "rec.window": "实际窗口：{from} — {to} · 每页 {limit} 行 · 最长 24 小时",
   "rec.estimates": "流量和数据包数均为估算值。倍数是有效估算倍数，不是配置的采样比率。",
   "rec.multiplier": "估算 ×{n}",
   "ic.title": "接口对账",
@@ -315,5 +315,8 @@
   "ov.if_idle": "无流量",
   "theme.gray": "浅灰",
   "theme.slate": "石板",
-  "theme.navy": "深蓝"
+  "theme.navy": "深蓝",
+  "rec.prev": "上一页",
+  "rec.next": "下一页",
+  "rec.page": "第 {n} 页"
 }

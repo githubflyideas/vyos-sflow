@@ -492,7 +492,7 @@ views.overview = async el => {
  el.innerHTML = `<div class="grid">
  ${panel('c4', t('ov.device'), '', `${devInfo}<div class="devnum"><div><div class="lab">${t('kpi.now')}</div><b>${fmtBps(d.now_bps)}</b></div><div><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><b>${fmtBytes(total.wire)}</b></div><div><div class="lab">${t('col.flows')}</div><b>${nf(total.flows || 0)}</b></div></div>
   <p class="muted" style="font-size:12px"><span id="kpiScope">${esc(t('ov.kpi_scope'))}</span> · ${t('col.pkts')} ${nf(total.pkts || 0)}</p>`)}
- <div class="panel c8"><div class="ph"><h2>${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
+ <div class="panel c8"><div class="ph"><h2 id="bwTitle">${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
  ${state.od ? `<p class="muted" id="directionScope">${esc(t('ov.direction_scope'))} · <span id="directionIface">${d.dir_iface ? esc(d.dir_iface) : esc(t('ov.direction_empty'))}</span></p>` : ''}
  <div class="chart" id="chStack"></div></div>
  ${panel('c12', t('ov.ifaces'), esc(t('ov.ifaces_sub')), ifs.length ? `<div class="tablewrap"><table><thead><tr><th>${t('ic.iface')}</th><th>${t('ov.speed')}</th><th>${t('ov.util_in')}</th><th>${t('ov.util_out')}</th><th class="num">${t('if.in')}</th><th class="num">${t('if.out')}</th><th>${t('col.status')}</th></tr></thead><tbody>
@@ -527,17 +527,20 @@ async function topTable(el, dim) {
 }
 // The newest flow records, at most 500, over at most a day; one address
 // can be picked out.
-const REC_MAX = 500;
+const REC_PAGE = 100;
 // sFlow's interface number for the router itself
 const ifLabel = i => i === 0x3FFFFFFF ? esc(t('rc.local')) : String(i);
 views.records = async el => {
- const d = await api('records', {limit: REC_MAX}, state.ip ? [{f: 'ip', v: state.ip, neg: false}] : []), rows = d.rows || [];
+ const pg = state.rp || 0, d = await api('records', {limit: REC_PAGE, offset: pg * REC_PAGE}, state.ip ? [{f: 'ip', v: state.ip, neg: false}] : []), rows = d.rows || [];
  const tf = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
  el.innerHTML = panel('c12', t('rec.title'), esc(t('rec.latest', {n: nf(rows.length)})) + ' · ' + esc(t('rec.sorted')), `<p class="muted" id="recordWindow" data-from="${esc(d.from || '')}" data-to="${esc(d.to || '')}" data-limit="${esc(d.limit ?? '')}">${esc(t('rec.window', {from: d.from ? new Date(d.from).toLocaleString(LANG, {timeZone: 'UTC'}) + ' UTC' : '—', to: d.to ? new Date(d.to).toLocaleString(LANG, {timeZone: 'UTC'}) + ' UTC' : '—', limit: d.limit == null ? '—' : nf(d.limit)}))}</p><p class="muted" id="recordEstimates">${esc(t('rec.estimates'))}</p><form class="recf" id="recF"><input id="recIP" value="${esc(state.ip)}" placeholder="${esc(t('field.ip'))} (192.0.2.10)" spellcheck="false" autocomplete="off"><button class="btn">${esc(t('rec.filter'))}</button>${state.ip ? `<button type="button" class="btn" id="recClr">${esc(t('rec.all'))}</button>` : ''}</form>
  <div class="tablewrap"><table class="rec"><thead><tr><th>${t('rc.time')}</th><th>${t('rc.client')}</th><th>${t('rc.server')}</th><th>${t('rc.proto')}</th><th>${t('rc.app')}</th><th>${t('rc.traffic')}</th><th>${t('rc.packets')}</th><th>${t('rc.in_if')} → ${t('rc.out_if')}</th><th>${t('rc.sampling')}</th></tr></thead><tbody>
- ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>${Number.isFinite(r.mult) && r.mult > 0 ? esc(t('rec.multiplier', {n: nf(r.mult, 2)})) : '—'}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>`);
- $('#recF').onsubmit = e => { e.preventDefault(); state.ip = $('#recIP').value.trim(); render(true); };
- if ($('#recClr')) $('#recClr').onclick = () => { state.ip = ''; render(true); };
+ ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>${Number.isFinite(r.mult) && r.mult > 0 ? esc(t('rec.multiplier', {n: nf(r.mult, 2)})) : '—'}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>
+ ${pg || d.more ? `<div class="pager"><button class="btn" id="recPrev" ${pg ? '' : 'disabled'}>${esc(t('rec.prev'))}</button><span class="muted">${esc(t('rec.page', {n: nf(pg + 1)}))}</span><button class="btn" id="recNext" ${d.more ? '' : 'disabled'}>${esc(t('rec.next'))}</button></div>` : ''}`);
+ $('#recF').onsubmit = e => { e.preventDefault(); state.ip = $('#recIP').value.trim(); state.rp = 0; render(true); };
+ if ($('#recClr')) $('#recClr').onclick = () => { state.ip = ''; state.rp = 0; render(true); };
+ if ($('#recPrev')) $('#recPrev').onclick = () => { state.rp = Math.max(0, pg - 1); render(true); window.scrollTo(0, 0); };
+ if ($('#recNext')) $('#recNext').onclick = () => { state.rp = pg + 1; render(true); window.scrollTo(0, 0); };
 };
 function streamHint(s) {
  if (!s?.enforced || !s.configured) return '';

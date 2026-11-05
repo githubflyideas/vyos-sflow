@@ -315,5 +315,8 @@
   "ov.if_idle": "Aucun trafic",
   "theme.gray": "Gris",
   "theme.slate": "Ardoise",
-  "theme.navy": "Marine"
+  "theme.navy": "Marine",
+  "rec.prev": "Précédent",
+  "rec.next": "Suivant",
+  "rec.page": "Page {n}"
 }

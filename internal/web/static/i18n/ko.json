@@ -315,5 +315,8 @@
   "ov.if_idle": "트래픽 없음",
   "theme.gray": "회색",
   "theme.slate": "슬레이트",
-  "theme.navy": "네이비"
+  "theme.navy": "네이비",
+  "rec.prev": "이전",
+  "rec.next": "다음",
+  "rec.page": "{n}페이지"
 }

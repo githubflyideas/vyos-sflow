@@ -315,5 +315,8 @@
   "ov.if_idle": "Нет трафика",
   "theme.gray": "Серая",
   "theme.slate": "Сланец",
-  "theme.navy": "Тёмно-синяя"
+  "theme.navy": "Тёмно-синяя",
+  "rec.prev": "Назад",
+  "rec.next": "Далее",
+  "rec.page": "Стр. {n}"
 }

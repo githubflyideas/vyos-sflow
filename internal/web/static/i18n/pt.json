@@ -315,5 +315,8 @@
   "ov.if_idle": "Sem tráfego",
   "theme.gray": "Cinza",
   "theme.slate": "Ardósia",
-  "theme.navy": "Marinho"
+  "theme.navy": "Marinho",
+  "rec.prev": "Anterior",
+  "rec.next": "Próxima",
+  "rec.page": "Página {n}"
 }

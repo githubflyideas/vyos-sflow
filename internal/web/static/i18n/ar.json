@@ -315,5 +315,8 @@
   "ov.if_idle": "لا حركة",
   "theme.gray": "رمادي",
   "theme.slate": "أردوازي",
-  "theme.navy": "كحلي"
+  "theme.navy": "كحلي",
+  "rec.prev": "السابق",
+  "rec.next": "التالي",
+  "rec.page": "الصفحة {n}"
 }

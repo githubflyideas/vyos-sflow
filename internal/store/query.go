@@ -588,13 +588,13 @@ type Record struct {
 }
 
 // Records returns the newest flow records, at most limit.
-func (s *Store) Records(q Query, limit int) ([]Record, error) {
+func (s *Store) Records(q Query, limit, offset int) ([]Record, error) {
 	where, args, err := q.where()
 	if err != nil {
 		return nil, err
 	}
 	rows, err := s.DB.Query(fmt.Sprintf(`SELECT ts, client, server, CASE WHEN client = src THEN sport ELSE dport END, svc_port, proto, app,
-		wire, pkts, in_if, out_if, tcp_flags, mult FROM %s WHERE %s ORDER BY ts DESC, wire DESC LIMIT %d`, s.Source(q.From, q.To), where, limit), args...)
+		wire, pkts, in_if, out_if, tcp_flags, mult FROM %s WHERE %s ORDER BY ts DESC, wire DESC LIMIT %d OFFSET %d`, s.Source(q.From, q.To), where, limit, max(offset, 0)), args...)
 	if err != nil {
 		return nil, err
 	}
