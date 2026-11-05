@@ -89,12 +89,12 @@ These captures show the application running, rather than UI mockups.
 
 ### Web dashboard
 
-Native VyOS capture: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. These captures show an earlier layout; new ones follow.
+Native VyOS capture of v1.2.4: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. Nothing is mocked or edited; the VM loses some sFlow packets on receipt, which the diagnostics page reports.
 
 ![Overview on VyOS](docs/images/screenshots/vyos/web-overview.png)
 
 <details>
-<summary>View client/server rankings and flow records</summary>
+<summary>View client/server rankings, flow records and interface reconciliation</summary>
 
 **Client and server rankings**
 
@@ -103,6 +103,10 @@ Native VyOS capture: the router's own sFlow samples real downloads at 1 in 1000,
 **Recent flow records**
 
 ![Flow records on VyOS](docs/images/screenshots/vyos/web-records.png)
+
+**Interface reconciliation**
+
+![Diagnostics with interface reconciliation on VyOS](docs/images/screenshots/vyos/web-sources.png)
 
 
 </details>
