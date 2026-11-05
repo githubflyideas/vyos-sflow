@@ -8,13 +8,19 @@ import (
 	"time"
 
 	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
+	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
 )
+
+type checkSink struct{}
+
+func (checkSink) Submit([]flow.Record)             {}
+func (checkSink) SubmitCounters([]flow.IfCounters) {}
 
 // Two ports, traffic in through 1 and out through 2, sampled 1 in 100 on
 // the way in, counters every 20 s: the samples add up to what the device
 // counted, per port and direction.
 func TestIfaceChecksAgainstCounters(t *testing.T) {
-	c := New(&lifecycleSink{})
+	c := New(&checkSink{})
 	agent := netip.MustParseAddr("192.0.2.9")
 	rng := rand.New(rand.NewPCG(1, 2))
 	at := time.Unix(1700000000, 0)

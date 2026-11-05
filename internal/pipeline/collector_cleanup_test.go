@@ -77,7 +77,7 @@ func TestCollectorClearSerializesConcurrentIngest(t *testing.T) {
 	if err := st.DB.QueryRow("SELECT count(*) FILTER (WHERE ts < ?),count(*),sum(pkts) FROM hot", now).Scan(&old, &n, &packets); err != nil {
 		t.Fatal(err)
 	}
-	if old != 0 || n != 1 || packets != 200 {
+	if old != 0 || n != 1 || packets != 100 {
 		t.Fatalf("concurrent clear lost or resurrected traffic: old=%d rows=%d packets=%g", old, n, packets)
 	}
 	if p.Dropped.Load() != 0 || p.WriteErrs.Load() != 0 {
@@ -87,7 +87,7 @@ func TestCollectorClearSerializesConcurrentIngest(t *testing.T) {
 	if err := st.DB.QueryRow("SELECT sum(pkts) FROM r_ts").Scan(&rollPackets); err != nil {
 		t.Fatal(err)
 	}
-	if rollPackets != 200 {
-		t.Fatalf("rollup packets=%g want 200", rollPackets)
+	if rollPackets != 100 {
+		t.Fatalf("rollup packets=%g want 100", rollPackets)
 	}
 }

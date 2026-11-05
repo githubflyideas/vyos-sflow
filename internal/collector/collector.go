@@ -76,33 +76,6 @@ type sfState struct {
 	eff                          float64
 	rate                         uint32
 	lost, drops                  uint64
-
-	// ref is the newest sample pool seen and refSeq that sample's sequence
-	// number; checks and sum say whether the pool counts packets the way it
-	// should, from the first samples
-	ref    uint32
-	refSeq uint32
-	checks int
-	sum    float64
-	poolOK bool
-
-	// recent are the last records of this source, which the samples lost
-	// before a newer one are counted as
-	recent []flow.Record
-	next   int
-}
-
-// recentKept is how many records of a source the lost samples are spread
-// over.
-const recentKept = 32
-
-func (st *sfState) remember(r flow.Record) {
-	if len(st.recent) < recentKept {
-		st.recent = append(st.recent, r)
-		return
-	}
-	st.recent[st.next] = r
-	st.next = (st.next + 1) % recentKept
 }
 
 type sfAgent struct {
@@ -112,15 +85,9 @@ type sfAgent struct {
 	counters  uint64
 	lostDgram uint64
 	lastSeq   map[uint32]uint32
-	clocks    map[uint32]sfClock
 	lastSeen  time.Time
 	firstSeen time.Time // the agent's first datagram
 	decodeErr uint64
-}
-
-type sfClock struct {
-	uptime uint32
-	seen   time.Time
 }
 
 func New(sink Sink) *Collector {
@@ -317,41 +284,12 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 		return false
 	}
 	ag.datagrams++
-	last, seen := ag.lastSeq[d.SubAgent]
-	clock := ag.clocks[d.SubAgent]
-	seqBack := last - d.Seq
-	// A lower uptime can be a 32-bit millisecond wrap or a restart. Compare
-	// the modular advance with elapsed receive time: the half-range rule
-	// alone misses resets after more than half the uptime counter's period.
-	// Allow one second of clock/arrival jitter when judging a plausible wrap.
-	elapsed := max(now.Sub(clock.seen), 0)
-	uptimeAdvance := time.Duration(d.Uptime-clock.uptime) * time.Millisecond
-	implausibleWrap := d.Uptime < clock.uptime && uptimeAdvance > elapsed+time.Second
-	// A short backwards sequence/uptime pair can also be reordering. Require
-	// a large rollback or evidence that the new boot followed the last sample.
-	restarted := seen && implausibleWrap && seqBack > 0 && seqBack < 1<<31 &&
-		(seqBack > 1000 || elapsed > time.Duration(d.Uptime)*time.Millisecond)
-	if restarted {
-		for k, st := range c.sf {
-			if k.agent == agentAddr && k.subAgent == d.SubAgent {
-				// Keep cumulative reception diagnostics, not old-boot estimator
-				// calibration or records eligible for loss compensation.
-				*st = sfState{evalAt: now, lost: st.lost, drops: st.drops}
-			}
+	if last, ok := ag.lastSeq[d.SubAgent]; ok {
+		if gap := d.Seq - last - 1; gap > 0 && gap < 1<<20 {
+			ag.lostDgram += uint64(gap)
 		}
 	}
-	if !seen || restarted || d.Seq-last > 0 && d.Seq-last < 1<<31 {
-		if seen && !restarted {
-			if gap := d.Seq - last - 1; gap > 0 && gap < 1<<20 {
-				ag.lostDgram += uint64(gap)
-			}
-		}
-		ag.lastSeq[d.SubAgent] = d.Seq
-		if ag.clocks == nil {
-			ag.clocks = make(map[uint32]sfClock)
-		}
-		ag.clocks[d.SubAgent] = sfClock{uptime: d.Uptime, seen: now}
-	}
+	ag.lastSeq[d.SubAgent] = d.Seq
 
 	recs := make([]flow.Record, 0, len(d.Flows))
 	for i := range d.Flows {
@@ -366,34 +304,15 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 			st = &sfState{evalAt: now}
 			c.sf[sfKey{agentAddr, d.SubAgent, s.SourceID}] = st
 		}
-		w, gap := st.update(s, now)
-		// The samples lost before this one, and one whose packet could
-		// not be read, count as the source's recent records rather than
-		// all as this one: losses come in runs, in bursts, and the next
-		// sample to arrive is often from after the burst.
-		own, spread := w, 0.0
-		if gap > 0 && len(st.recent) > 0 {
-			own = w / float64(gap+1)
-			spread = w - own
-		}
-		if !s.Decoded {
-			spread, own = spread+own, 0
-		}
-		if spread > 0 && len(st.recent) > 0 {
-			m := spread / float64(len(st.recent))
-			for _, r := range st.recent {
-				r.Mult = m
-				recs = append(recs, r)
-			}
-		}
-		if own == 0 {
+		if !st.update(s, now) || !s.Decoded {
 			continue
 		}
 		r := s.Record
 		r.Exporter = agentAddr
-		r.Mult = own
+		if st.eff > 0 {
+			r.Mult = st.eff
+		}
 		recs = append(recs, r)
-		st.remember(r)
 	}
 	for i := range d.Counters {
 		d.Counters[i].Exporter = agentAddr
@@ -407,24 +326,12 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 }
 
 // update tracks the effective sampling rate: packets offered for sampling
-// (sample_pool) per sample actually received, shown on the sources page.
-// It returns what the sample counts for: the packets the pool advanced by
-// since the newest sample before it, which covers the samples lost or
-// dropped on the way; 0 for a sample older than one already counted; the
-// configured rate where the pool cannot be used; and how many samples were
-// lost just before it.
-func (st *sfState) update(s *sflow.FlowSample, now time.Time) (float64, uint32) {
-	// Repeated delivery of the high-water sample is not a new observation.
-	if st.init && s.Seq == st.refSeq && s.Pool == st.ref {
-		return 0, 0
-	}
-	// Weight and diagnostics share one high-water mark. A late delivery may
-	// still carry its configured weight during pool validation, but must not
-	// rewind the measurement window, drop counters or current configured rate.
-	late := st.init && st.ref-s.Pool < 1<<31 && float64(st.ref-s.Pool) <= float64(max(s.Rate, 1))*1000 && st.refSeq-s.Seq >= 1 && st.refSeq-s.Seq <= 1000
-	w, gap := st.weight(s)
-	if late {
-		return w, gap
+// (sample_pool) per sample actually received. Lost datagrams and samples
+// dropped by the agent both raise it, compensating for the missing data.
+func (st *sfState) update(s *sflow.FlowSample, now time.Time) bool {
+	// the same sample delivered again adds nothing
+	if st.init && s.Seq == st.lastSeq && s.Pool == st.lastPool {
+		return false
 	}
 	if st.init && s.Rate != st.rate {
 		// The agent's configured rate changed. Everything measured so far
@@ -466,52 +373,7 @@ func (st *sfState) update(s *sflow.FlowSample, now time.Time) (float64, uint32) 
 		st.winPool, st.winRecv = 0, 0
 		st.evalAt = now
 	}
-	return w, gap
-}
-
-func (st *sfState) weight(s *sflow.FlowSample) (float64, uint32) {
-	rate := float64(max(s.Rate, 1))
-	limit := rate * 1000
-	ahead, back := s.Pool-st.ref, st.ref-s.Pool
-	// late: behind the newest sample in both its pool and its sequence
-	// number, by a little; an agent that restarted starts both again
-	seqBack, seqAhead := st.refSeq-s.Seq, s.Seq-st.refSeq
-	late := back < 1<<31 && float64(back) <= limit && seqBack >= 1 && seqBack <= 1000
-	switch {
-	case !st.init:
-		st.ref, st.refSeq = s.Pool, s.Seq
-		return rate, 0
-	case ahead >= 1 && (float64(ahead) <= limit || seqAhead >= 1 && seqAhead < 1<<20 && float64(ahead) <= rate*float64(seqAhead)*20):
-		// (a long run of lost samples moves the sequence number as far)
-		st.ref, st.refSeq = s.Pool, s.Seq
-		if !st.poolOK {
-			// the first ten samples show whether the pool counts packets
-			// (some agents leave it at 0 or count samples instead)
-			if st.checks < 10 {
-				st.checks++
-				st.sum += float64(ahead)
-				if st.checks == 10 {
-					m := st.sum / 10
-					st.poolOK = m >= rate*0.5 && m <= rate*20
-				}
-			}
-			return rate, 0
-		}
-		var gap uint32
-		if seqAhead > 1 && seqAhead < 1<<20 {
-			gap = seqAhead - 1
-		}
-		return float64(ahead), gap
-	case late:
-		if !st.poolOK {
-			return rate, 0
-		}
-		return 0, 0
-	default:
-		// a restart, a pool that does not move, or one that jumped
-		st.ref, st.refSeq = s.Pool, s.Seq
-		return rate, 0
-	}
+	return true
 }
 
 // SourceInfo summarises one exporter for the UI.

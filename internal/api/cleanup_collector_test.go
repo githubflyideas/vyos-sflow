@@ -54,8 +54,8 @@ func TestCleanupClearsLiveCollectorReservoir(t *testing.T) {
 	if err := st.DB.QueryRow("SELECT count(*) FILTER (WHERE ts < ?), count(*), sum(pkts) FROM hot", now).Scan(&old, &n, &packets); err != nil {
 		t.Fatal(err)
 	}
-	if old != 0 || n != 1 || packets != 200 {
-		t.Fatalf("post-clear history: old=%d rows=%d packets=%g; want 0,1,200 (compensation retained)", old, n, packets)
+	if old != 0 || n != 1 || packets != 100 {
+		t.Fatalf("post-clear history: old=%d rows=%d packets=%g; want 0,1,100", old, n, packets)
 	}
 	if p.WriteErrs.Load() != 0 {
 		t.Fatal(p.LastError())
