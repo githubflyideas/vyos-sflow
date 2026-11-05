@@ -6,7 +6,7 @@ here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 fail() { printf 'vyos-sflow: %s\n' "$*" >&2; exit 1; }
 (($# == 0)) || fail 'This wizard takes no arguments; use install.sh for advanced installation'
 printf '%s\n' \
-    'vyos-sflow 1.2.2 offline installation' \
+    'vyos-sflow 1.2.3 offline installation' \
     'Install in /config/vyos-sflow and enable/start its systemd service.' \
     'Existing configuration, data and accounts are retained; passwords are never reset.' \
     'New installs: Web 0.0.0.0:8066; sFlow UDP 0.0.0.0:6343 (all interfaces).' \

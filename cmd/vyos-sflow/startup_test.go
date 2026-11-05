@@ -8,8 +8,8 @@ import (
 )
 
 func TestReleaseVersionDefault(t *testing.T) {
-	if version != "1.2.2" {
-		t.Fatalf("default version = %q, want 1.2.2", version)
+	if version != "1.2.3" {
+		t.Fatalf("default version = %q, want 1.2.3", version)
 	}
 }
 

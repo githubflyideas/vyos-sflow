@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.3
+
+- Traffic is counted as in 1.1.2 again.
+- Sources: interface reconciliation, each interface's own counters against the sampled traffic.
+
 ## 1.2.2
 
 - sFlow: traffic is counted in full from devices that send two samplers' samples under one interface.
