@@ -152,7 +152,7 @@ test('direction identifies the selected exporter/interface and leaves KPI scope 
     h.context.ResizeObserver = class { observe() {} };
     h.testing.state.od = dir;
     const rendering = h.testing.views.overview(el);
-    h.pending[0].resolve({ok:true, json:async () => ({totals:{wire:123}, dir_iface:iface, dir_series:{times:[],names:[],values:[]}})});
+    for (const req of h.pending) req.resolve({ok:true, json:async () => req.url.includes('sources') ? {} : ({totals:{wire:123}, dir_iface:iface, dir_series:{times:[],names:[],values:[]}})});
     await rendering;
     assert.match(el.innerHTML, /ov.kpi_scope/);
     assert.match(el.innerHTML, /ov.direction_scope/);

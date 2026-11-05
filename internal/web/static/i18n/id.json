@@ -176,8 +176,6 @@
   "ov.bw_sub_day": "Garis putus: kemarin di jam yang sama",
   "issue.agent_drops": "Perangkat sendiri membuang {p} sampelnya (dilaporkan di sFlow): ekspor sFlow-nya dibatasi laju. Total sudah dikompensasi; rincian per host tidak. Kurangi sampling (misalnya 1:2048 atau 1:4096) atau naikkan batas sFlow perangkat.",
   "theme.black": "Hitam",
-  "theme.teal": "Hijau toska",
-  "theme.orange": "Jingga",
   "theme.next": "klik untuk tema berikutnya",
   "ov.dir_total": "Total",
   "ov.bw_all": "Bandwidth (masuk + keluar), per aplikasi",
@@ -304,5 +302,18 @@
   "ic.dev_out": "Perangkat keluar",
   "ic.est_out": "Sampel keluar",
   "ic.note": "{m} menit terakhir. Penghitung antarmuka perangkat adalah yang dibaca SNMP; arah yang jauh di bawah 100% biasanya tidak disampel pada perangkat ini.",
-  "ic.none": "Belum ada penghitung antarmuka. Aktifkan polling penghitung sFlow di perangkat untuk membandingkan."
+  "ic.none": "Belum ada penghitung antarmuka. Aktifkan polling penghitung sFlow di perangkat untuk membandingkan.",
+  "ov.device": "Perangkat",
+  "ov.if_count": "Antarmuka",
+  "ov.ifaces": "Lalu lintas antarmuka",
+  "ov.ifaces_sub": "Dari penghitung perangkat · menurut pemakaian",
+  "ov.speed": "Kecepatan",
+  "ov.util_in": "Pemakaian masuk",
+  "ov.util_out": "Pemakaian keluar",
+  "ov.if_ok": "Normal",
+  "ov.if_off": "Selisih",
+  "ov.if_idle": "Tidak ada lalu lintas",
+  "theme.gray": "Abu-abu",
+  "theme.slate": "Batu tulis",
+  "theme.navy": "Biru tua"
 }

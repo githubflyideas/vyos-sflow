@@ -33,8 +33,11 @@ async function loadLang(code) {
   themeLabel();
 }
 // the theme button shows the current theme; a click goes to the next one
+const SWATCH = {light: '#ffffff', gray: '#dde3ec', slate: '#4a5363', navy: '#16264a', black: '#000000'};
 function themeLabel() {
-  const b = $('#theme'), cur = window.t66Theme ? t66Theme.get() : 'black';
+  const b = $('#theme'), cur = window.t66Theme ? t66Theme.get() : 'gray';
+  const sw = $('#themes');
+  if (sw && window.t66Theme) sw.innerHTML = t66Theme.list.map(k => `<button type="button" data-th="${k}" style="background:${SWATCH[k]}" aria-pressed="${k === cur}" title="${esc(t('theme.label') + ': ' + t('theme.' + k))}" aria-label="${esc(t('theme.label') + ': ' + t('theme.' + k))}"></button>`).join('');
   b.querySelector('span').textContent = t('theme.' + cur);
   b.title = t('theme.label') + ': ' + t('theme.' + cur) + ' · ' + t('theme.next');
   b.setAttribute('aria-label', b.title);
@@ -463,17 +466,37 @@ function drawSeries(el, series) {
 // what went out through the interface sFlow samples on
 const dirSeg = () => `<div class="seg" role="group">${[['', 'ov.dir_total'], ['in', 'if.in'], ['out', 'if.out']].map(([k, l]) =>
   `<button data-od="${k}" aria-pressed="${state.od === k}">${esc(t(l))}</button>`).join('')}</div>`;
+// a device's interface as the overview lists it: what the device counted,
+// how full the link is, and whether the samples add up to it
+const utilBar = (bps, speed) => {
+ if (!(speed > 0)) return '<span class="muted">—</span>';
+ const p = Math.min(100, bps / speed * 100);
+ return `<span class="ub"><i class="${p >= 70 ? 'hot' : ''}" style="width:${p.toFixed(1)}%"></i></span><span class="ubp">${nf(p, 1)}%</span>`;
+};
+const icState = r => {
+ const dev = r.dev_in_bps + r.dev_out_bps, est = r.est_in_bps + r.est_out_bps;
+ if (!(dev > 0) && !(est > 0)) return ['off', t('ov.if_idle')];
+ const off = [[r.est_in_bps, r.dev_in_bps], [r.est_out_bps, r.dev_out_bps]].some(([e, d]) => d > 0 && Math.abs(e / d - 1) > 0.2);
+ return off ? ['warn', t('ov.if_off')] : ['', t('ov.if_ok')];
+};
 views.overview = async el => {
- const d = await api('overview', state.od ? {dir: state.od} : {}), total = d.totals || {};
+ const [d, src] = await Promise.all([api('overview', state.od ? {dir: state.od} : {}), api('sources').catch(() => ({}))]);
+ const total = d.totals || {}, devs = src.sources || [], ifs = (src.ifaces || []).slice().sort((a, b) => (b.speed ? (b.dev_in_bps + b.dev_out_bps) / b.speed : 0) - (a.speed ? (a.dev_in_bps + a.dev_out_bps) / a.speed : 0));
  const title = state.od ? t(state.od === 'in' ? 'ov.bw_in' : 'ov.bw_out') : t('ov.bw_title');
- el.innerHTML = `<div class="grid"><div class="panel c12"><p class="muted" id="kpiScope">${esc(t('ov.kpi_scope'))}</p><div class="kpis">
- <div class="kpi"><div class="lab">${t('kpi.now')}</div><div class="n">${fmtBps(d.now_bps)}</div></div>
- <div class="kpi"><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><div class="n">${fmtBytes(total.wire)}</div></div>
- <div class="kpi"><div class="lab">${t('col.pkts')}</div><div class="n">${nf(total.pkts || 0)}</div></div>
- <div class="kpi"><div class="lab">${t('col.flows')}</div><div class="n">${nf(total.flows || 0)}</div></div>
- </div></div><div class="panel c12"><div class="ph"><h2>${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
+ const dv = devs[0];
+ const devInfo = dv ? `<div class="dev"><span>${t('col.device')}</span><b>${esc(dv.exporter)}${devs.length > 1 ? ` <span class="muted">+${devs.length - 1}</span>` : ''}</b>
+  <span>${t('col.proto')}</span><span>${esc(dv.proto)}</span>
+  <span>${t('col.sampling')}</span><span>${esc(dv.sampling || '—')}</span>
+  <span>${t('col.status')}</span><span class="st ${dv.status === 'ok' ? 'ok' : dv.status === 'bad' ? 'bad' : 'warn'}">● ${esc(t('st.' + dv.status))}</span>
+  <span>${t('ov.if_count')}</span><span>${nf(ifs.length)}</span></div>` : `<div class="empty">${emptyText()}</div>`;
+ el.innerHTML = `<div class="grid">
+ ${panel('c4', t('ov.device'), '', `${devInfo}<div class="devnum"><div><div class="lab">${t('kpi.now')}</div><b>${fmtBps(d.now_bps)}</b></div><div><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><b>${fmtBytes(total.wire)}</b></div><div><div class="lab">${t('col.flows')}</div><b>${nf(total.flows || 0)}</b></div></div>
+  <p class="muted" style="font-size:12px"><span id="kpiScope">${esc(t('ov.kpi_scope'))}</span> · ${t('col.pkts')} ${nf(total.pkts || 0)}</p>`)}
+ <div class="panel c8"><div class="ph"><h2>${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
  ${state.od ? `<p class="muted" id="directionScope">${esc(t('ov.direction_scope'))} · <span id="directionIface">${d.dir_iface ? esc(d.dir_iface) : esc(t('ov.direction_empty'))}</span></p>` : ''}
  <div class="chart" id="chStack"></div></div>
+ ${panel('c12', t('ov.ifaces'), esc(t('ov.ifaces_sub')), ifs.length ? `<div class="tablewrap"><table><thead><tr><th>${t('ic.iface')}</th><th>${t('ov.speed')}</th><th>${t('ov.util_in')}</th><th>${t('ov.util_out')}</th><th class="num">${t('if.in')}</th><th class="num">${t('if.out')}</th><th>${t('col.status')}</th></tr></thead><tbody>
+  ${ifs.map(r => { const [k, txt] = icState(r); return `<tr><td class="nw"><span class="dot ${k}"></span>${esc(r.exporter)} / ${r.ifindex}</td><td>${r.speed ? fmtBps(r.speed) : '—'}</td><td class="nw">${utilBar(r.dev_in_bps, r.speed)}</td><td class="nw">${utilBar(r.dev_out_bps, r.speed)}</td><td class="num">${fmtBps(r.dev_in_bps)}</td><td class="num">${fmtBps(r.dev_out_bps)}</td><td>${esc(txt)}</td></tr>`; }).join('')}</tbody></table></div>` : `<div class="empty">${esc(t('ic.none'))}</div>`)}
  ${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}</div>`;
  drawSeries($('#chStack'), state.od ? d.dir_series : d.series); fillSelf();
  el.querySelectorAll('[data-od]').forEach(b => b.onclick = () => { state.od = b.dataset.od; render(true); });
@@ -693,11 +716,12 @@ async function loadStatus() {
 
 let selfStatus = null;
 function fillSelf() {
-  const el = $('#self'), s = selfStatus;
-  if (!el || !s) return;
+  // the overview and the diagnostics page both have one; fill the one shown
+  const first = $('#self'), shown = document.querySelector('.view.on #self'), s = selfStatus;
+  if (!first || !s) return;
   const live = s.records_per_sec > 0.2;
   const it = (k, v, attrs = '') => `<div class="it"><span class="k">${k}</span><span class="val" ${attrs}>${v}</span></div>`;
-  el.innerHTML = `${streamHint(s.stream)}<div class="live ${live ? 'ok' : 'idle'}"><i></i>${t(live ? 'self.receiving' : 'self.idle')}</div>
+  const html = `${streamHint(s.stream)}<div class="live ${live ? 'ok' : 'idle'}"><i></i>${t(live ? 'self.receiving' : 'self.idle')}</div>
     ${it(t('self.ingest'), esc(t('self.per_sec', {n: nf(s.records_per_sec, s.records_per_sec < 10 ? 1 : 0)})))}
     ${it(t('self.dropped'), nf(s.dropped), s.dropped ? 'style="color:var(--crit)"' : '')}
     ${it(t('self.counter_samples'), nf(s.counter_samples || 0))}
@@ -706,6 +730,7 @@ function fillSelf() {
     ${it(t('self.disk'), fmtBytes(s.disk_bytes))}
     ${it(t('self.free'), fmtBytes(s.disk_free), `${s.disk_need > s.disk_free ? 'style="color:var(--crit)"' : ''} title="${esc(s.disk_need >= 0 ? t('self.need', {d: nf(s.retention_days), n: fmtBytes(s.disk_need)}) : t('self.need_later', {d: nf(s.retention_days)}))}"`)}
     ${s.write_errors ? it('!', nf(s.write_errors), `style="color:var(--crit)" title="${esc(s.last_error)}"`) : ''}`;
+  for (const el of new Set([first, shown])) if (el) el.innerHTML = html;
 }
 
 function showLogin() {
@@ -759,6 +784,8 @@ async function init() {
   await loadLang(lang);
   $('#lang').value = lang;
   $('#theme').onclick = () => { if (window.t66Theme) t66Theme.next(); themeLabel(); render(); };
+  const sw = $('#themes');
+  if (sw) sw.onclick = e => { const b = e.target.closest('[data-th]'); if (!b || !window.t66Theme) return; t66Theme.set(b.dataset.th); themeLabel(); render(); };
   $('#lang').onchange = async () => {
     await loadLang($('#lang').value);
     loadStatus(); render();

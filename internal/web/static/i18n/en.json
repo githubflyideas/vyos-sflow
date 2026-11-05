@@ -176,8 +176,6 @@
   "ov.bw_sub_day": "Dashed line: same time yesterday",
   "issue.agent_drops": "The device itself dropped {p} of its samples (it reports this in sFlow): its sFlow export is rate-limited. Totals are compensated; per-host detail cannot be. Sample less often (for example 1:2048 or 1:4096) or raise the device's sFlow rate limit.",
   "theme.black": "Black",
-  "theme.teal": "Teal",
-  "theme.orange": "Orange",
   "theme.next": "click for the next theme",
   "ov.dir_total": "Total",
   "ov.bw_all": "Bandwidth (in + out), by application",
@@ -304,5 +302,18 @@
   "ic.dev_out": "Device out",
   "ic.est_out": "Sampled out",
   "ic.note": "Over the last {m} min. The device's own interface counters are what SNMP reads; a direction far below 100% is usually not sampled on this device.",
-  "ic.none": "No interface counters received yet. Enable sFlow counter polling on the device to compare."
+  "ic.none": "No interface counters received yet. Enable sFlow counter polling on the device to compare.",
+  "ov.device": "Device",
+  "ov.if_count": "Interfaces",
+  "ov.ifaces": "Interface traffic",
+  "ov.ifaces_sub": "From the device’s own counters · busiest first",
+  "ov.speed": "Speed",
+  "ov.util_in": "In utilisation",
+  "ov.util_out": "Out utilisation",
+  "ov.if_ok": "Normal",
+  "ov.if_off": "Samples differ",
+  "ov.if_idle": "No traffic",
+  "theme.gray": "Grey",
+  "theme.slate": "Slate",
+  "theme.navy": "Navy"
 }

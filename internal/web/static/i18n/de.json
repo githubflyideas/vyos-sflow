@@ -176,8 +176,6 @@
   "ov.bw_sub_day": "Gestrichelt: gleiche Zeit gestern",
   "issue.agent_drops": "Das Gerät selbst hat {p} seiner Samples verworfen (es meldet dies in sFlow): Sein sFlow-Export ist ratenbegrenzt. Summen werden ausgeglichen, Details pro Host nicht. Sampeln Sie seltener (zum Beispiel 1:2048 oder 1:4096) oder erhöhen Sie das sFlow-Ratenlimit des Geräts.",
   "theme.black": "Schwarz",
-  "theme.teal": "Petrol",
-  "theme.orange": "Orange",
   "theme.next": "klicken für das nächste Design",
   "ov.dir_total": "Gesamt",
   "ov.bw_all": "Bandbreite (ein + aus) nach Anwendung",
@@ -304,5 +302,18 @@
   "ic.dev_out": "Gerät aus",
   "ic.est_out": "Stichprobe aus",
   "ic.note": "Letzte {m} Min. Die Schnittstellenzähler des Geräts sind die Werte, die SNMP liest; eine Richtung weit unter 100 % wird meist auf diesem Gerät nicht abgetastet.",
-  "ic.none": "Noch keine Schnittstellenzähler empfangen. Aktivieren Sie sFlow-Counter-Polling am Gerät, um zu vergleichen."
+  "ic.none": "Noch keine Schnittstellenzähler empfangen. Aktivieren Sie sFlow-Counter-Polling am Gerät, um zu vergleichen.",
+  "ov.device": "Gerät",
+  "ov.if_count": "Schnittstellen",
+  "ov.ifaces": "Schnittstellenverkehr",
+  "ov.ifaces_sub": "Aus den Zählern des Geräts · nach Auslastung",
+  "ov.speed": "Geschwindigkeit",
+  "ov.util_in": "Auslastung ein",
+  "ov.util_out": "Auslastung aus",
+  "ov.if_ok": "Normal",
+  "ov.if_off": "Abweichung",
+  "ov.if_idle": "Kein Verkehr",
+  "theme.gray": "Grau",
+  "theme.slate": "Schiefer",
+  "theme.navy": "Marine"
 }

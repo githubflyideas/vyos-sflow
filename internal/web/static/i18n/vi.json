@@ -176,8 +176,6 @@
   "ov.bw_sub_day": "Nét đứt: cùng giờ hôm qua",
   "issue.agent_drops": "Chính thiết bị đã bỏ {p} mẫu của nó (thiết bị báo điều này trong sFlow): export sFlow của nó bị giới hạn tốc độ. Tổng đã được bù; chi tiết theo từng máy thì không bù được. Hãy lấy mẫu thưa hơn (ví dụ 1:2048 hoặc 1:4096) hoặc nâng giới hạn tốc độ sFlow của thiết bị.",
   "theme.black": "Đen",
-  "theme.teal": "Xanh mòng két",
-  "theme.orange": "Cam",
   "theme.next": "bấm để đổi giao diện màu",
   "ov.dir_total": "Tổng",
   "ov.bw_all": "Băng thông (vào + ra), theo ứng dụng",
@@ -304,5 +302,18 @@
   "ic.dev_out": "Thiết bị ra",
   "ic.est_out": "Mẫu ra",
   "ic.note": "{m} phút gần nhất. Bộ đếm giao diện của thiết bị là giá trị SNMP đọc; một chiều thấp hơn nhiều so với 100% thường không được lấy mẫu trên thiết bị này.",
-  "ic.none": "Chưa nhận được bộ đếm giao diện. Bật thu thập bộ đếm sFlow trên thiết bị để so sánh."
+  "ic.none": "Chưa nhận được bộ đếm giao diện. Bật thu thập bộ đếm sFlow trên thiết bị để so sánh.",
+  "ov.device": "Thiết bị",
+  "ov.if_count": "Giao diện",
+  "ov.ifaces": "Lưu lượng giao diện",
+  "ov.ifaces_sub": "Từ bộ đếm của thiết bị · theo mức sử dụng",
+  "ov.speed": "Tốc độ",
+  "ov.util_in": "Sử dụng chiều vào",
+  "ov.util_out": "Sử dụng chiều ra",
+  "ov.if_ok": "Bình thường",
+  "ov.if_off": "Lệch",
+  "ov.if_idle": "Không có lưu lượng",
+  "theme.gray": "Xám",
+  "theme.slate": "Đá phiến",
+  "theme.navy": "Xanh đậm"
 }

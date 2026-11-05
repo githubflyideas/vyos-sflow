@@ -176,8 +176,6 @@
   "ov.bw_sub_day": "Pointillés : hier à la même heure",
   "issue.agent_drops": "L'équipement lui-même a abandonné {p} de ses échantillons (il le signale dans sFlow) : son export sFlow est limité en débit. Les totaux sont compensés, pas le détail par hôte. Échantillonnez moins (par exemple 1:2048 ou 1:4096) ou relevez la limite sFlow de l'équipement.",
   "theme.black": "Noir",
-  "theme.teal": "Sarcelle",
-  "theme.orange": "Orange",
   "theme.next": "cliquer pour le thème suivant",
   "ov.dir_total": "Total",
   "ov.bw_all": "Bande passante (entrant + sortant), par application",
@@ -304,5 +302,18 @@
   "ic.dev_out": "Équipement sortie",
   "ic.est_out": "Échantillons sortie",
   "ic.note": "{m} dernières min. Les compteurs d’interface de l’équipement sont ceux que lit SNMP ; un sens très en dessous de 100 % n’est généralement pas échantillonné sur cet équipement.",
-  "ic.none": "Aucun compteur d’interface reçu. Activez la collecte des compteurs sFlow sur l’équipement pour comparer."
+  "ic.none": "Aucun compteur d’interface reçu. Activez la collecte des compteurs sFlow sur l’équipement pour comparer.",
+  "ov.device": "Équipement",
+  "ov.if_count": "Interfaces",
+  "ov.ifaces": "Trafic des interfaces",
+  "ov.ifaces_sub": "D’après les compteurs de l’équipement · par charge",
+  "ov.speed": "Débit",
+  "ov.util_in": "Charge entrante",
+  "ov.util_out": "Charge sortante",
+  "ov.if_ok": "Normal",
+  "ov.if_off": "Écart",
+  "ov.if_idle": "Aucun trafic",
+  "theme.gray": "Gris",
+  "theme.slate": "Ardoise",
+  "theme.navy": "Marine"
 }

@@ -176,8 +176,6 @@
   "ov.bw_sub_day": "Línea discontinua: ayer a la misma hora",
   "issue.agent_drops": "El propio equipo descartó un {p} de sus muestras (lo informa en sFlow): su exportación sFlow está limitada. Los totales están compensados; el detalle por host no. Muestree menos (por ejemplo 1:2048 o 1:4096) o suba el límite de sFlow del equipo.",
   "theme.black": "Negro",
-  "theme.teal": "Turquesa",
-  "theme.orange": "Naranja",
   "theme.next": "clic para el siguiente tema",
   "ov.dir_total": "Total",
   "ov.bw_all": "Ancho de banda (entrada + salida), por aplicación",
@@ -304,5 +302,18 @@
   "ic.dev_out": "Equipo salida",
   "ic.est_out": "Muestras salida",
   "ic.note": "Últimos {m} min. Los contadores de interfaz del equipo son lo que lee SNMP; una dirección muy por debajo del 100 % normalmente no se muestrea en este equipo.",
-  "ic.none": "Aún no se reciben contadores de interfaz. Active el sondeo de contadores sFlow en el equipo para comparar."
+  "ic.none": "Aún no se reciben contadores de interfaz. Active el sondeo de contadores sFlow en el equipo para comparar.",
+  "ov.device": "Equipo",
+  "ov.if_count": "Interfaces",
+  "ov.ifaces": "Tráfico por interfaz",
+  "ov.ifaces_sub": "De los contadores del equipo · por uso",
+  "ov.speed": "Velocidad",
+  "ov.util_in": "Uso de entrada",
+  "ov.util_out": "Uso de salida",
+  "ov.if_ok": "Normal",
+  "ov.if_off": "Desviación",
+  "ov.if_idle": "Sin tráfico",
+  "theme.gray": "Gris",
+  "theme.slate": "Pizarra",
+  "theme.navy": "Marino"
 }

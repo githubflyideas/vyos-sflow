@@ -1,20 +1,20 @@
 // Applies the colour theme before the page is drawn, so it does not flash.
-// The choice is kept per browser; clicking the theme button goes to the next.
-// Black is the default: the pages are mostly charts, often on a wall screen.
+// Five themes from light to dark; the choice is kept per browser.
 (function () {
-  var THEMES = ['light', 'black', 'teal', 'orange'];
-  var OLD = {bright: 'light', dim: 'black', dark: 'black', auto: 'light', gray: 'light'};
+  var THEMES = ['light', 'gray', 'slate', 'navy', 'black'];
+  var DARK = {slate: 1, navy: 1, black: 1};
+  var OLD = {bright: 'light', dim: 'black', dark: 'black', auto: 'gray', teal: 'gray', orange: 'light'};
   function get() {
-    var v = 'black';
-    try { v = localStorage.getItem('t66.theme') || 'black'; } catch (e) {}
+    var v = 'gray';
+    try { v = localStorage.getItem('t66.theme') || 'gray'; } catch (e) {}
     if (OLD[v]) { v = OLD[v]; try { localStorage.setItem('t66.theme', v); } catch (e) {} }
-    return THEMES.indexOf(v) < 0 ? 'black' : v;
+    return THEMES.indexOf(v) < 0 ? 'gray' : v;
   }
   function apply(x) {
-    if (x === 'light') document.documentElement.removeAttribute('data-theme');
+    if (x === 'gray') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', x);
-    // the built-in logo has light lettering on black
-    var q = '/logo?dark=' + (x === 'black' ? 1 : 0);
+    // the built-in logo has a dark and a light version
+    var q = '/logo?dark=' + (DARK[x] ? 1 : 0);
     var set = function () { document.querySelectorAll('img.logo').forEach(function (i) { if (i.getAttribute('src').split('&')[0] !== q) i.src = q; }); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', set); else set();
   }
