@@ -7,7 +7,7 @@
 - Security: every Web response carries a Content-Security-Policy (same-origin scripts, no framing), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
 - Release archives store files with owner and group 0 instead of the build user's IDs.
 - The Go module path and the service installation download links use the current repository name `githubflyideas/vyos-sflow`; the help page links to this repository instead of traffic66. The TLS certificate download is named `vyos-sflow.crt`.
-- Documentation: the README states that the repository contains both the Apache-2.0 `LICENSE` and the inherited PolyForm Noncommercial `LICENSE.md` with its Additional Use Grant, and that which terms apply has not yet been clarified by the copyright holder. The license texts are unchanged.
+- License: vyos-sflow is licensed under Apache-2.0 only. The inherited PolyForm Noncommercial `LICENSE.md` and `ADDITIONAL-USE-GRANT.md` are removed; the Apache-2.0 `LICENSE` text is unchanged. New `NOTICE` (copyright and Traffic66 attribution) and `TRADEMARKS.md` (names and logo reserved, Apache-2.0 section 6) are shipped in release archives. `upstream-manifest.json` remains a historical provenance record.
 - Documentation: the development build command embeds the commit so `./vyos-sflow version` matches the source. The legacy names `./vyso_sflow_data` and `traffic66.duckdb` are kept deliberately so existing data is still found.
 
 ## 1.2.5

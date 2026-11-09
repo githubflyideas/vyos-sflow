@@ -123,16 +123,10 @@ Want automatic startup? [Install as a service](docs/VYOS.md). Otherwise, keep ru
 
 [Configuration](docs/VYOS.md) · [User manual](docs/MANUAL.md) · [Compatibility and validation](docs/VALIDATION.md)
 
-## License and DuckDB trademark
+## License and trademarks
 
-> [!IMPORTANT]
-> **The licensing of this repository is not yet clarified by the copyright holder.** It contains two different license texts, and both are shipped in the release archives:
->
-> - [LICENSE](LICENSE): the Apache License 2.0 text (GitHub shows the repository as Apache-2.0 because of this file).
-> - [LICENSE.md](LICENSE.md): the PolyForm Noncommercial License 1.0.0, together with [ADDITIONAL-USE-GRANT.md](ADDITIONAL-USE-GRANT.md) (production use by organizations of 100 or more people beyond 30 days needs a Registration License; competing, hosted and OEM offerings are excluded). Both files name “Traffic66”, the upstream project this sFlow-only derivative was made from (see [upstream-manifest.json](upstream-manifest.json)), and are identical to the license files currently published in [githubflyideas/traffic66](https://github.com/githubflyideas/traffic66).
->
-> This README does not decide which terms apply. Until the copyright holder states which license (or combination) covers vyos-sflow, assume the more restrictive PolyForm Noncommercial terms and the Additional Use Grant may apply, especially for commercial or larger-organization production use, and ask the licensor in writing (contact address in [ADDITIONAL-USE-GRANT.md](ADDITIONAL-USE-GRANT.md)). vyos-sflow itself has no registration reminder or license-key function.
+vyos-sflow is licensed under the **[Apache License 2.0](LICENSE)**. Keep the [NOTICE](NOTICE) file with redistributions. vyos-sflow is derived from [Traffic66](https://github.com/githubflyideas/traffic66) by the same copyright holder; the license files inherited from Traffic66 in earlier commits have been replaced by Apache-2.0. [upstream-manifest.json](upstream-manifest.json) is a historical provenance record of the upstream files at the time of derivation, including those former license files; its hashes are intentionally left unchanged.
 
-Third-party licenses and notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The license does not grant trademark rights. The names "vyos-sflow" and "Traffic66" and the project logo are reserved; see [TRADEMARKS.md](TRADEMARKS.md). Third-party licenses and notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 **DuckDB is a trademark of the DuckDB Foundation.** This project uses DuckDB as its embedded database. It is not an official DuckDB product and is not affiliated with, sponsored by or endorsed by the DuckDB Foundation. DuckDB is distributed under the MIT license; software licenses do not grant rights to DuckDB trademarks or logos.
