@@ -34,3 +34,17 @@ func TestStartupSecurityNotice(t *testing.T) {
 		}
 	}
 }
+
+func TestStartupLoopbackHint(t *testing.T) {
+	var buf bytes.Buffer
+	old := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(old)
+	for addr, want := range map[string]bool{"127.0.0.1:8066": true, "[::1]:8066": true, "localhost:8066": true, "0.0.0.0:8066": false, "[::]:8066": false, "192.168.1.2:8066": false} {
+		buf.Reset()
+		logStartup("http", addr, "0.0.0.0:6343", "/srv/flows")
+		if got := strings.Contains(buf.String(), "reachable from this machine only"); got != want {
+			t.Errorf("%s: loopback hint=%v want %v: %s", addr, got, want, buf.String())
+		}
+	}
+}

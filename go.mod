@@ -1,4 +1,4 @@
-module github.com/githubflyideas/vyos-sflow-new
+module github.com/githubflyideas/vyos-sflow
 
 go 1.25.0
 

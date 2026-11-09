@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
-	"github.com/githubflyideas/vyos-sflow-new/internal/pipeline"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/pipeline"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"

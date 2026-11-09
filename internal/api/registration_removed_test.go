@@ -8,10 +8,10 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/dnsres"
-	"github.com/githubflyideas/vyos-sflow-new/internal/pipeline"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/dnsres"
+	"github.com/githubflyideas/vyos-sflow/internal/pipeline"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 func TestAPIWithoutRegistration(t *testing.T) {

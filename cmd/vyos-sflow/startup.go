@@ -1,6 +1,10 @@
 package main
 
-import "log"
+import (
+	"log"
+	"net"
+	"net/netip"
+)
 
 var version = "1.2.5"
 var commit = "unknown"
@@ -11,4 +15,19 @@ func logStartup(scheme, addr, listen, data string) {
 	if scheme == "http" {
 		log.Print("Security notice: HTTP traffic is unencrypted, including credentials; avoid untrusted networks.")
 	}
+	if loopbackOnly(addr) {
+		log.Print("Web UI is reachable from this machine only. For remote access use -addr PRIVATE_IP:8066 (or VYOS_SFLOW_ADDR), or an SSH tunnel: ssh -N -L 8066:127.0.0.1:8066 SSH_USER@ROUTER_IP")
+	}
+}
+
+func loopbackOnly(addr string) bool {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return false
+	}
+	if host == "localhost" {
+		return true
+	}
+	ip, err := netip.ParseAddr(host)
+	return err == nil && ip.Unmap().IsLoopback()
 }

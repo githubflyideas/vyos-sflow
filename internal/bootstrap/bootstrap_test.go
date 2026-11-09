@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
 	"os"
 	"path/filepath"
 	"testing"

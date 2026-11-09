@@ -4,7 +4,7 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 // Exported TCP records carry the flags of all their packets: both

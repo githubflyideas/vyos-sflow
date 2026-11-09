@@ -15,7 +15,7 @@ func (c *Config) PromptWebAddress(interactive bool, in io.Reader, out io.Writer,
 	if !interactive || c.addrExplicit {
 		return nil
 	}
-	if _, err := fmt.Fprint(out, "Web private local IP (Enter for all interfaces 0.0.0.0): "); err != nil {
+	if _, err := fmt.Fprint(out, "Web address: Enter for this machine only (127.0.0.1), a private local IP for LAN access, or 0.0.0.0 for all interfaces: "); err != nil {
 		return err
 	}
 	line, err := bufio.NewReader(io.LimitReader(in, 1024)).ReadString('\n')
@@ -23,12 +23,19 @@ func (c *Config) PromptWebAddress(interactive bool, in io.Reader, out io.Writer,
 		return fmt.Errorf("read Web address: %w", err)
 	}
 	host := strings.TrimSpace(line)
-	if host == "" {
-		host = "0.0.0.0"
-	} else {
+	switch host {
+	case "":
+		host = "127.0.0.1"
+	case "0.0.0.0", "::":
+		// all interfaces, only when typed explicitly
+	default:
 		addr, err := netip.ParseAddr(host)
-		if err != nil || addr.Zone() != "" || !addr.IsPrivate() {
-			return fmt.Errorf("Web address must be a private local IP, or Enter for all interfaces")
+		if err != nil || addr.Zone() != "" || !(addr.IsPrivate() || addr.Unmap().IsLoopback()) {
+			return fmt.Errorf("Web address must be a private local IP, 0.0.0.0 for all interfaces, or Enter for loopback only")
+		}
+		if addr.Unmap().IsLoopback() {
+			host = addr.Unmap().String()
+			break
 		}
 		found := false
 		for _, a := range local {

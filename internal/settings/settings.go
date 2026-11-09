@@ -13,7 +13,18 @@ import (
 	"strings"
 )
 
+// DefaultData keeps its historical spelling ("vyso") on purpose: existing
+// direct-execution installs store accounts and history there, and renaming
+// it would silently start new users with an empty directory.
 const DefaultData = "./vyso_sflow_data"
+
+// DefaultAddr keeps the Web UI on loopback unless an address is chosen
+// explicitly (flag, environment or the interactive prompt). sFlow keeps
+// DefaultListen on all interfaces so remote exporters keep working.
+const (
+	DefaultAddr   = "127.0.0.1:8066"
+	DefaultListen = "0.0.0.0:6343"
+)
 
 // Config is the Linux service's explicitly configured runtime boundary.
 type Config struct {
@@ -29,11 +40,11 @@ type Config struct {
 // Parse validates environment values first; explicit flags then override them.
 // Passwords are deliberately not flags or fields that a diagnostic can print.
 func Parse(args []string, getenv func(string) string) (Config, error) {
-	c := Config{Addr: "0.0.0.0:8066", Listen: "0.0.0.0:6343", Data: DefaultData, User: "admin", RetentionDays: 2, DBThreads: 1, MemoryFraction: 0.05}
+	c := Config{Addr: DefaultAddr, Listen: DefaultListen, Data: DefaultData, User: "admin", RetentionDays: 2, DBThreads: 1, MemoryFraction: 0.05}
 	fs := flag.NewFlagSet("vyos-sflow serve", flag.ContinueOnError)
 
 	fs.BoolVar(&c.Accept48hRetention, "accept-48h-retention", false, "explicitly accept migration of existing history to rolling 48-hour retention")
-	fs.StringVar(&c.Addr, "addr", c.Addr, "web/API address (all interfaces by default; private interface recommended)")
+	fs.StringVar(&c.Addr, "addr", c.Addr, "web/API address (loopback 127.0.0.1 by default; use a private interface IP or 0.0.0.0 for remote access)")
 	fs.StringVar(&c.Listen, "listen", c.Listen, "one sFlow-only UDP address (all interfaces by default; private interface recommended)")
 	fs.StringVar(&c.Data, "data", c.Data, "persistent data directory")
 	fs.StringVar(&c.User, "user", c.User, "initial administrator")

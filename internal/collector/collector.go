@@ -14,8 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/decode/sflow"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/decode/sflow"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 // Sink receives decoded data.

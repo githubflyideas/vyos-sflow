@@ -15,15 +15,22 @@ async function main() {
     const service = new h.Service(binary, args, env, log, {cwd:tmp}), options = {alive: () => service.alive()};
     try {
       // Do not supply bind addresses, TLS or an HTTP opt-in: exercise actual defaults.
-      service.start(); await h.waitHealth('http://127.0.0.2:8066', options);
+      // Web defaults to loopback only; sFlow stays on all interfaces for remote exporters.
+      service.start(); await h.waitHealth('http://127.0.0.1:8066', options);
       assert.ok(fs.statSync(path.join(tmp,'vyso_sflow_data')).isDirectory(), 'Default data directory is not relative to launch cwd');
-      assert.ok(h.wildcard('tcp', 8066), 'HTTP is not wildcard bound');
+      assert.ok(!h.wildcard('tcp', 8066), 'HTTP is wildcard bound by default');
       assert.ok(h.wildcard('udp', 6343), 'sFlow is not wildcard bound');
       await h.send([h.sflow(1)], 6343, '127.0.0.2');
-      await h.waitFor(async () => ((await h.request('http://127.0.0.2:8066/api/sources', {auth: h.basic(password)})).sources || []).some(s => s.records > 0), 'sFlow not received on alternate address', options);
+      await h.waitFor(async () => ((await h.request('http://127.0.0.1:8066/api/sources', {auth: h.basic(password)})).sources || []).some(s => s.records > 0), 'sFlow not received on alternate address', options);
       await service.stop();
       const output = fs.readFileSync(log, 'utf8');
       assert.ok(output.includes('private/internal interface') && output.includes('unencrypted'), 'Missing HTTP safety notice');
+      assert.ok(output.includes('reachable from this machine only'), 'Missing loopback-only remote access hint');
+      // An explicit all-interfaces choice is still honoured.
+      service.args = [...args, '-addr', '0.0.0.0:8066']; service.start();
+      await h.waitHealth('http://127.0.0.2:8066', options);
+      assert.ok(h.wildcard('tcp', 8066), 'explicit -addr 0.0.0.0 is not wildcard bound');
+      await service.stop();
       const cert = path.join(tmp, 'cert.pem'), key = path.join(tmp, 'key.pem');
       h.run('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', key, '-out', cert, '-days', '1', '-subj', '/CN=localhost', '-addext', 'subjectAltName=IP:127.0.0.1']);
       const ca = fs.readFileSync(cert);
@@ -36,7 +43,7 @@ async function main() {
       await service.stop();
     } finally { await service.cleanup(); }
   });
-  console.log('PASS wildcard HTTP/UDP, alternate-address sFlow, safety notice and verified optional TLS');
+  console.log('PASS loopback HTTP default, explicit wildcard HTTP, wildcard sFlow, alternate-address sFlow, safety notice and verified optional TLS');
 }
 if (require.main === module) h.cli(main);
 module.exports = {main, wildcard: h.wildcard};

@@ -2,7 +2,7 @@ package collector
 
 import (
 	"encoding/binary"
-	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
+	"github.com/githubflyideas/vyos-sflow/internal/encode"
 	"net/netip"
 	"testing"
 	"time"

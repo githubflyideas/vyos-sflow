@@ -2,12 +2,12 @@ package settings
 
 import "testing"
 
-func TestAllInterfaceDefaults(t *testing.T) {
+func TestListenerDefaults(t *testing.T) {
 	c, err := Parse(nil, func(string) string { return "" })
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.Addr != "0.0.0.0:8066" || c.Listen != "0.0.0.0:6343" || c.DBThreads != 1 || c.RetentionDays != 2 || c.User != "admin" || c.TLSCert != "" || c.TLSKey != "" || c.AllowRemoteHTTP {
+	if c.Addr != "127.0.0.1:8066" || c.Listen != "0.0.0.0:6343" || c.DBThreads != 1 || c.RetentionDays != 2 || c.User != "admin" || c.TLSCert != "" || c.TLSKey != "" || c.AllowRemoteHTTP {
 		t.Fatalf("unexpected defaults: %+v", c)
 	}
 }

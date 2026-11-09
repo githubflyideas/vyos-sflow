@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Security: `./vyos-sflow serve` keeps the Web UI on `127.0.0.1:8066` unless an address is chosen. At the interactive prompt, Enter now means loopback only; type a private local IP for LAN access or `0.0.0.0`/`::` for all interfaces. Noninteractive starts without `-addr` or `VYOS_SFLOW_ADDR` also use `127.0.0.1`. **Compatibility:** wrappers that relied on the old all-interfaces default must pass `-addr 0.0.0.0:8066` (or a private IP) or set `VYOS_SFLOW_ADDR`. Installed services keep the address in their `service.env`. The sFlow listener default `0.0.0.0:6343` is unchanged, so remote exporters keep working.
+- The startup log explains how to reach a loopback-only Web UI (choose `-addr` or use an SSH tunnel).
+- Security: every Web response carries a Content-Security-Policy (same-origin scripts, no framing), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
+- Release archives store files with owner and group 0 instead of the build user's IDs.
+- The Go module path and the service installation download links use the current repository name `githubflyideas/vyos-sflow`; the help page links to this repository instead of traffic66. The TLS certificate download is named `vyos-sflow.crt`.
+- Documentation: the README states that the repository contains both the Apache-2.0 `LICENSE` and the inherited PolyForm Noncommercial `LICENSE.md` with its Additional Use Grant, and that which terms apply has not yet been clarified by the copyright holder. The license texts are unchanged.
+- Documentation: the development build command embeds the commit so `./vyos-sflow version` matches the source. The legacy names `./vyso_sflow_data` and `traffic66.duckdb` are kept deliberately so existing data is still found.
+
 ## 1.2.5
 
 - The top bar fits narrower windows: account and sign-out are never cut off.

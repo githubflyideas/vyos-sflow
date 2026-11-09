@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 	"testing"
 )
 

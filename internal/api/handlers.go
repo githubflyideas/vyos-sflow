@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 func parseQuery(r *http.Request) (store.Query, error) {
@@ -396,7 +396,7 @@ func (s *Server) certDownload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/x-pem-file")
-	w.Header().Set("Content-Disposition", `attachment; filename="traffic66.crt"`)
+	w.Header().Set("Content-Disposition", `attachment; filename="vyos-sflow.crt"`)
 	w.Write(b)
 }
 

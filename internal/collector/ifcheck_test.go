@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/encode"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 type checkSink struct{}

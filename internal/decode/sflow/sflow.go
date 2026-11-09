@@ -9,9 +9,9 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
-	"github.com/githubflyideas/vyos-sflow-new/internal/packet"
-	"github.com/githubflyideas/vyos-sflow-new/internal/wire"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/packet"
+	"github.com/githubflyideas/vyos-sflow/internal/wire"
 )
 
 // Sample formats (enterprise 0).

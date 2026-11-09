@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/githubflyideas/vyos-sflow-new/docs"
+	"github.com/githubflyideas/vyos-sflow/docs"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"

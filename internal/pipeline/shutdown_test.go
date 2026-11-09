@@ -2,8 +2,8 @@ package pipeline
 
 import (
 	"context"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 	"net/netip"
 	"testing"
 	"time"

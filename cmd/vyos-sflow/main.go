@@ -23,16 +23,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/api"
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
-	"github.com/githubflyideas/vyos-sflow-new/internal/bootstrap"
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/dnsres"
-	"github.com/githubflyideas/vyos-sflow-new/internal/pipeline"
-	"github.com/githubflyideas/vyos-sflow-new/internal/settings"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
-	"github.com/githubflyideas/vyos-sflow-new/internal/tui"
-	"github.com/githubflyideas/vyos-sflow-new/internal/web"
+	"github.com/githubflyideas/vyos-sflow/internal/api"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/bootstrap"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/dnsres"
+	"github.com/githubflyideas/vyos-sflow/internal/pipeline"
+	"github.com/githubflyideas/vyos-sflow/internal/settings"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/tui"
+	"github.com/githubflyideas/vyos-sflow/internal/web"
 )
 
 const usage = `vyos-sflow — Linux sFlow analytics with embedded DuckDB

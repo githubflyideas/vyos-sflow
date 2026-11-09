@@ -3,7 +3,7 @@ package collector
 import (
 	"context"
 	"encoding/hex"
-	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
+	"github.com/githubflyideas/vyos-sflow/internal/encode"
 	"net"
 	"net/netip"
 	"testing"

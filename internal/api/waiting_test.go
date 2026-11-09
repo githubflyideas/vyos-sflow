@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
 )
 
 type srcList []collector.SourceInfo

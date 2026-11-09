@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 func instantRecord(at time.Time) flow.Record {

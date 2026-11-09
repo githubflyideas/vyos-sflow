@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"os"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/settings"
+	"github.com/githubflyideas/vyos-sflow/internal/settings"
 )
 
 func promptWebAddress(cfg *settings.Config, in, out *os.File) error {

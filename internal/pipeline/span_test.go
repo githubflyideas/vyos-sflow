@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 // A small flow spread over hours (a laptop that slept with a connection

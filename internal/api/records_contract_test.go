@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 func TestRecordsEffectiveWindowMetadata(t *testing.T) {

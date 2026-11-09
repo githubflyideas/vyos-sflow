@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
 )
 
 // loginHint tells the sign-in page whether to show the default password:

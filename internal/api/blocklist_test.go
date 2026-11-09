@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 type nullSink struct{}

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
 )
 
 // A new installation signs in with the default password, must change it

@@ -2,7 +2,7 @@ package collector
 
 import (
 	"context"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 	"net"
 	"testing"
 	"time"

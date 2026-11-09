@@ -1,14 +1,16 @@
 # Optional installation and configuration
 
-Start with the README's direct-execution steps. `./vyos-sflow serve` creates `./vyso_sflow_data` in the current directory. Run from the same directory to keep accounts and history. The interactive Web IP prompt accepts a private local address or Enter for all interfaces; it does not change the sFlow listener.
+Start with the README's direct-execution steps. `./vyos-sflow serve` creates `./vyso_sflow_data` in the current directory. Run from the same directory to keep accounts and history. The interactive Web address prompt accepts a private local address, `0.0.0.0` (or `::`) for all interfaces, or Enter for loopback only (`127.0.0.1`); it does not change the sFlow listener. Without a terminal there is no prompt and the Web UI listens on `127.0.0.1:8066`.
+
+**Compatibility:** up to 1.2.5, Enter and noninteractive starts bound the Web UI to all interfaces (`0.0.0.0:8066`). Scripts or wrappers that relied on that must now pass `-addr 0.0.0.0:8066` (or a private IP) or set `VYOS_SFLOW_ADDR`. Installed services are unaffected: their `service.env` sets `VYOS_SFLOW_ADDR` explicitly. The sFlow default `0.0.0.0:6343` is unchanged.
 
 ## Install for automatic startup
 
 Use the optional offline installer on Linux amd64 with systemd, Bash, curl, administrator access and standard file/account utilities:
 
 ```sh
-curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.2.5/vyos-sflow-1.2.5-linux-amd64.run &&
-curl -fLO https://github.com/githubflyideas/vyos-sflow-new/releases/download/v1.2.5/SHA256SUMS &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.5/vyos-sflow-1.2.5-linux-amd64.run &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.5/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
 sudo bash vyos-sflow-1.2.5-linux-amd64.run
 ```
@@ -43,7 +45,7 @@ sudo systemctl restart vyos-sflow.service
 
 ## Private access and TLS
 
-Both listeners use all interfaces by default. Bind to private addresses or restrict access with a firewall. Any reachable sender can submit sFlow; header identity is not authentication.
+The shipped service template binds both listeners to all interfaces; direct execution keeps the Web UI on loopback unless you choose an address. Bind to private addresses or restrict access with a firewall. Any reachable sender can submit sFlow; header identity is not authentication.
 
 For HTTPS, set `VYOS_SFLOW_TLS_CERT` and `VYOS_SFLOW_TLS_KEY` together to valid files readable by the service account. Alternatively, tunnel the Web port from your computer:
 

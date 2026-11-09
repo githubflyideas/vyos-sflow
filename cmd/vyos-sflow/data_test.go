@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/bootstrap"
-	"github.com/githubflyideas/vyos-sflow-new/internal/settings"
+	"github.com/githubflyideas/vyos-sflow/internal/bootstrap"
+	"github.com/githubflyideas/vyos-sflow/internal/settings"
 )
 
 func TestDefaultDirectoryRestartPreservesUserData(t *testing.T) {

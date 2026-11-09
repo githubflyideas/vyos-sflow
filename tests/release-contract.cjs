@@ -21,7 +21,7 @@ const archiveRoot = `vyos-sflow-${release}-linux-amd64`;
 const quickStart = readme.split('### 2. Download and run')[1]?.match(/```sh\r?\n([\s\S]*?)```/)?.[1];
 assert.ok(quickStart, 'beginner download block is missing');
 function verifyDownloads(text, artifact) {
-  const downloads = [...text.matchAll(/https:\/\/github\.com\/githubflyideas\/vyos-sflow(?:-new)?\/releases\/download\/v([^/\s]+)\/([^\s]+)/g)];
+  const downloads = [...text.matchAll(/https:\/\/github\.com\/githubflyideas\/vyos-sflow\/releases\/download\/v([^/\s]+)\/([^\s]+)/g)];
   assert.equal(downloads.length, 2, 'expected explicit artifact and checksum downloads');
   for (const [, tag] of downloads) assert.equal(tag, release, 'download version differs from newest changelog');
   assert.deepEqual(downloads.map(m => m[2]), [artifact, 'SHA256SUMS']);
