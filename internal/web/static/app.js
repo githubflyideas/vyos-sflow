@@ -353,7 +353,7 @@ function firstText() {
 // paragraphs, lists, tables, fenced code, images, links, **bold**, `code`
 // and <a id> anchors. Everything is escaped first and only these tags are
 // made, so nothing in the text can run or load anything else.
-const GH = 'https://github.com/githubflyideas/traffic66/blob/main/';
+const GH = 'https://github.com/githubflyideas/vyos-sflow/blob/main/';
 let helpLang = null;  // a language picked on the page; else the UI language
 const mdSlug = (s, seen) => {
   let b = s.toLowerCase().replace(/<[^>]*>/g, '').replace(/[^\p{L}\p{N}\s_-]/gu, '').trim().replace(/\s/g, '-'), k = b, n = 0;

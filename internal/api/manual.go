@@ -6,7 +6,7 @@ import (
 	"path"
 	"regexp"
 
-	"github.com/githubflyideas/vyos-sflow-new/docs"
+	"github.com/githubflyideas/vyos-sflow/docs"
 )
 
 var manualLang = regexp.MustCompile(`^[a-z]{2}$`)

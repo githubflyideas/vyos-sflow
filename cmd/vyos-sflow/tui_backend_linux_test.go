@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
-	"github.com/githubflyideas/vyos-sflow-new/internal/bootstrap"
-	"github.com/githubflyideas/vyos-sflow-new/internal/settings"
-	"github.com/githubflyideas/vyos-sflow-new/internal/tui"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/bootstrap"
+	"github.com/githubflyideas/vyos-sflow/internal/settings"
+	"github.com/githubflyideas/vyos-sflow/internal/tui"
 )
 
 // This suite requires the real Linux DuckDB build. The portable session tests

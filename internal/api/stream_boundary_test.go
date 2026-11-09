@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
 	"net/http"
 	"net/http/httptest"
 	"net/url"

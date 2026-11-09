@@ -19,7 +19,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/web"
+	"github.com/githubflyideas/vyos-sflow/internal/web"
 )
 
 // Options configure the TUI.

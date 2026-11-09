@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
 )
 
 // TestAdminOnly: a signed-in user who is not the administrator is

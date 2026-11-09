@@ -3,8 +3,8 @@ package api
 import (
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 // A new installation is empty for its first several minutes, and the pages

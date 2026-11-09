@@ -86,9 +86,10 @@ jobs:
       - name: Package tested binary
         run: |
           target=dist/vyos-sflow-1.2.5-linux-amd64
-          cp README.md LICENSE LICENSE.md ADDITIONAL-USE-GRANT.md THIRD_PARTY_NOTICES.md upstream-manifest.json "$target/"
+          cp README.md LICENSE NOTICE TRADEMARKS.md THIRD_PARTY_NOTICES.md upstream-manifest.json "$target/"
           cp -r packaging docs "$target/"
-          tar -C dist -czf dist/vyos-sflow-1.2.5-linux-amd64.tar.gz vyos-sflow-1.2.5-linux-amd64
+          tar -C dist --owner=0 --group=0 --numeric-owner -czf dist/vyos-sflow-1.2.5-linux-amd64.tar.gz vyos-sflow-1.2.5-linux-amd64
+          tar -tvzf dist/vyos-sflow-1.2.5-linux-amd64.tar.gz | awk '$2 != "0/0" {print "unexpected archive owner: " $0; bad=1} END {exit bad}'
           bash scripts/build-self-installer.sh --archive dist/vyos-sflow-1.2.5-linux-amd64.tar.gz --output dist/vyos-sflow-1.2.5-linux-amd64.run
           bash dist/vyos-sflow-1.2.5-linux-amd64.run --check
           cd dist

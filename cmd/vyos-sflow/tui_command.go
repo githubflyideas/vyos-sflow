@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/settings"
-	"github.com/githubflyideas/vyos-sflow-new/internal/tui"
+	"github.com/githubflyideas/vyos-sflow/internal/settings"
+	"github.com/githubflyideas/vyos-sflow/internal/tui"
 )
 
 type commandHooks struct {

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/encode"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 func TestCollectorClearSerializesConcurrentIngest(t *testing.T) {

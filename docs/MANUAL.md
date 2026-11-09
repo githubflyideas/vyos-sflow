@@ -44,4 +44,4 @@ sudo systemctl status vyos-sflow.service
 sudo journalctl -u vyos-sflow.service -n 50 --no-pager
 ```
 
-Web and UDP listeners use all interfaces by default. Restrict management access to a private network; HTTP is unencrypted and TLS is optional. See the installation guide for configuration and the validation document for compatibility limits.
+For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is chosen at the prompt or with `-addr`; the sFlow UDP listener uses all interfaces. The installed service uses the addresses in its `service.env` (all interfaces in the shipped template). Restrict management access to a private network; HTTP is unencrypted and TLS is optional. See the installation guide for configuration and the validation document for compatibility limits.

@@ -7,7 +7,7 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/githubflyideas/vyos-sflow-new/internal/tlscert"
+	"github.com/githubflyideas/vyos-sflow/internal/tlscert"
 	"io/fs"
 	"log"
 	"net"
@@ -17,12 +17,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
-	"github.com/githubflyideas/vyos-sflow-new/internal/collector"
-	"github.com/githubflyideas/vyos-sflow-new/internal/dnsres"
-	"github.com/githubflyideas/vyos-sflow-new/internal/pipeline"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/collector"
+	"github.com/githubflyideas/vyos-sflow/internal/dnsres"
+	"github.com/githubflyideas/vyos-sflow/internal/pipeline"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 // Server wires the API together.
@@ -146,7 +146,7 @@ func (s *Server) Handler() http.Handler {
 		w.Header().Set("Cache-Control", "no-cache")
 		static.ServeHTTP(w, r)
 	})
-	return mux
+	return securityHeaders(mux)
 }
 
 // failLimiter locks out a client address after repeated failed logins.

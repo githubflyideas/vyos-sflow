@@ -148,6 +148,9 @@ func Open(opt Options) (*Store, error) {
 	if opt.Now == nil {
 		opt.Now = time.Now
 	}
+	// The database keeps its upstream file name on purpose: existing data
+	// directories hold history in traffic66.duckdb, and renaming it would
+	// make an upgraded binary start with an empty database.
 	_, statErr := os.Stat(filepath.Join(opt.Dir, "traffic66.duckdb"))
 	existed := statErr == nil
 	if statErr != nil && !os.IsNotExist(statErr) {
@@ -190,7 +193,7 @@ func Open(opt Options) (*Store, error) {
 	c, err := duckdb.NewConnector(dsn, init)
 	if err != nil {
 		if strings.Contains(err.Error(), "lock") {
-			return nil, fmt.Errorf("the data directory %s is in use by another traffic66 (%w)", opt.Dir, err)
+			return nil, fmt.Errorf("the data directory %s is in use by another vyos-sflow process (%w)", opt.Dir, err)
 		}
 		return nil, fmt.Errorf("cannot open the database in %s: %w", opt.Dir, err)
 	}

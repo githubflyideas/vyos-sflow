@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/auth"
 )
 
 // newInstallation is a fresh installation: one admin, still on the

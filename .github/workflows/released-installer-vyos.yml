@@ -29,8 +29,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download v1.2.5 --repo githubflyideas/vyos-sflow-new --dir dist --pattern '*.run' --pattern SHA256SUMS
-          digest=$(gh api repos/githubflyideas/vyos-sflow-new/releases/tags/v1.2.5 --jq '.assets[] | select(.name == "vyos-sflow-1.2.5-linux-amd64.run") | .digest')
+          gh release download v1.2.5 --repo githubflyideas/vyos-sflow --dir dist --pattern '*.run' --pattern SHA256SUMS
+          digest=$(gh api repos/githubflyideas/vyos-sflow/releases/tags/v1.2.5 --jq '.assets[] | select(.name == "vyos-sflow-1.2.5-linux-amd64.run") | .digest')
           [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
           cd dist
           sha256sum --ignore-missing -c SHA256SUMS

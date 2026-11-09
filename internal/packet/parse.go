@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"net/netip"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 const (

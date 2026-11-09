@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 // The demo's attack, a few hours before "now", as the sampled switch and the

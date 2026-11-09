@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/githubflyideas/vyos-sflow-new/internal/settings"
+	"github.com/githubflyideas/vyos-sflow/internal/settings"
 	"os"
 	"path/filepath"
 	"testing"
@@ -40,7 +40,7 @@ func TestHeadlessStartupNeverReadsInput(t *testing.T) {
 	if err != nil || st.Size() != 0 {
 		t.Fatalf("headless startup printed a prompt: %v", err)
 	}
-	if cfg.Addr != "0.0.0.0:8066" || cfg.Listen != "0.0.0.0:6343" {
+	if cfg.Addr != "127.0.0.1:8066" || cfg.Listen != "0.0.0.0:6343" {
 		t.Fatalf("defaults changed: %+v", cfg)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 )
 
 func (p *Pipeline) ingestQueued(q queuedRecords) {

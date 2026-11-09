@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
+	"github.com/githubflyideas/vyos-sflow/internal/encode"
 )
 
 func TestRoundTrip(t *testing.T) {

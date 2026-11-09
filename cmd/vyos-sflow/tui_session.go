@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/tui"
+	"github.com/githubflyideas/vyos-sflow/internal/tui"
 )
 
 // backend returns only after its producers, pipeline and storage have stopped.

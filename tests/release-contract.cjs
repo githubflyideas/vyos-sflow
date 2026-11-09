@@ -21,7 +21,7 @@ const archiveRoot = `vyos-sflow-${release}-linux-amd64`;
 const quickStart = readme.split('### 2. Download and run')[1]?.match(/```sh\r?\n([\s\S]*?)```/)?.[1];
 assert.ok(quickStart, 'beginner download block is missing');
 function verifyDownloads(text, artifact) {
-  const downloads = [...text.matchAll(/https:\/\/github\.com\/githubflyideas\/vyos-sflow(?:-new)?\/releases\/download\/v([^/\s]+)\/([^\s]+)/g)];
+  const downloads = [...text.matchAll(/https:\/\/github\.com\/githubflyideas\/vyos-sflow\/releases\/download\/v([^/\s]+)\/([^\s]+)/g)];
   assert.equal(downloads.length, 2, 'expected explicit artifact and checksum downloads');
   for (const [, tag] of downloads) assert.equal(tag, release, 'download version differs from newest changelog');
   assert.deepEqual(downloads.map(m => m[2]), [artifact, 'SHA256SUMS']);
@@ -55,4 +55,19 @@ for (const f of ['README.md', ...fs.readdirSync(path.join(root, 'docs')).filter(
   }
 }
 assert.ok(fs.existsSync(path.join(root, 'docs/images/vyos-sflow-logo.png')));
-console.log('PASS release source layout, runnable quick start, logo and documentation links');
+// Licensing: Apache-2.0 only, with NOTICE and trademark reservation shipped in the release archive.
+const license = fs.readFileSync(path.join(root, 'LICENSE'), 'utf8');
+assert.match(license, /^\s*Apache License\s+Version 2\.0, January 2004/, 'LICENSE is not the Apache-2.0 text');
+assert.ok(license.includes('END OF TERMS AND CONDITIONS'), 'LICENSE text is incomplete');
+for (const f of ['LICENSE.md', 'ADDITIONAL-USE-GRANT.md', 'ADDITIONAL_TERMS.md']) assert.ok(!files.includes(f), `conflicting license file ${f} is tracked`);
+for (const f of ['NOTICE', 'TRADEMARKS.md', 'THIRD_PARTY_NOTICES.md']) assert.ok(files.includes(f), `${f} is missing`);
+for (const f of files.filter(f => f !== 'CHANGELOG.md' && f !== 'tests/release-contract.cjs' && fs.statSync(path.join(root, f)).isFile() && /\.(md|go|js|cjs|sh|yml|html|json)$|^NOTICE$/.test(f))) {
+  assert.doesNotMatch(fs.readFileSync(path.join(root, f), 'utf8'), /PolyForm|Additional Use Grant|Registration License/i, `non-Apache license terms referenced in ${f}`);
+}
+assert.match(readme, /Apache License 2\.0\]\(LICENSE\)/);
+assert.match(readme, /TRADEMARKS\.md/);
+const packageStep = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8').match(/^\s*cp README\.md (.*) "\$target\/"$/m)?.[1].split(/\s+/);
+assert.ok(packageStep, 'release packaging copy step is missing');
+for (const f of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', 'THIRD_PARTY_NOTICES.md']) assert.ok(packageStep.includes(f), `${f} is not packaged`);
+for (const f of ['LICENSE.md', 'ADDITIONAL-USE-GRANT.md']) assert.ok(!packageStep.includes(f), `${f} is still packaged`);
+console.log('PASS release source layout, runnable quick start, logo, documentation links and Apache-2.0 license/package consistency');

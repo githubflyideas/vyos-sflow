@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/tui"
+	"github.com/githubflyideas/vyos-sflow/internal/tui"
 )
 
 func TestTUICommandAbsentServiceStartsOwnedSession(t *testing.T) {

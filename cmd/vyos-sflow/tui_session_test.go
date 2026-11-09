@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/tui"
+	"github.com/githubflyideas/vyos-sflow/internal/tui"
 )
 
 func TestOwnedSessionViewExitPathsReleaseSocketsAndData(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/decode/sflow"
+	"github.com/githubflyideas/vyos-sflow/internal/decode/sflow"
 )
 
 // feed drives one source through n samples at the given configured rate,

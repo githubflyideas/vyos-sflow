@@ -1,0 +1,10 @@
+vyos-sflow
+Copyright 2026 flyideas
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product is derived from Traffic66
+(https://github.com/githubflyideas/traffic66), Copyright 2026 flyideas.
+
+No trademark rights are granted by the Apache License; see TRADEMARKS.md.
+Third-party components and their licenses are listed in THIRD_PARTY_NOTICES.md.

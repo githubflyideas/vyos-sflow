@@ -2,7 +2,7 @@ package api
 
 import (
 	"errors"
-	"github.com/githubflyideas/vyos-sflow-new/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/store"
 	"net/http"
 	"time"
 )

@@ -4,8 +4,8 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/githubflyideas/vyos-sflow-new/internal/encode"
-	"github.com/githubflyideas/vyos-sflow-new/internal/flow"
+	"github.com/githubflyideas/vyos-sflow/internal/encode"
+	"github.com/githubflyideas/vyos-sflow/internal/flow"
 )
 
 func TestEthernetVLANTCP(t *testing.T) {

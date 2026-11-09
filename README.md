@@ -47,16 +47,16 @@ cd vyos-sflow-1.2.5-linux-amd64 &&
 ./vyos-sflow serve
 ```
 
-Press **Enter** at the Web IP prompt to use all interfaces, or enter a private IP of this machine.
+At the Web address prompt, type this router's private LAN IP (for example `192.168.1.1`) to open the dashboard from your network. Press **Enter** to keep it on this machine only (`127.0.0.1`); type `0.0.0.0` only if you really want every interface. Without a terminal (scripts, pipes) there is no prompt and the Web UI stays on `127.0.0.1`.
 
 ### 3. Open the dashboard
 
-Open **`http://ROUTER_IP:8066`** in your browser. Sign in with **`admin` / `tryvyossflow66`**, change the password, then open **Overview** or **Top**. Charts fill as sampled traffic arrives; **Sources** helps diagnose an empty chart.
+Open **`http://ROUTER_IP:8066`** in your browser, using the IP you typed. If you kept `127.0.0.1`, first open an SSH tunnel on your computer with `ssh -N -L 8066:127.0.0.1:8066 SSH_USER@ROUTER_IP`, then open `http://127.0.0.1:8066`. Sign in with **`admin` / `tryvyossflow66`**, change the password, then open **Overview** or **Top**. Charts fill as sampled traffic arrives; **Sources** helps diagnose an empty chart.
 
-**Stop and restart:** keep this terminal or SSH session open while running. Press `Ctrl+C` to stop; run `./vyos-sflow serve` from the same directory to continue. Accounts and history are stored in `./vyso_sflow_data` — keep this folder.
+**Stop and restart:** keep this terminal or SSH session open while running. Press `Ctrl+C` to stop; run `./vyos-sflow serve` from the same directory to continue. Accounts and history are stored in `./vyso_sflow_data` — keep this folder. (The spelling `vyso` is historical and kept on purpose so existing data is found after an upgrade.)
 
 > [!WARNING]
-> Web TCP `8066` and sFlow UDP `6343` listen on all interfaces by default. Bind the Web UI to a private interface and restrict access with your firewall. HTTP is unencrypted; [TLS is optional](docs/VYOS.md).
+> The Web UI (TCP `8066`) listens on `127.0.0.1` unless you choose an address at the prompt or with `-addr`/`VYOS_SFLOW_ADDR`. sFlow UDP `6343` listens on all interfaces so exporters on other hosts can reach it; when the exporter is this router, use `-listen 127.0.0.1:6343`, otherwise restrict UDP with your firewall. Change the default password before exposing the Web UI anywhere. HTTP is unencrypted; [TLS is optional](docs/VYOS.md). Release 1.2.5, which the commands above download, still binds the Web UI to all interfaces when you press Enter or start without a terminal; the loopback default applies to builds from current source and later releases (see the [changelog](CHANGELOG.md)). With 1.2.5, type the private IP at the prompt or pass `-addr`.
 
 ## Temporary terminal view (TUI)
 
@@ -123,8 +123,10 @@ Want automatic startup? [Install as a service](docs/VYOS.md). Otherwise, keep ru
 
 [Configuration](docs/VYOS.md) · [User manual](docs/MANUAL.md) · [Compatibility and validation](docs/VALIDATION.md)
 
-## License and DuckDB trademark
+## License and trademarks
 
-**Apache License 2.0** — see [LICENSE](LICENSE). Third-party licenses and notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+vyos-sflow is licensed under the **[Apache License 2.0](LICENSE)**. Keep the [NOTICE](NOTICE) file with redistributions. vyos-sflow is derived from [Traffic66](https://github.com/githubflyideas/traffic66) by the same copyright holder; the license files inherited from Traffic66 in earlier commits have been replaced by Apache-2.0. [upstream-manifest.json](upstream-manifest.json) is a historical provenance record of the upstream files at the time of derivation, including those former license files; its hashes are intentionally left unchanged.
+
+The license does not grant trademark rights. The names "vyos-sflow" and "Traffic66" and the project logo are reserved; see [TRADEMARKS.md](TRADEMARKS.md). Third-party licenses and notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 **DuckDB is a trademark of the DuckDB Foundation.** This project uses DuckDB as its embedded database. It is not an official DuckDB product and is not affiliated with, sponsored by or endorsed by the DuckDB Foundation. DuckDB is distributed under the MIT license; software licenses do not grant rights to DuckDB trademarks or logos.

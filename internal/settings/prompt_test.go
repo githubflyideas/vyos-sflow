@@ -24,8 +24,12 @@ func TestOptionalWebPrompt(t *testing.T) {
 		input, want string
 		bad         bool
 	}{
-		{name: "headless", want: "0.0.0.0:8066"},
-		{name: "blank", tty: true, input: "\n", want: "0.0.0.0:8066"},
+		{name: "headless", want: "127.0.0.1:8066"},
+		{name: "blank", tty: true, input: "\n", want: "127.0.0.1:8066"},
+		{name: "explicit all interfaces", tty: true, input: "0.0.0.0\n", want: "0.0.0.0:8066"},
+		{name: "explicit all interfaces v6", tty: true, input: "::\n", want: "[::]:8066"},
+		{name: "loopback", tty: true, input: "127.0.0.1\n", want: "127.0.0.1:8066"},
+		{name: "loopback v6", tty: true, input: "::1\n", want: "[::1]:8066"},
 		{name: "private local", tty: true, input: "192.168.1.2\n", want: "192.168.1.2:8066"},
 		{name: "private v6", tty: true, input: "fd00::1\n", want: "[fd00::1]:8066"},
 		{name: "not local", tty: true, input: "192.168.1.3\n", bad: true},
@@ -33,6 +37,9 @@ func TestOptionalWebPrompt(t *testing.T) {
 		{name: "EOF", tty: true, bad: true},
 		{name: "flag", tty: true, args: []string{"-addr", "127.0.0.1:9999"}, want: "127.0.0.1:9999"},
 		{name: "environment", tty: true, env: "127.0.0.1:9998", want: "127.0.0.1:9998"},
+		{name: "explicit wildcard flag", tty: true, args: []string{"-addr", "0.0.0.0:8066"}, want: "0.0.0.0:8066"},
+		{name: "explicit wildcard environment", env: "0.0.0.0:8066", want: "0.0.0.0:8066"},
+		{name: "garbage", tty: true, input: "router\n", bad: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, err := Parse(tc.args, func(k string) string {
