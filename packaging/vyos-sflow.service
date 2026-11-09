@@ -1,5 +1,5 @@
 [Unit]
-Description=vyos-sflow collector and analysis (1.2.5)
+Description=vyos-sflow collector and analysis (1.2.6)
 Requires=vyos-sflow-ready.service
 After=network.target vyos-sflow-ready.service
 RequiresMountsFor=/config/vyos-sflow/data

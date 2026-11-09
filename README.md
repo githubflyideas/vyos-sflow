@@ -39,11 +39,11 @@ exit
 In a writable directory on the router:
 
 ```sh
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.5/vyos-sflow-1.2.5-linux-amd64.tar.gz &&
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.5/SHA256SUMS &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.6/vyos-sflow-1.2.6-linux-amd64.tar.gz &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.6/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
-tar -xzf vyos-sflow-1.2.5-linux-amd64.tar.gz &&
-cd vyos-sflow-1.2.5-linux-amd64 &&
+tar -xzf vyos-sflow-1.2.6-linux-amd64.tar.gz &&
+cd vyos-sflow-1.2.6-linux-amd64 &&
 ./vyos-sflow serve
 ```
 
@@ -56,7 +56,7 @@ Open **`http://ROUTER_IP:8066`** in your browser, using the IP you typed. If you
 **Stop and restart:** keep this terminal or SSH session open while running. Press `Ctrl+C` to stop; run `./vyos-sflow serve` from the same directory to continue. Accounts and history are stored in `./vyso_sflow_data` — keep this folder. (The spelling `vyso` is historical and kept on purpose so existing data is found after an upgrade.)
 
 > [!WARNING]
-> The Web UI (TCP `8066`) listens on `127.0.0.1` unless you choose an address at the prompt or with `-addr`/`VYOS_SFLOW_ADDR`. sFlow UDP `6343` listens on all interfaces so exporters on other hosts can reach it; when the exporter is this router, use `-listen 127.0.0.1:6343`, otherwise restrict UDP with your firewall. Change the default password before exposing the Web UI anywhere. HTTP is unencrypted; [TLS is optional](docs/VYOS.md). Release 1.2.5, which the commands above download, still binds the Web UI to all interfaces when you press Enter or start without a terminal; the loopback default applies to builds from current source and later releases (see the [changelog](CHANGELOG.md)). With 1.2.5, type the private IP at the prompt or pass `-addr`.
+> The Web UI (TCP `8066`) listens on `127.0.0.1` unless you choose an address at the prompt or with `-addr`/`VYOS_SFLOW_ADDR`. sFlow UDP `6343` listens on all interfaces so exporters on other hosts can reach it; when the exporter is this router, use `-listen 127.0.0.1:6343`, otherwise restrict UDP with your firewall. Change the default password before exposing the Web UI anywhere. HTTP is unencrypted; [TLS is optional](docs/VYOS.md). Releases up to 1.2.5 bound the Web UI to all interfaces by default; see the [changelog](CHANGELOG.md).
 
 ## Temporary terminal view (TUI)
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.6
 
 - Security: `./vyos-sflow serve` keeps the Web UI on `127.0.0.1:8066` unless an address is chosen. At the interactive prompt, Enter now means loopback only; type a private local IP for LAN access or `0.0.0.0`/`::` for all interfaces. Noninteractive starts without `-addr` or `VYOS_SFLOW_ADDR` also use `127.0.0.1`. **Compatibility:** wrappers that relied on the old all-interfaces default must pass `-addr 0.0.0.0:8066` (or a private IP) or set `VYOS_SFLOW_ADDR`. Installed services keep the address in their `service.env`. The sFlow listener default `0.0.0.0:6343` is unchanged, so remote exporters keep working.
 - The startup log explains how to reach a loopback-only Web UI (choose `-addr` or use an SSH tunnel).
