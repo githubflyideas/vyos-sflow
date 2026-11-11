@@ -5,7 +5,7 @@ umask 077
 fail() { printf 'vyos-sflow: %s\n' "$*" >&2; exit 1; }
 mode=install
 case ${1-} in
-    --help) printf 'Usage: sudo bash FILE.run\n       bash FILE.run --check\nOffline Linux x86_64 installation. --check verifies and extracts privately, without installing.\n'; exit 0 ;;
+    --help) printf 'Usage: sudo bash FILE.run\n       bash FILE.run --check\nOffline Linux x86_64 or arm64 (aarch64) installation. --check verifies and extracts privately, without installing.\n'; exit 0 ;;
     --check) mode=check; shift ;;
     '') ;;
     *) fail 'Unknown option; use --help' ;;

@@ -6,7 +6,7 @@ Start with the README's direct-execution steps. `./vyos-sflow serve` creates `./
 
 ## Install for automatic startup
 
-Use the optional offline installer on Linux amd64 with systemd, Bash, curl, administrator access and standard file/account utilities:
+Use the optional offline installer on Linux amd64 or arm64 with systemd, Bash, curl, administrator access and standard file/account utilities:
 
 ```sh
 curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.9/vyos-sflow-1.2.9-linux-amd64.run &&
@@ -14,6 +14,8 @@ curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.9/
 sha256sum --ignore-missing -c SHA256SUMS &&
 sudo bash vyos-sflow-1.2.9-linux-amd64.run
 ```
+
+On ARM (`uname -m` prints `aarch64`), use the `linux-arm64.run` file instead; the installer refuses a package built for the other CPU.
 
 Confirm with `y`. The installer enables the service and checks readiness. It does not configure native sampling or firewall rules. On a separate Linux host, configure the router to send sFlow to that host's address, UDP `6343`.
 

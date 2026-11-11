@@ -39,7 +39,7 @@ assert.ok(installBlock.includes(`sudo bash ${archiveRoot}.run`), 'installer invo
 const startup = fs.readFileSync(path.join(root, 'cmd/vyos-sflow/startup.go'), 'utf8');
 assert.equal(startup.match(/var version = "([^"]+)"/)?.[1], release, 'default binary version differs from changelog');
 const builder = fs.readFileSync(path.join(root, 'scripts/build-self-installer.sh'), 'utf8');
-assert.ok(builder.includes(`ROOT=${archiveRoot}`), 'self-installer payload root differs from release');
+assert.ok(builder.includes(`ROOT=vyos-sflow-${release}-linux-$arch`), 'self-installer payload root differs from release');
 for (const file of ['packaging/setup.sh', 'packaging/install.sh', 'packaging/vyos-sflow.service', '.github/workflows/ci.yml', '.github/workflows/released-installer-vyos.yml', '.github/workflows/readme-screenshots.yml']) {
   const text = fs.readFileSync(path.join(root, file), 'utf8');
   assert.ok(text.includes(release), `active release version missing from ${file}`);

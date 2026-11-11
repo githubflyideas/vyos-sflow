@@ -2,7 +2,7 @@
 
 ## Supported environment
 
-- Linux amd64 (x86_64).
+- Linux amd64 (x86_64) and arm64 (aarch64).
 - Direct executable use requires a writable data directory; systemd is optional.
 - Managed installation requires Bash, systemd, administrator access and standard Linux file/account utilities.
 - sFlow v5 input, with embedded DuckDB/Parquet storage and rolling 48-hour history.
@@ -16,7 +16,7 @@ The native guest test checks installation, genuine hsflowd samples and history p
 ## Operational limits
 
 - Recovery after VyOS image upgrades is not supported. Back up before OS changes.
-- Hardware forwarding throughput, VPP and ARM64 have not been validated.
+- Hardware forwarding throughput and VPP have not been validated. arm64 builds pass the same automated checks on ARM Linux hosts; the native VyOS guest test runs on amd64 only.
 - UDP can lose packets. Traffic totals are sample-derived estimates, not exact interface counters.
 - Memory limits are safeguards, not measured throughput guarantees. Leave resources for routing and monitor disk use.
 - Maintain independent backups; full recovery from every disk-full/storage-failure scenario is not guaranteed.

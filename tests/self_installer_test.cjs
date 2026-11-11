@@ -43,11 +43,11 @@ for(const [label,extra] of [
 test('builder requires every lifecycle file',t=>{const f=fixture(t);for(const name of ['vyos-sflow','packaging/install.sh','packaging/common.sh','packaging/uninstall.sh','packaging/service.env.example','packaging/vyos-sflow.service','packaging/setup.sh','packaging/vyos-sflow-ready.service']){f.write(f.files.filter(x=>x.name!==ROOT+'/'+name));const r=f.build();assert.notEqual(r.status,0);assert.match(r.stderr,/Incomplete release archive/);assert(!fs.existsSync(f.output));}});
 test('corrupt payload fails without side effects',t=>{const f=fixture(t);assert.equal(f.build().status,0);const b=fs.readFileSync(f.output);b[b.length-12]^=1;fs.writeFileSync(f.output,b);const r=f.run(['--check']);assert.notEqual(r.status,0);assert.match(r.stderr,/checksum mismatch/);});
 test('invalid gzip and same input/output fail closed',t=>{const f=fixture(t);fs.writeFileSync(f.archive,'not gzip');assert.notEqual(f.build().status,0);assert(!fs.existsSync(f.output));const r=shell([pos(path.join(REPO,'scripts/build-self-installer.sh')),'--archive',pos(f.archive),'--output',pos(f.archive)]);assert.notEqual(r.status,0);assert.equal(fs.readFileSync(f.archive,'utf8'),'not gzip');});
-test('live installer rejects non-Linux',t=>{const f=fixture(t);assert.equal(f.build().status,0);fs.writeFileSync(path.join(f.commands,'uname'),'#!/bin/bash\necho Darwin\n',{mode:0o755});const r=f.run([],'yes\n');assert.notEqual(r.status,0);assert.match(r.stderr,/Linux x86_64/);});
+test('live installer rejects non-Linux',t=>{const f=fixture(t);assert.equal(f.build().status,0);fs.writeFileSync(path.join(f.commands,'uname'),'#!/bin/bash\necho Darwin\n',{mode:0o755});const r=f.run([],'yes\n');assert.notEqual(r.status,0);assert.match(r.stderr,/x86_64 or arm64/);});
 
 test('real non-Linux host is rejected',t=>{
  if(shell(['-c','uname -s']).stdout.trim()==='Linux'){t.skip('real host is Linux; synthetic case runs separately');return;}
- const f=fixture(t);assert.equal(f.build().status,0);const r=f.run([],'yes\n');assert.notEqual(r.status,0);assert.match(r.stderr,/Linux x86_64/);
+ const f=fixture(t);assert.equal(f.build().status,0);const r=f.run([],'yes\n');assert.notEqual(r.status,0);assert.match(r.stderr,/x86_64 or arm64/);
 });
 for(const [label,mutate] of [
  ['bad header checksum',b=>{b[0]^=1;return b;}],

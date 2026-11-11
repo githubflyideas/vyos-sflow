@@ -16,7 +16,13 @@ printf 'Continue? [y/N] '
 read -r answer || fail 'Confirmation required; nothing installed'
 answer=${answer%$'\r'}
 case $answer in y|Y|yes|YES) ;; *) printf 'Cancelled; nothing installed.\n'; exit 0 ;; esac
-[[ $(uname -s) == Linux && $(uname -m) == x86_64 ]] || fail 'Installation requires Linux x86_64; --check is safe on other platforms'
+case $(uname -m) in x86_64|amd64) machine=amd64 ;; aarch64|arm64) machine=arm64 ;; *) machine= ;; esac
+[[ $(uname -s) == Linux && -n $machine ]] || fail 'Installation requires Linux on x86_64 or arm64 (aarch64); --check is safe on other platforms'
+# The package directory is named after the CPU it was built for.
+package_dir=$(basename -- "$(dirname -- "$here")")
+case $package_dir in
+    *-linux-amd64|*-linux-arm64) [[ ${package_dir##*-linux-} == "$machine" ]] || fail "This package is for ${package_dir##*-linux-}, but this machine is $machine; download the linux-$machine package" ;;
+esac
 [[ $(id -u) == 0 ]] || fail 'Run with sudo bash FILE.run (root required)'
 [[ -d /run/systemd/system ]] || fail 'A running systemd host is required'
 for cmd in systemctl curl cmp cat grep getent groupadd useradd id cut chown chmod install mv mktemp mkdir rm dirname sleep; do

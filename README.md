@@ -15,7 +15,7 @@ Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and
 | TUI | One command for a temporary view over SSH |
 | History | The latest 48 hours, stored with DuckDB™ |
 | UI text | 15 interface languages |
-| Build | Linux amd64, including VyOS |
+| Build | Linux amd64 and arm64 (aarch64), including VyOS |
 
 ## Get started in 3 steps
 
@@ -47,6 +47,8 @@ tar -xzf vyos-sflow-1.2.9-linux-amd64.tar.gz &&
 cd vyos-sflow-1.2.9-linux-amd64 &&
 ./vyos-sflow serve
 ```
+
+On an ARM router (`uname -m` prints `aarch64`), use `arm64` instead of `amd64` in the file names above.
 
 At the Web address prompt, type this router's private LAN IP (for example `192.168.1.1`) to open the dashboard from your network. Press **Enter** to keep it on this machine only (`127.0.0.1`); type `0.0.0.0` only if you really want every interface. Without a terminal (scripts, pipes) there is no prompt and the Web UI stays on `127.0.0.1`.
 

@@ -2,15 +2,18 @@
 # Wrap a trusted CI archive without repacking. Digest proves integrity, not origin.
 set -euo pipefail
 umask 077
-ROOT=vyos-sflow-1.2.9-linux-amd64
+arch=amd64
 fail() { printf '%s\n' "$*" >&2; exit 1; }
 archive= output=
 while (($#)); do
     case $1 in
-        --archive|--output) (($# >= 2)) || fail 'Missing option value'; key=$1; value=$2; shift 2; if [[ $key == --archive ]]; then archive=$value; else output=$value; fi ;;
-        *) fail 'Usage: build-self-installer.sh --archive FILE.tar.gz --output FILE.run' ;;
+        --archive|--output|--arch) (($# >= 2)) || fail 'Missing option value'; key=$1; value=$2; shift 2
+            case $key in --archive) archive=$value ;; --output) output=$value ;; --arch) arch=$value ;; esac ;;
+        *) fail 'Usage: build-self-installer.sh [--arch amd64|arm64] --archive FILE.tar.gz --output FILE.run' ;;
     esac
 done
+[[ $arch == amd64 || $arch == arm64 ]] || fail 'Unsupported --arch; use amd64 or arm64'
+ROOT=vyos-sflow-1.2.9-linux-$arch
 [[ -n $archive && -n $output && -f $archive ]] || fail 'Archive and output are required'
 for cmd in realpath mktemp cp gzip od awk sha256sum sed wc cat chmod mkdir mv rm; do command -v "$cmd" >/dev/null || fail "Required command missing: $cmd"; done
 [[ $(realpath -m -- "$archive") != "$(realpath -m -- "$output")" && ! $archive -ef $output ]] || fail 'output must differ from archive'
