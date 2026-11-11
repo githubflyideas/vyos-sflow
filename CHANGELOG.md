@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.9
+
+- Terminal UI: `tui -data` attaches to the running service on whatever port it uses; the third tab has its name again.
+- Messages name vyos-sflow instead of traffic66.
+
 ## 1.2.8
 
 - Users: resetting a user's password signs that user out everywhere; DELETE /api/users also takes the name in a JSON body.
