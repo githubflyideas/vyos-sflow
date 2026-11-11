@@ -86,8 +86,17 @@ func TestAccounts(t *testing.T) {
 	if w, _ := call("DELETE", "/api/users?user=admin", "", ck); w.Code != 400 {
 		t.Fatalf("admin deletes self: %d", w.Code)
 	}
-	if w, _ := call("DELETE", "/api/users?user=alice", "", ck); w.Code != 200 {
-		t.Fatalf("delete alice: %d", w.Code)
+	// a reset ends the sessions the old password opened
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-pass2","reset":true}`, ck); w.Code != 200 {
+		t.Fatalf("reset alice again: %d %s", w.Code, w.Body)
+	}
+	if w, _ := call("GET", "/api/me", "", ack); w.Code != 401 {
+		t.Fatalf("alice still signed in after a reset: %d", w.Code)
+	}
+	_, ack = call("POST", "/api/login", `{"user":"alice","password":"alice-pass2"}`, "")
+	// the name may also come in a JSON body
+	if w, _ := call("DELETE", "/api/users", `{"user":"alice"}`, ck); w.Code != 200 {
+		t.Fatalf("delete alice: %d %s", w.Code, w.Body)
 	}
 	if w, _ := call("GET", "/api/me", "", ack); w.Code != 401 {
 		t.Fatalf("deleted alice still signed in: %d", w.Code)

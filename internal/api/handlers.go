@@ -96,6 +96,12 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 	out["series"] = se
 	// Inbound and outbound are what came in and what went out through
 	// the interface sFlow samples on, the busiest one.
+	switch r.URL.Query().Get("dir") {
+	case "", "in", "out":
+	default:
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "dir is in or out"})
+		return
+	}
 	if dir := r.URL.Query().Get("dir"); dir == "in" || dir == "out" {
 		ifk, err := s.Store.BusiestIface(q)
 		if err != nil {

@@ -284,12 +284,22 @@ func passwd(args []string) error {
 	if err := os.MkdirAll(*data, 0700); err != nil {
 		return err
 	}
+	es, err := auth.Load(*data)
+	if err != nil {
+		return err
+	}
+	what := "added the new user"
+	for _, e := range es {
+		if e.User == *user {
+			what = "changed the password of"
+		}
+	}
 	if err := auth.Set(*data, *user, pw); err != nil {
 		return err
 	}
 	if *generate {
 		fmt.Println(pw)
 	}
-	fmt.Println("password saved; restart the service to invalidate any existing sessions")
+	fmt.Printf("%s %s; restart the service to end sessions opened with an old password\n", what, *user)
 	return nil
 }
