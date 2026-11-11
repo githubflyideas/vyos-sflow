@@ -3,6 +3,7 @@
 </p>
 
 # vyos-sflow
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/98987b3b-7262-4194-b150-03b9827e4066" />
 
 Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and recent flow records in your browser or over SSH.
 
