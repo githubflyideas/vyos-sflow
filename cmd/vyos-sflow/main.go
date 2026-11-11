@@ -205,6 +205,13 @@ func serveConfigured(ctx context.Context, cfg settings.Config, initialPassword s
 	hs := &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 60 * time.Second, IdleTimeout: 60 * time.Second}
 	httpDone := make(chan error, 1)
 	go func() { httpDone <- hs.Serve(ln) }()
+	// tui -data finds this run's web address here, so a service on a port
+	// other than 8066 can still be attached to
+	urlPath := filepath.Join(cfg.Data, ".tui-url")
+	if err := os.WriteFile(urlPath, []byte(localURL(scheme, ln.Addr())), 0600); err != nil {
+		return err
+	}
+	defer os.Remove(urlPath)
 	logStartup(scheme, ln.Addr().String(), listener.LocalAddr(), cfg.Data)
 	if ready != nil {
 		select {
@@ -302,4 +309,17 @@ func passwd(args []string) error {
 	}
 	fmt.Printf("%s %s; restart the service to end sessions opened with an old password\n", what, *user)
 	return nil
+}
+
+// localURL is how a program on this machine reaches the web UI listening on
+// a: an all-interfaces address is reached through loopback.
+func localURL(scheme string, a net.Addr) string {
+	host, port, err := net.SplitHostPort(a.String())
+	if err != nil {
+		return scheme + "://127.0.0.1:8066"
+	}
+	if ip := net.ParseIP(host); ip == nil || ip.IsUnspecified() {
+		host = "127.0.0.1"
+	}
+	return scheme + "://" + net.JoinHostPort(host, port)
 }

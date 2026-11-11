@@ -67,6 +67,14 @@ func runTUICommand(ctx context.Context, args []string, h commandHooks) error {
 	if listenExplicit {
 		return errors.New("-listen applies only to a new temporary session; omit it when attaching")
 	}
+	urlGiven := false
+	fs.Visit(func(f *flag.Flag) { urlGiven = urlGiven || f.Name == "url" })
+	if !urlGiven {
+		// the running service says where it listens
+		if b, err := os.ReadFile(filepath.Join(*data, ".tui-url")); err == nil && strings.TrimSpace(string(b)) != "" {
+			*endpoint = strings.TrimSpace(string(b))
+		}
+	}
 	opt := tui.Options{URL: *endpoint, User: *user, Lang: *lang}
 	if *user != "" {
 		opt.Password = h.getenv("VYOS_SFLOW_PASSWORD")
