@@ -137,12 +137,16 @@ func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"users": a.Users(), "admin": a.Admin()})
 }
 
-// putUser adds a user, or sets a new password for one.
+// putUser adds a user, or, with reset, sets a new password for one.
 func (s *Server) putUser(w http.ResponseWriter, r *http.Request) {
-	if s.admin(w, r) == nil {
+	a := s.admin(w, r)
+	if a == nil {
 		return
 	}
-	var in struct{ User, Password string }
+	var in struct {
+		User, Password string
+		Reset          bool
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
 		return
@@ -154,6 +158,22 @@ func (s *Server) putUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := checkNew(in.Password); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	// Adding a name that is taken would quietly replace that person's
+	// password; changing it is a reset, asked for as one.
+	exists := false
+	for _, u := range a.Users() {
+		if u == in.User {
+			exists = true
+		}
+	}
+	switch {
+	case exists && !in.Reset:
+		writeJSON(w, http.StatusConflict, map[string]string{"error": "exists"})
+		return
+	case !exists && in.Reset:
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no_user"})
 		return
 	}
 	if err := auth.Set(s.DataDir, in.User, in.Password); err != nil {

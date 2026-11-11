@@ -66,6 +66,16 @@ func TestAccounts(t *testing.T) {
 	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-pass"}`, ck); w.Code != 200 {
 		t.Fatalf("add alice: %d %s", w.Code, w.Body)
 	}
+	// adding her again must not quietly replace her password; a reset does
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"other-pass"}`, ck); w.Code != 409 {
+		t.Fatalf("add alice again: %d %s", w.Code, w.Body)
+	}
+	if w, _ := call("POST", "/api/users", `{"user":"nobody","password":"other-pass","reset":true}`, ck); w.Code != 404 {
+		t.Fatalf("reset a missing user: %d %s", w.Code, w.Body)
+	}
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-pass","reset":true}`, ck); w.Code != 200 {
+		t.Fatalf("reset alice: %d %s", w.Code, w.Body)
+	}
 	_, ack := call("POST", "/api/login", `{"user":"alice","password":"alice-pass"}`, "")
 	if w, _ := call("GET", "/api/users", "", ack); w.Code != 403 {
 		t.Fatalf("alice lists users: %d", w.Code)
@@ -137,8 +147,8 @@ func TestAccountsWithoutRegistration(t *testing.T) {
 		}
 	}
 
-	// Updating an existing account remains available.
-	if w := add("ops"); w.Code != 200 {
+	// Updating an existing account remains available, as a reset.
+	if w := call("POST", "/api/users", `{"user":"ops","password":"a-long-enough-password","reset":true}`); w.Code != 200 {
 		t.Fatalf("changing an existing password: %d %s", w.Code, w.Body)
 	}
 
