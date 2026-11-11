@@ -61,46 +61,46 @@ jobs:
           node tests/no-restore.cjs
       - name: Build static Linux release candidate
         run: |
-          mkdir -p dist/vyos-sflow-1.2.6-linux-amd64 evidence
+          mkdir -p dist/vyos-sflow-1.2.7-linux-amd64 evidence
           static_dir="$(mktemp -d)"
           ln -s "$(g++ -print-file-name=libstdc++.a)" "$static_dir/libstdc++.a"
           export CGO_LDFLAGS="-L$static_dir"
-          go build -trimpath -tags netgo,osusergo -ldflags "-s -w -X main.version=1.2.6 -X main.commit=${GITHUB_SHA} -linkmode=external -extldflags '-static -Wl,--wrap=getentropy'" -o dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow ./cmd/vyos-sflow
-          file dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
-          ldd dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow 2>&1 | tee evidence/ldd.txt || true
+          go build -trimpath -tags netgo,osusergo -ldflags "-s -w -X main.version=1.2.7 -X main.commit=${GITHUB_SHA} -linkmode=external -extldflags '-static -Wl,--wrap=getentropy'" -o dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow ./cmd/vyos-sflow
+          file dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
+          ldd dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow 2>&1 | tee evidence/ldd.txt || true
           grep -Eq 'not a dynamic executable|statically linked' evidence/ldd.txt
-          dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow version
+          dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow version
       - name: Install browser test runtime
         run: |
           npm install --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Real UDP, DuckDB, HTTP, Chromium and restart acceptance
         run: |
-          node tests/tui-session.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
-          node tests/e2e.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow --browser
-          node tests/sampling-lifecycle.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
-          node tests/first-login.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
-          node tests/first-login-browser.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
-          node tests/network-defaults.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
-          node tests/browser-no-registration.cjs dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
+          node tests/tui-session.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
+          node tests/e2e.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow --browser
+          node tests/sampling-lifecycle.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
+          node tests/first-login.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
+          node tests/first-login-browser.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
+          node tests/network-defaults.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
+          node tests/browser-no-registration.cjs dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
       - name: Package tested binary
         run: |
-          target=dist/vyos-sflow-1.2.6-linux-amd64
+          target=dist/vyos-sflow-1.2.7-linux-amd64
           cp README.md LICENSE NOTICE TRADEMARKS.md THIRD_PARTY_NOTICES.md upstream-manifest.json "$target/"
           cp -r packaging docs "$target/"
-          tar -C dist --owner=0 --group=0 --numeric-owner -czf dist/vyos-sflow-1.2.6-linux-amd64.tar.gz vyos-sflow-1.2.6-linux-amd64
-          tar -tvzf dist/vyos-sflow-1.2.6-linux-amd64.tar.gz | awk '$2 != "0/0" {print "unexpected archive owner: " $0; bad=1} END {exit bad}'
-          bash scripts/build-self-installer.sh --archive dist/vyos-sflow-1.2.6-linux-amd64.tar.gz --output dist/vyos-sflow-1.2.6-linux-amd64.run
-          bash dist/vyos-sflow-1.2.6-linux-amd64.run --check
+          tar -C dist --owner=0 --group=0 --numeric-owner -czf dist/vyos-sflow-1.2.7-linux-amd64.tar.gz vyos-sflow-1.2.7-linux-amd64
+          tar -tvzf dist/vyos-sflow-1.2.7-linux-amd64.tar.gz | awk '$2 != "0/0" {print "unexpected archive owner: " $0; bad=1} END {exit bad}'
+          bash scripts/build-self-installer.sh --archive dist/vyos-sflow-1.2.7-linux-amd64.tar.gz --output dist/vyos-sflow-1.2.7-linux-amd64.run
+          bash dist/vyos-sflow-1.2.7-linux-amd64.run --check
           cd dist
-          sha256sum vyos-sflow-1.2.6-linux-amd64.tar.gz vyos-sflow-1.2.6-linux-amd64.run > SHA256SUMS
+          sha256sum vyos-sflow-1.2.7-linux-amd64.tar.gz vyos-sflow-1.2.7-linux-amd64.run > SHA256SUMS
       - name: Packaged beginner quick start
-        run: node tests/quick-start.cjs dist/vyos-sflow-1.2.6-linux-amd64.tar.gz dist/SHA256SUMS
+        run: node tests/quick-start.cjs dist/vyos-sflow-1.2.7-linux-amd64.tar.gz dist/SHA256SUMS
       - name: Real single-file installation and systemd acceptance
-        run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_TEMP node tests/installed-service.cjs --installer dist/vyos-sflow-1.2.6-linux-amd64.run --binary dist/vyos-sflow-1.2.6-linux-amd64/vyos-sflow
+        run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_TEMP node tests/installed-service.cjs --installer dist/vyos-sflow-1.2.7-linux-amd64.run --binary dist/vyos-sflow-1.2.7-linux-amd64/vyos-sflow
       - uses: actions/upload-artifact@v4
         with:
-          name: vyos-sflow-1.2.6-linux-amd64
+          name: vyos-sflow-1.2.7-linux-amd64
           path: |
             dist/*.tar.gz
             dist/*.run
@@ -126,7 +126,7 @@ jobs:
           go-version: '1.26.9'
       - uses: actions/download-artifact@v4
         with:
-          name: vyos-sflow-1.2.6-linux-amd64
+          name: vyos-sflow-1.2.7-linux-amd64
           path: dist
       - name: Verify tested artifact
         run: cd dist && sha256sum -c SHA256SUMS
@@ -138,7 +138,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           node tests/vyos_vm.cjs \
-            --artifact dist/vyos-sflow-1.2.6-linux-amd64.run \
+            --artifact dist/vyos-sflow-1.2.7-linux-amd64.run \
             --work-dir "$RUNNER_TEMP" --evidence evidence/vyos-vm \
             --timeout 1800
       - uses: actions/upload-artifact@v4
@@ -170,7 +170,7 @@ jobs:
       - uses: actions/download-artifact@v4
         if: steps.v.outputs.new == 'true'
         with:
-          name: vyos-sflow-1.2.6-linux-amd64
+          name: vyos-sflow-1.2.7-linux-amd64
           path: dist
       - name: Publish
         if: steps.v.outputs.new == 'true'
