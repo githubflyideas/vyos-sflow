@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.8
+
+- Users: resetting a user's password signs that user out everywhere; DELETE /api/users also takes the name in a JSON body.
+- `passwd` says whether it added a user or changed a password.
+- /api/overview answers 400 for a `dir` other than `in` or `out`.
+- Text fixes.
+
 ## 1.2.7
 
 - Users: adding a name that already exists no longer changes that user's password; use Reset password instead.
