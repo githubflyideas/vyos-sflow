@@ -90,7 +90,7 @@ These captures show the application running, rather than UI mockups.
 
 ### Web dashboard
 
-Native VyOS capture of v1.2.4: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. Nothing is mocked or edited; the VM loses some sFlow packets on receipt, which the diagnostics page reports.
+Native VyOS capture of v1.2.9: the router's own sFlow samples real downloads at 1 in 1000, on a VyOS 2026.10.30 rolling live ISO in a VM. Nothing is mocked or edited; the VM loses some sFlow packets on receipt, which the diagnostics page reports.
 
 ![Overview on VyOS](docs/images/screenshots/vyos/web-overview.png)
 
@@ -114,9 +114,9 @@ Native VyOS capture of v1.2.4: the router's own sFlow samples real downloads at 
 
 ### Terminal UI
 
-A real Linux terminal running v1.1.2 with synthetic sFlow sent to the collector:
+A real Linux terminal running v1.2.9 with synthetic sFlow sent to the collector:
 
-![Terminal UI showing Top hosts](docs/images/screenshots/v1.1.2/tui-top.png)
+![Terminal UI showing Top hosts](docs/images/screenshots/v1.2.9/tui-top.png)
 
 ## Optional setup
 

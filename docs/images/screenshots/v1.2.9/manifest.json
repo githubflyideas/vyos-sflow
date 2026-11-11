@@ -1,0 +1,40 @@
+{
+  "release": "v1.2.9",
+  "version": "vyos-sflow 1.2.9 (2b29137f569e0cb0bbb0ea3df50420882b7b3eec)",
+  "binarySHA256": "b5edaa2fbbde3c9e79bf13fcb3994e5038301f8b298e325de36a394e4c899397",
+  "data": "Synthetic documentation-range sFlow sent by UDP; real collector, storage and API; actual elapsed timestamps.",
+  "terminal": "Native X11 xterm window and PTY, attached to same real service.",
+  "screenshots": [
+    {
+      "name": "web-login.png",
+      "sha256": "62ddd508ad59b659bb45f358c01a7b8cb3779d2778c7cacbe61fe8c2223d0dca"
+    },
+    {
+      "name": "web-overview.png",
+      "sha256": "d921bccc178fac19901eef8344d6490c6efe63c8c0d7de01e9d7ed8bbf84d0dd"
+    },
+    {
+      "name": "web-inbound.png",
+      "sha256": "b01d758227c82da7e6687b0d338768fe3600255534e00f5afebba256afc217ef"
+    },
+    {
+      "name": "web-top.png",
+      "sha256": "23d9dcf8a7dc318a33569bc3430ef20290ea09590219f959282db5d3c4d2bee7"
+    },
+    {
+      "name": "web-records.png",
+      "sha256": "f63f7a167176570ee26e7c4b0f5a639e8069e2880d98686df7d16f052fbd2c79"
+    },
+    {
+      "name": "tui-overview.png",
+      "sha256": "3bb484fcf68556f120df6ee3221cdb015564c54824ff7b9e3e0511bbd41af2be"
+    },
+    {
+      "name": "tui-top.png",
+      "sha256": "7b1c02b1ac17ff73740216b7ff24f7168ae712a58448f7eb242185a5c63ec6e1"
+    }
+  ],
+  "packetsSent": 2472,
+  "wireBytes": 19281600,
+  "capturedAt": "2026-11-11T14:30:34.773Z"
+}
