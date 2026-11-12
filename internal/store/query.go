@@ -251,7 +251,7 @@ func (s *Store) TopNBy(q Query, dim string, limit int, by string, asc ...bool) (
 		inner = "SELECT val AS k, bytes, wire, pkts, flows FROM r_dim WHERE ts>=? AND ts<? AND dim=?"
 		args = []any{q.From.UTC(), q.To.UTC(), d.rollup}
 	}
-	rows, err := s.DB.Query(fmt.Sprintf("SELECT k, coalesce(sum(bytes),0), coalesce(sum(wire),0), coalesce(sum(pkts),0), coalesce(sum(flows),0) FROM (%s) GROUP BY k ORDER BY sum(%s) %s, k LIMIT %d", inner, order, direction, limit), args...)
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT k, coalesce(CAST(CASE WHEN sum(bytes) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(bytes) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(flows) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(flows) END AS UBIGINT),0) FROM (%s) GROUP BY k ORDER BY sum(%s) %s, k LIMIT %d", inner, order, direction, limit), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +399,7 @@ func (s *Store) SeriesByApp(q Query, k int) (*Series, error) {
 	var err error
 	bucket := q.bucketSQL(step)
 	if rollup {
-		sqlq, pre, rerr := s.rollups(q, fmt.Sprintf(`SELECT %s AS b, app, sum(wire) FROM {r_ts} WHERE ts >= ? AND ts < ? GROUP BY 1,2`, bucket))
+		sqlq, pre, rerr := s.rollups(q, fmt.Sprintf(`SELECT %s AS b, app, CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT) FROM {r_ts} WHERE ts >= ? AND ts < ? GROUP BY 1,2`, bucket))
 		if rerr != nil {
 			return nil, rerr
 		}
@@ -409,7 +409,7 @@ func (s *Store) SeriesByApp(q Query, k int) (*Series, error) {
 		if werr != nil {
 			return nil, werr
 		}
-		rows, err = s.DB.Query(fmt.Sprintf(`SELECT %s AS b, app, sum(wire) FROM %s WHERE %s GROUP BY 1,2`, bucket, s.Source(q.From, q.To), where), args...)
+		rows, err = s.DB.Query(fmt.Sprintf(`SELECT %s AS b, app, CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT) FROM %s WHERE %s GROUP BY 1,2`, bucket, s.Source(q.From, q.To), where), args...)
 	}
 	if err != nil {
 		return nil, err
@@ -513,7 +513,7 @@ func (s *Store) Totals(q Query) (Totals, error) {
 			}
 			return s.DB.QueryRow(sqlq, append(pre, q.From.UTC(), q.To.UTC())...).Scan(dst...)
 		}
-		if err := one(`SELECT coalesce(sum(bytes),0), coalesce(sum(wire),0), coalesce(sum(pkts),0), coalesce(sum(flows),0) FROM {r_ts} WHERE ts >= ? AND ts < ?`,
+		if err := one(`SELECT coalesce(CAST(CASE WHEN sum(bytes) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(bytes) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(flows) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(flows) END AS UBIGINT),0) FROM {r_ts} WHERE ts >= ? AND ts < ?`,
 			&t.Bytes, &t.Wire, &t.Pkts, &t.Flows); err != nil {
 			return t, err
 		}
@@ -528,7 +528,7 @@ func (s *Store) Totals(q Query) (Totals, error) {
 		return t, err
 	}
 	src := s.Source(q.From, q.To)
-	err = s.DB.QueryRow(fmt.Sprintf(`SELECT coalesce(sum(bytes),0), coalesce(sum(wire),0), coalesce(sum(pkts),0), coalesce(sum(flows),0)
+	err = s.DB.QueryRow(fmt.Sprintf(`SELECT coalesce(CAST(CASE WHEN sum(bytes) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(bytes) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(flows) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(flows) END AS UBIGINT),0)
 		FROM %s WHERE %s`, src, where), args...).
 		Scan(&t.Bytes, &t.Wire, &t.Pkts, &t.Flows)
 	if err != nil {
@@ -628,7 +628,7 @@ func (s *Store) BusiestIface(q Query) (string, error) {
 	err = s.DB.QueryRow(fmt.Sprintf(`SELECT exporter, i FROM (
 			SELECT exporter, in_if AS i, wire FROM %[1]s WHERE %[2]s AND in_if NOT IN (0, %[3]d)
 			UNION ALL SELECT exporter, out_if, wire FROM %[1]s WHERE %[2]s AND out_if NOT IN (0, %[3]d))
-		GROUP BY 1, 2 ORDER BY sum(wire) DESC LIMIT 1`, s.Source(q.From, q.To), where, LocalIf), append(append([]any{}, args...), args...)...).Scan(&exp, &idx)
+		GROUP BY 1, 2 ORDER BY CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT) DESC LIMIT 1`, s.Source(q.From, q.To), where, LocalIf), append(append([]any{}, args...), args...)...).Scan(&exp, &idx)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", nil
 	}

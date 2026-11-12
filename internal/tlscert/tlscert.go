@@ -147,7 +147,7 @@ func generate(certPath, keyPath string) (tls.Certificate, error) {
 	now := time.Now()
 	tpl := x509.Certificate{
 		SerialNumber:          serial,
-		Subject:               pkix.Name{CommonName: first(names, "traffic66"), Organization: []string{"traffic66"}},
+		Subject:               pkix.Name{CommonName: first(names, "vyos-sflow"), Organization: []string{"vyos-sflow"}},
 		NotBefore:             now.Add(-time.Hour), // a clock a little behind ours still accepts it
 		NotAfter:              now.Add(Life),
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign,

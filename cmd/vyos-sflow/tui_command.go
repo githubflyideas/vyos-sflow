@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,6 +55,17 @@ func runTUICommand(ctx context.Context, args []string, h commandHooks) error {
 			listenExplicit = true
 		}
 	})
+	if !attach {
+		// A service on another port says where it listens in its data
+		// directory; it counts when it answers there.
+		if b, err := os.ReadFile(filepath.Join(*data, ".tui-url")); err == nil {
+			if u, err := url.Parse(strings.TrimSpace(string(b))); err == nil && u.Host != "" {
+				if ok, _ := serviceAvailableAt(ctx, u.Host); ok {
+					attach = true
+				}
+			}
+		}
+	}
 	if !attach {
 		var err error
 		attach, err = h.available(ctx)

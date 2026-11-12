@@ -19,10 +19,10 @@ type seriesDim struct {
 var seriesDims = map[string]seriesDim{
 	"host": {key: "unnest(list_distinct([client, server]))", cond: "true"},
 	"app": {key: "app", cond: "true", rollup: func(b string) string {
-		return `SELECT ` + b + `,app,sum(wire),sum(pkts) FROM {r_ts} WHERE ts>=? AND ts<? GROUP BY 1,2`
+		return `SELECT ` + b + `,app,CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT) FROM {r_ts} WHERE ts>=? AND ts<? GROUP BY 1,2`
 	}},
 	"proto": {key: "CAST(proto AS VARCHAR)", cond: "true", hourly: true, rollup: func(b string) string {
-		return `SELECT ` + b + `,val,sum(wire),sum(pkts) FROM {r_dim} WHERE ts>=? AND ts<? AND dim='proto' GROUP BY 1,2`
+		return `SELECT ` + b + `,val,CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT) FROM {r_dim} WHERE ts>=? AND ts<? AND dim='proto' GROUP BY 1,2`
 	}},
 }
 

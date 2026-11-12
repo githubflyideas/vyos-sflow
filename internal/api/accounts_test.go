@@ -53,7 +53,7 @@ func TestAccounts(t *testing.T) {
 	if w, _ := call("POST", "/api/password", `{"old":"`+auth.DefaultPassword+`","new":"short"}`, ck); w.Code != 400 {
 		t.Fatalf("short password: %d", w.Code)
 	}
-	if w, _ := call("POST", "/api/password", `{"old":"`+auth.DefaultPassword+`","new":"s3cret-pass"}`, ck); w.Code != 200 {
+	if w, _ := call("POST", "/api/password", `{"old":"`+auth.DefaultPassword+`","new":"s3cret-password-1"}`, ck); w.Code != 200 {
 		t.Fatalf("change: %d %s", w.Code, w.Body)
 	}
 	if w, _ := call("GET", "/api/overview", "", ck); w.Code != 200 {
@@ -63,20 +63,20 @@ func TestAccounts(t *testing.T) {
 		t.Fatalf("hint after change %s", w.Body)
 	}
 	// admin adds alice; alice cannot manage users
-	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-pass"}`, ck); w.Code != 200 {
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-password-1"}`, ck); w.Code != 200 {
 		t.Fatalf("add alice: %d %s", w.Code, w.Body)
 	}
 	// adding her again must not quietly replace her password; a reset does
-	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"other-pass"}`, ck); w.Code != 409 {
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"other-password-1"}`, ck); w.Code != 409 {
 		t.Fatalf("add alice again: %d %s", w.Code, w.Body)
 	}
-	if w, _ := call("POST", "/api/users", `{"user":"nobody","password":"other-pass","reset":true}`, ck); w.Code != 404 {
+	if w, _ := call("POST", "/api/users", `{"user":"nobody","password":"other-password-1","reset":true}`, ck); w.Code != 404 {
 		t.Fatalf("reset a missing user: %d %s", w.Code, w.Body)
 	}
-	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-pass","reset":true}`, ck); w.Code != 200 {
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-password-1","reset":true}`, ck); w.Code != 200 {
 		t.Fatalf("reset alice: %d %s", w.Code, w.Body)
 	}
-	_, ack := call("POST", "/api/login", `{"user":"alice","password":"alice-pass"}`, "")
+	_, ack := call("POST", "/api/login", `{"user":"alice","password":"alice-password-1"}`, "")
 	if w, _ := call("GET", "/api/users", "", ack); w.Code != 403 {
 		t.Fatalf("alice lists users: %d", w.Code)
 	}
@@ -87,13 +87,13 @@ func TestAccounts(t *testing.T) {
 		t.Fatalf("admin deletes self: %d", w.Code)
 	}
 	// a reset ends the sessions the old password opened
-	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-pass2","reset":true}`, ck); w.Code != 200 {
+	if w, _ := call("POST", "/api/users", `{"user":"alice","password":"alice-password-12","reset":true}`, ck); w.Code != 200 {
 		t.Fatalf("reset alice again: %d %s", w.Code, w.Body)
 	}
 	if w, _ := call("GET", "/api/me", "", ack); w.Code != 401 {
 		t.Fatalf("alice still signed in after a reset: %d", w.Code)
 	}
-	_, ack = call("POST", "/api/login", `{"user":"alice","password":"alice-pass2"}`, "")
+	_, ack = call("POST", "/api/login", `{"user":"alice","password":"alice-password-12"}`, "")
 	// the name may also come in a JSON body
 	if w, _ := call("DELETE", "/api/users", `{"user":"alice"}`, ck); w.Code != 200 {
 		t.Fatalf("delete alice: %d %s", w.Code, w.Body)

@@ -53,7 +53,7 @@ func TestBasicAuthObeysTheForcedChange(t *testing.T) {
 		t.Errorf("/api/me before the change: got %d, want 200", w.Code)
 	}
 	// and once the password is a real one, Basic auth works as before
-	r := httptest.NewRequest("POST", "/api/password", strings.NewReader(`{"old":"`+auth.DefaultPassword+`","new":"s3cret-pass"}`))
+	r := httptest.NewRequest("POST", "/api/password", strings.NewReader(`{"old":"`+auth.DefaultPassword+`","new":"s3cret-password-1"}`))
 	r.RemoteAddr = "192.0.2.1:1"
 	r.SetBasicAuth("admin", auth.DefaultPassword)
 	rec := httptest.NewRecorder()
@@ -61,7 +61,7 @@ func TestBasicAuthObeysTheForcedChange(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("change over Basic auth: got %d %s", rec.Code, rec.Body)
 	}
-	if w := basic("/api/overview", "admin", "s3cret-pass"); w.Code != http.StatusOK {
+	if w := basic("/api/overview", "admin", "s3cret-password-1"); w.Code != http.StatusOK {
 		t.Errorf("Basic auth after the change: got %d, want 200", w.Code)
 	}
 }
@@ -179,7 +179,7 @@ func TestChangingThePasswordEndsOtherSessions(t *testing.T) {
 		mux.ServeHTTP(w, r)
 		return w
 	}
-	if w := call("POST", "/api/password", `{"old":"`+auth.DefaultPassword+`","new":"s3cret-pass"}`, mine); w.Code != http.StatusOK {
+	if w := call("POST", "/api/password", `{"old":"`+auth.DefaultPassword+`","new":"s3cret-password-1"}`, mine); w.Code != http.StatusOK {
 		t.Fatalf("change: %d %s", w.Code, w.Body)
 	}
 	if w := call("GET", "/api/overview", "", mine); w.Code != http.StatusOK {

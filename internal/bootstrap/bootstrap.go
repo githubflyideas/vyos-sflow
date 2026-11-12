@@ -17,6 +17,9 @@ func Ensure(dir, user, initial string) (*auth.FileChecker, error) {
 		return nil, err
 	}
 	if len(entries) > 0 {
+		if err := auth.RecordAdmin(dir, user); err != nil {
+			return nil, err
+		}
 		return auth.NewFileChecker(dir, nil), nil
 	}
 	if initial == "" {

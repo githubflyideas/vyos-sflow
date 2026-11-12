@@ -207,7 +207,7 @@ func (b *Blocklist) save() error {
 		return nil
 	}
 	var sb strings.Builder
-	sb.WriteString("# Sources whose datagrams traffic66 drops on arrival.\n")
+	sb.WriteString("# Sources whose datagrams vyos-sflow drops on arrival.\n")
 	sb.WriteString("# One address per line, then the time it was blocked, the datagrams\n")
 	sb.WriteString("# dropped from it so far, and an optional note.\n")
 	sb.WriteString("# A blocked sender can change address, and a UDP source address can be\n")

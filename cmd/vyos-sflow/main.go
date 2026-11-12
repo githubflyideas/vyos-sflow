@@ -268,6 +268,9 @@ func passwd(args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	if *user == "" || strings.ContainsAny(*user, ": \t\r\n") || len(*user) > 64 {
+		return fmt.Errorf("a user name cannot be empty or contain spaces or colons")
+	}
 	pw := os.Getenv("VYOS_SFLOW_PASSWORD")
 	if *generate {
 		pw = auth.Generate()
