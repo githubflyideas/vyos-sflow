@@ -35,6 +35,6 @@ bash packaging/test-install.sh
 node --test tests/self_installer_test.cjs
 ```
 
-The version number comes from `cmd/vyos-sflow/startup.go`; the commit is only known when passed with `-ldflags "-X main.commit=..."`, otherwise `version` prints `(unknown)`. `./vyos-sflow version` should print the checked-out commit, for example `vyos-sflow 1.2.11 (<commit>)`. Release binaries are additionally linked statically; the exact command is the "Build static Linux release candidate" step in `.github/workflows/ci.yml`. Release archives store files with owner and group `0`/`root`.
+The version number comes from `cmd/vyos-sflow/startup.go`; the commit is only known when passed with `-ldflags "-X main.commit=..."`, otherwise `version` prints `(unknown)`. `./vyos-sflow version` should print the checked-out commit, for example `vyos-sflow 1.2.12 (<commit>)`. Release binaries are additionally linked statically; the exact command is the "Build static Linux release candidate" step in `.github/workflows/ci.yml`. Release archives store files with owner and group `0`/`root`.
 
 See [VM acceptance](VYOS-VM-TEST.md). Run installation tests only on disposable hosts.

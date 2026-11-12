@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.12
+
+- Stricter checks on incoming samples; refused records are logged and counted.
+- Works behind a reverse proxy that passes the host name on (see docs/VYOS.md).
+- Account changes from `passwd` and the web UI at the same time are all kept; `passwd` accepts a piped password.
+- Smaller fixes to sign-in, user names and the terminal UI.
+
 ## 1.2.11
 
 - Build with Go 1.27.4.

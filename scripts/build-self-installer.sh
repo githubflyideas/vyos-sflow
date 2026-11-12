@@ -2,7 +2,7 @@
 # Wrap a trusted CI archive without repacking. Digest proves integrity, not origin.
 set -euo pipefail
 umask 077
-ROOT=vyos-sflow-1.2.11-linux-amd64
+ROOT=vyos-sflow-1.2.12-linux-amd64
 fail() { printf '%s\n' "$*" >&2; exit 1; }
 archive= output=
 while (($#)); do
