@@ -261,7 +261,7 @@
   "tui.h.web": "open this view in the web UI",
   "tui.h.quit": "quit",
   "ob.title": "Send your first flows",
-  "ob.step1": "Point a device's sFlow, NetFlow or IPFIX export at this machine:",
+  "ob.step1": "Point a device's sFlow export at this machine:",
   "ob.ports": "UDP ports:",
   "ob.step2": "It appears under Settings within seconds, and this page fills in a minute or two later.",
   "ob.try": "Or paste one of these, already set to this machine's address and ports:",

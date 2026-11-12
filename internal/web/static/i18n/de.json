@@ -261,7 +261,7 @@
   "tui.h.web": "diese Ansicht im Web öffnen",
   "tui.h.quit": "Beenden",
   "ob.title": "Erste Flows senden",
-  "ob.step1": "Richten Sie den sFlow-, NetFlow- oder IPFIX-Export eines Geräts auf diesen Rechner:",
+  "ob.step1": "Richten Sie den sFlow-Export eines Geräts auf diesen Rechner:",
   "ob.ports": "UDP-Ports:",
   "ob.step2": "Es erscheint binnen Sekunden unter Einstellungen; diese Seite füllt sich ein bis zwei Minuten später.",
   "ob.try": "Oder fügen Sie einen dieser Befehle ein, schon mit Adresse und Ports dieses Rechners:",
