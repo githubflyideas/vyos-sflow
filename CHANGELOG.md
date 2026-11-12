@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.11
+
+- Build with Go 1.27.4.
+
 ## 1.2.10
 
 - Security and robustness fixes for incoming data and account management.
