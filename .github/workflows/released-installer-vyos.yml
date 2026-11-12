@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   released-run-vyos:
-    if: github.event_name == 'workflow_dispatch' || github.event.release.tag_name == 'v1.2.9'
+    if: github.event_name == 'workflow_dispatch' || github.event.release.tag_name == 'v1.2.10'
     runs-on: ubuntu-22.04
     timeout-minutes: 40
     steps:
@@ -29,12 +29,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download v1.2.9 --repo githubflyideas/vyos-sflow --dir dist --pattern '*.run' --pattern SHA256SUMS
-          digest=$(gh api repos/githubflyideas/vyos-sflow/releases/tags/v1.2.9 --jq '.assets[] | select(.name == "vyos-sflow-1.2.9-linux-amd64.run") | .digest')
+          gh release download v1.2.10 --repo githubflyideas/vyos-sflow --dir dist --pattern '*.run' --pattern SHA256SUMS
+          digest=$(gh api repos/githubflyideas/vyos-sflow/releases/tags/v1.2.10 --jq '.assets[] | select(.name == "vyos-sflow-1.2.10-linux-amd64.run") | .digest')
           [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
           cd dist
           sha256sum --ignore-missing -c SHA256SUMS
-          printf '%s  %s\n' "${digest#sha256:}" vyos-sflow-1.2.9-linux-amd64.run | sha256sum -c -
+          printf '%s  %s\n' "${digest#sha256:}" vyos-sflow-1.2.10-linux-amd64.run | sha256sum -c -
       - name: Install isolated VM runtime
         run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 p7zip-full expect
       - name: Published single-file installer and native sFlow
@@ -43,7 +43,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           node tests/vyos_vm.cjs \
-            --artifact dist/vyos-sflow-1.2.9-linux-amd64.run \
+            --artifact dist/vyos-sflow-1.2.10-linux-amd64.run \
             --work-dir "$RUNNER_TEMP" --evidence evidence/released-run-vyos \
             --timeout 1800
       - uses: actions/upload-artifact@v4

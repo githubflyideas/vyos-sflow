@@ -5,7 +5,7 @@ const fs=require('node:fs'), path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {gzipSync,gunzipSync}=require('node:zlib');
 const {createHash}=require('node:crypto');
-const REPO=path.resolve(__dirname,'..'), ROOT='vyos-sflow-1.2.9-linux-amd64';
+const REPO=path.resolve(__dirname,'..'), ROOT='vyos-sflow-1.2.10-linux-amd64';
 const pos=p=>p.replaceAll('\\','/');
 function shell(args,opts={}) {return spawnSync('bash',args,{encoding:'utf8',cwd:REPO,...opts});}
 function tar(files) {
@@ -69,7 +69,7 @@ function wizardFixture(t,{health='ok',start=true,active=true}={}){
  fs.writeFileSync(path.join(pkg,'install.sh'),'#!/bin/bash\necho install >> "$TRACE"\nwhile (($#)); do if [[ $1 == --environment ]]; then cp "$2" "$TEST_BASE/service.env"; exit; fi; shift; done\nexit 98\n');
  const scripts={uname:'if [[ $1 == -s ]]; then echo Linux; else echo x86_64; fi',id:'echo 0',sleep:':',
   systemctl:`echo "systemctl $*" >> "$TRACE"\nif [[ $1 == start ]]; then exit ${start?0:1}; fi\nif [[ $1 == is-active ]]; then exit ${active?0:1}; fi`,
-  curl:'echo "curl $*" >> "$TRACE"\n'+(health==='transport-failure'?'exit 22':`printf '%s\\n' '${health==='ok'?'{"status":"ok","version":"1.2.9"}':health}'`)};
+  curl:'echo "curl $*" >> "$TRACE"\n'+(health==='transport-failure'?'exit 22':`printf '%s\\n' '${health==='ok'?'{"status":"ok","version":"1.2.10"}':health}'`)};
  for(const [name,body] of Object.entries(scripts))fs.writeFileSync(path.join(f.commands,name),'#!/bin/bash\n'+body+'\n',{mode:0o755});
  const run=(input='y\n')=>{
   const r=shell(['-c','p=$1; if command -v cygpath >/dev/null; then p=$(cygpath -u "$p"); fi; export PATH="$p:$PATH"; shift; exec bash "$@"','test',pos(f.commands),pos(path.join(pkg,'setup.sh'))],{input,env:{...process.env,TMPDIR:pos(f.scratch),FORBIDDEN_LOG:pos(path.join(f.dir,'forbidden')),TRACE:pos(trace),TEST_BASE:pos(base)}});

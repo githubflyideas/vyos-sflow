@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.10
+
+- Security and robustness fixes for incoming data and account management.
+- `tui` without options finds a running service on another port.
+- Minimum password length is 12 characters everywhere.
+- Better contrast in all themes; text fixes.
+
 ## 1.2.9
 
 - Terminal UI: `tui -data` attaches to the running service on whatever port it uses; the third tab has its name again.
