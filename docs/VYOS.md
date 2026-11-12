@@ -55,6 +55,8 @@ ssh -N -L 8066:127.0.0.1:8066 SSH_USER@ROUTER_IP
 
 Then open `http://127.0.0.1:8066`. Adapt addresses for custom listener settings.
 
+Behind a reverse proxy, pass the browser's host name on: with nginx, `proxy_set_header Host $host;` (or `proxy_set_header X-Forwarded-Host $host;`). Changes such as passwords and users are refused when the request's origin does not match the host the service sees.
+
 ## Existing installations and backups
 
 Stop the process/service before backing up the complete data directory and service configuration. Keep account files and Parquet history together and keep backups private.
@@ -73,6 +75,8 @@ Existing accounts and configuration remain intact. Legacy sender-selection envir
 A database without the 48-hour retention policy needs explicit `VYOS_SFLOW_ACCEPT_48H_RETENTION=true` before older flow history may expire. Review and back up before enabling it; this is not permission to clear all history. Never delete data merely to bypass an upgrade warning.
 
 Binary replacement does not roll back database changes. Recovery after a VyOS image upgrade is not supported; plan OS changes separately.
+
+Since 1.2.10 the password file records who the administrator is. Going back to 1.2.9 or older uses the old rule again (a user named `admin`, else the first user), which can make another user the administrator until you upgrade again.
 
 ## Resources and troubleshooting
 

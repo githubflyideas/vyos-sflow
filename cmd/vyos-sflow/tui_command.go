@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -60,7 +61,7 @@ func runTUICommand(ctx context.Context, args []string, h commandHooks) error {
 		// directory; it counts when it answers there.
 		if b, err := os.ReadFile(filepath.Join(*data, ".tui-url")); err == nil {
 			if u, err := url.Parse(strings.TrimSpace(string(b))); err == nil && u.Host != "" {
-				if ok, _ := serviceAvailableAt(ctx, u.Host); ok {
+				if answersHTTP(ctx, u.String()) {
 					attach = true
 				}
 			}
@@ -126,4 +127,22 @@ func serviceAvailableAt(ctx context.Context, addr string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+// answersHTTP reports whether a vyos-sflow service answers at base: a port
+// that only accepts connections (another program, or none left behind a
+// stale address file) does not count.
+func answersHTTP(ctx context.Context, base string) bool {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(base, "/")+"/healthz", nil)
+	if err != nil {
+		return false
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	return resp.StatusCode == http.StatusOK
 }

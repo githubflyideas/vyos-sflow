@@ -342,7 +342,7 @@ func (p *Pipeline) process(r *flow.Record) {
 	// sampling rate or a byte count no device produces is refused, so that
 	// one forged packet cannot add exabytes to the totals.
 	if mult > maxMult || float64(r.Bytes)*mult > maxRecordBytes || float64(r.Packets)*mult > maxRecordBytes {
-		p.Implausible.Add(1)
+		p.noteImplausible(r)
 		return
 	}
 	srcIsClient := enrich.Role(r)
@@ -588,3 +588,11 @@ const (
 	maxMult        = 1 << 24
 	maxRecordBytes = 1 << 46
 )
+
+// noteImplausible counts a refused record and says so in the log: the
+// first one, then every thousandth.
+func (p *Pipeline) noteImplausible(r *flow.Record) {
+	if n := p.Implausible.Add(1); n == 1 || n%1000 == 0 {
+		log.Printf("pipeline: refused %d record(s) with an impossible sampling rate, size or time; latest from %s", n, r.Exporter)
+	}
+}
