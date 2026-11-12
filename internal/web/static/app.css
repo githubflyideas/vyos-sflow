@@ -7,7 +7,7 @@
   --card-h:#fafbfd;
   --c1:#1559c7; --c2:#fa8c16; --c3:#13a8a8; --c4:#d4a106; --c5:#eb2f96; --c6:#52c41a; --c7:#722ed1; --c8:#f5222d; --other:#bfc6d1;
   --base:#8c95a5;
-  --good:#389e0d; --warn:#faad14; --crit:#cf1322; --warn-ink:#ad6800; --crit-soft:#fff1f0;
+  --good:#2b7a0b; --warn:#faad14; --crit:#cf1322; --warn-ink:#8a5300; --crit-soft:#fff1f0;
   --shadow:rgba(16,38,80,.08);
 }
 :root[data-theme=light]{
