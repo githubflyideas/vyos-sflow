@@ -29,6 +29,8 @@ async function loadLang(code) {
   document.documentElement.dir = RTL.has(code) ? 'rtl' : 'ltr';
   try { localStorage.setItem('t66.lang', code); } catch (e) {}
   document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  // names for buttons whose text narrow layouts hide
+  document.querySelectorAll('[data-il]').forEach(el => el.setAttribute('aria-label', t(el.dataset.il)));
   refreshLabel();
   themeLabel();
 }
@@ -256,7 +258,7 @@ function tsChart(el, {times, areas = [], lines = [], fmtY = fmtAxisBps, fmtV = f
     // all zero: a scale up to 1K reads as "nothing", 0..1 rounds to 0,0,1,1,1
     const Y = top > 0 ? niceMax(top * 1.05) : 1000, y = v => T + (H - T - B) * (1 - v / Y);
     const span = times[n - 1] - times[0];
-    let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(el.getAttribute('aria-label') || '')}">`;
+    let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(el.getAttribute('aria-label') || el.closest('.panel')?.querySelector('h2,h3')?.textContent || t('nav.' + state.v))}">`;
     for (let k = 0; k <= 4; k++) {
       const yy = y(Y * k / 4);
       s += `<line class="gl" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text class="ax" x="${rtl ? W - R + 8 : L - 8}" y="${yy + 4}" text-anchor="${rtl ? 'start' : 'end'}">${fmtY(Y * k / 4)}</text>`;
@@ -508,7 +510,7 @@ views.topn = el => state.tm === 'talkers' ? talkers(el) : topTable(el, state.dim
 async function talkers(el) {
  const [cl, sv, ov] = await Promise.all([api('topn', {dim: 'client', limit: 30}), api('topn', {dim: 'server', limit: 30}), api('overview')]);
  const tot = ov.totals || {};
- const table = (rows, head) => `<table><thead><tr><th></th><th>${t(head)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
+ const table = (rows, head) => `<table><thead><tr><th><span class="vh">#</span></th><th>${t(head)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
   ${(rows || []).map((r, i) => `<tr><td class="rank">${i + 1}</td><td>${esc(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">${emptyText()}</td></tr>`}
   <tr class="sum"><td></td><td>${t('topn.global_total')}</td><td>${fmtBytes(tot.wire)}</td><td>${nf(tot.pkts || 0)}</td><td>${nf(tot.flows || 0)}</td></tr></tbody></table>`;
  el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}<p class="muted" id="topPerspectives">${esc(t('topn.perspectives'))}</p></div>
@@ -563,7 +565,7 @@ const icPct = (est, dev) => {
   const p = est / dev * 100, off = Math.abs(p - 100);
   return `<td class="${off > 20 ? 'bad' : off > 8 ? 'warn' : 'good'}">${nf(p, 1)}%</td>`;
 };
-const ifaceCheck = rows => rows.length ? `<div class="tablewrap"><table class="ifcheck"><tr><th>${t('ic.iface')}</th><th>${t('ic.dev_in')}</th><th>${t('ic.est_in')}</th><th></th><th>${t('ic.dev_out')}</th><th>${t('ic.est_out')}</th><th></th></tr>
+const ifaceCheck = rows => rows.length ? `<div class="tablewrap"><table class="ifcheck"><tr><th>${t('ic.iface')}</th><th>${t('ic.dev_in')}</th><th>${t('ic.est_in')}</th><th><span class="vh">%</span></th><th>${t('ic.dev_out')}</th><th>${t('ic.est_out')}</th><th><span class="vh">%</span></th></tr>
  ${rows.map(r => `<tr><td class="nw">${esc(r.exporter)} / ${r.ifindex}${r.speed ? ` <span class="muted">${fmtBps(r.speed)}</span>` : ''}</td><td>${fmtBps(r.dev_in_bps)}</td><td>${fmtBps(r.est_in_bps)}</td>${icPct(r.est_in_bps, r.dev_in_bps)}<td>${fmtBps(r.dev_out_bps)}</td><td>${fmtBps(r.est_out_bps)}</td>${icPct(r.est_out_bps, r.dev_out_bps)}</tr>`).join('')}</table></div>
  <p class="muted" style="font-size:12.5px">${esc(t('ic.note', {m: nf(Math.round((rows[0].seconds || 0) / 60))}))}</p>` : `<div class="empty">${esc(t('ic.none'))}</div>`;
 views.cleanup = async (el) => {
@@ -698,7 +700,15 @@ async function render(push) {
   } catch (e) {
     if (e.message !== 'login' && e.message !== 'stale' && seq === loadSeq) el.innerHTML = errorBox(e);
   }
-  if (seq === loadSeq) { drawnAt = Date.now(); }
+  if (seq === loadSeq) { drawnAt = Date.now(); focusableScroll(el); }
+}
+// A panel that scrolls sideways must be reachable with the keyboard to be
+// scrolled at all.
+function focusableScroll(root) {
+  root.querySelectorAll('.panel, .tablewrap').forEach(p => {
+    if (p.scrollWidth > p.clientWidth + 1) { p.tabIndex = 0; if (!p.getAttribute('aria-label')) p.setAttribute('aria-label', p.querySelector('h2,h3')?.textContent || ''); }
+    else if (p.tabIndex === 0) p.removeAttribute('tabindex');
+  });
 }
 function go(v) { state.v = VIEWS.includes(v) ? v : 'overview'; render(true); window.scrollTo(0, 0); }
 

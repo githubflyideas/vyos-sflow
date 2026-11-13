@@ -68,7 +68,7 @@ For a quick look over SSH, run one command:
 ```
 
 - **No local service running:** starts a temporary sFlow collector and opens the terminal dashboard. No separate `serve` command, browser or service installation is needed.
-- **Local service already running:** connects to it using its local credentials instead of starting a second collector.
+- **Local service already running:** connects to it using its local credentials instead of starting a second collector. A service counts as running when the data directory (`./vyso_sflow_data`, or `VYOS_SFLOW_DATA`) holds the address the service wrote at start and that address answers, or when something listens on `127.0.0.1:8066`. `-data`, `-url` or `-user` always connect to an existing service.
 - **Quit with `q` or `Ctrl+C`:** closes the TUI and any temporary collector it started. An existing service keeps running.
 
 Standalone TUI history lasts only for that session. Its temporary data is removed on exit; existing accounts and `./vyso_sflow_data` are not cleared. Keep using `serve` or the optional system service when you want continuous collection and persistent history.

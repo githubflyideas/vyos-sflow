@@ -19,7 +19,7 @@ The default UDP listener is `0.0.0.0:6343`. Configure the exporter to send sFlow
 
 ## Temporary terminal view
 
-Run `./vyos-sflow tui` over SSH for a one-command session. If no local service is running, it starts a temporary collector, stores session data in a private temporary directory and connects the TUI through a loopback-only API. It still receives sFlow on UDP `0.0.0.0:6343`; configure sampling as described in the README and restrict UDP access to trusted devices.
+Run `./vyos-sflow tui` over SSH for a one-command session. It looks for a running service first: the address a service writes into its data directory at start (`./vyso_sflow_data`, or `VYOS_SFLOW_DATA`) when that address answers, else `127.0.0.1:8066`. Options `-data`, `-url` or `-user` always connect to an existing service. If no local service is running, it starts a temporary collector, stores session data in a private temporary directory and connects the TUI through a loopback-only API. It still receives sFlow on UDP `0.0.0.0:6343`; configure sampling as described in the README and restrict UDP access to trusted devices.
 
 Press `q` or `Ctrl+C` to exit. The session's collector stops and its temporary data is removed; this does not clear existing persistent history or accounts. If TUI connected to an already running service, that service continues running after you quit. For an explicit service address and account, use `./vyos-sflow tui -url http://ROUTER_IP:8066 -user admin`. Existing account restrictions still apply.
 
@@ -45,3 +45,13 @@ sudo journalctl -u vyos-sflow.service -n 50 --no-pager
 ```
 
 For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is chosen at the prompt or with `-addr`; the sFlow UDP listener uses all interfaces. The installed service uses the addresses in its `service.env` (all interfaces in the shipped template). Restrict management access to a private network; HTTP is unencrypted and TLS is optional. See the installation guide for configuration and the validation document for compatibility limits.
+
+## How the numbers are counted
+
+- **Sampling.** Each sampled packet counts as the sampling rate's worth of packets and bytes. The rate used is measured from the agent's sample pool every 30 seconds once 30 samples have arrived; until then, and right after the agent's configured rate changes, the configured rate is used. A measured rate outside half to four times the configured one is not trusted and the configured rate is used instead.
+- **Lost exports.** Gaps in an agent's sequence numbers are reported as loss on the diagnostics page. The measured rate makes up for lost samples from the next measurement on; samples counted before it are not corrected afterwards, so the first half minute of a lossy agent reads low.
+- **Duplicates.** A datagram repeated straight after itself (same sequence number and pool) is dropped. A copy that arrives later, after other datagrams, is counted again: sFlow carries nothing that would tell a replay from new data.
+- **Sampling rate 0.** Treated as 1 in 1 and shown as 1:0; such an agent is misconfigured.
+- **Impossible values.** A sample with a frame larger than 65,599 bytes, a sampling rate above 1 in 16,777,216, or a record above 64 TiB is refused; the count is in the log and in the status data as `implausible`.
+- **Recent minutes.** Data for a minute keeps arriving for about a minute after it; until then the minute is shown as received so far. *Current bandwidth* is the average over the last five complete minutes, so it reads 0 for the first minutes after start.
+
