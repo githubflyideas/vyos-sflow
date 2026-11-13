@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.13
+
+- Data cleanup can delete one device's stored data.
+- Accessibility improvements for screen readers and keyboard use.
+- Documentation of how the numbers are counted and how `tui` finds a service.
+
 ## 1.2.12
 
 - Stricter checks on incoming samples; refused records are logged and counted.

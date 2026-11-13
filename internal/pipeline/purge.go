@@ -57,3 +57,13 @@ drained:
 	p.newest = time.Time{}
 	return result, nil
 }
+
+// PurgeExporter deletes everything one device exported. What is still held
+// in memory is written first, so that it is deleted with the rest.
+func (p *Pipeline) PurgeExporter(exporter string) (store.PurgeSize, error) {
+	p.FlushRows()
+	p.FlushRollups()
+	p.ioMu.Lock()
+	defer p.ioMu.Unlock()
+	return p.st.PurgeExporter(exporter)
+}

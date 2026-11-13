@@ -261,12 +261,12 @@ test("installer checks digest and confirmation-only wizard; tar retains advanced
     "product.tar.gz",
     "a".repeat(64),
     "url",
-    "cd vyos-sflow-1.2.12-linux-amd64 && bash packaging/install.sh",
+    "cd vyos-sflow-1.2.13-linux-amd64 && bash packaging/install.sh",
   );
   assert.ok(
     cmds
       .at(-1)
-      .endsWith("cd vyos-sflow-1.2.12-linux-amd64 && bash packaging/install.sh"),
+      .endsWith("cd vyos-sflow-1.2.13-linux-amd64 && bash packaging/install.sh"),
   );
 });
 test("CLI compatibility and unrestricted stream contract", () => {

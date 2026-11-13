@@ -137,6 +137,7 @@ func (s *Server) Handler() http.Handler {
 	api("POST /api/resolve", s.resolve)
 	api("GET /api/cleanup", s.getCleanup)
 	adminAPI("POST /api/cleanup", s.postCleanup)
+	adminAPI("POST /api/cleanup/exporter", s.postPurgeExporter)
 
 	mux.HandleFunc("/api/", http.NotFound)
 	static := http.FileServer(http.FS(s.Static))

@@ -577,7 +577,23 @@ views.cleanup = async (el) => {
     <div class="kpis" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px"><div class="kpi"><div class="lab">${t('cl.disk')}</div><div class="n">${fmtBytes(d.disk_bytes)}</div></div>
       <div class="kpi"><div class="lab">${t('cl.oldest')}</div><div class="n" style="font-size:20px">${d.oldest && !d.oldest.startsWith('0001') ? esc(new Intl.DateTimeFormat(LANG, {dateStyle: 'medium', timeStyle: 'short'}).format(new Date(d.oldest))) : '—'}</div></div></div>
     <p>${esc(t('cl.all'))}</p><button class="btn danger" data-cl-all>${esc(t('cl.run'))}</button>
-    <div id="clMsg" style="margin-top:10px;font-size:13px"></div>`)}</div>`;
+    <div id="clMsg" style="margin-top:10px;font-size:13px"></div>`)}
+    ${panel('c12', t('cl.dev_title'), t('cl.dev_sub'), (d.exporters || []).length ? `<div class="tablewrap"><table><tr><th>${esc(t('ov.device'))}</th><th class="num">${esc(t('col.flows'))}</th><th class="num">${esc(t('col.traffic'))}</th><th>${esc(t('col.last'))}</th><th><span class="vh">${esc(t('cl.dev_run'))}</span></th></tr>${d.exporters.map(x => `<tr><td>${esc(x.exporter)}</td><td class="num">${nf(x.rows)}</td><td class="num">${fmtBytes(x.wire)}</td><td>${esc(new Intl.DateTimeFormat(LANG, {dateStyle: 'medium', timeStyle: 'short'}).format(new Date(x.last)))}</td><td><button class="btn danger" data-cl-dev="${esc(x.exporter)}">${esc(t('cl.dev_run'))}</button></td></tr>`).join('')}</table></div>` : `<div class="empty">${esc(t('cl.dev_none'))}</div>`)}
+    <div id="clDevMsg" style="margin-top:10px;font-size:13px"></div></div>`;
+  el.querySelectorAll('[data-cl-dev]').forEach(btn => btn.onclick = async () => {
+    const x = btn.dataset.clDev;
+    if (busy || !confirm(t('cl.dev_confirm', {x}))) return;
+    busy = true; btn.disabled = true;
+    try {
+      const res = await fetch('/api/cleanup/exporter', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({exporter: x, confirm: true})});
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || res.statusText);
+      clDone = t('cl.dev_done', {n: nf(j.rows || 0), x});
+      loadStatus(); render();
+    } catch (error) {
+      const m = $('#clDevMsg'); m.style.color = 'var(--crit)'; m.textContent = error.message;
+    } finally { busy = false; btn.disabled = false; }
+  });
   const b = el.querySelector('[data-cl-all]');
   let busy = false;
   b.onclick = async () => {

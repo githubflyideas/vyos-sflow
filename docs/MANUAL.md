@@ -55,3 +55,7 @@ For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is
 - **Impossible values.** A sample with a frame larger than 65,599 bytes, a sampling rate above 1 in 16,777,216, or a record above 64 TiB is refused; the count is in the log and in the status data as `implausible`.
 - **Recent minutes.** Data for a minute keeps arriving for about a minute after it; until then the minute is shown as received so far. *Current bandwidth* is the average over the last five complete minutes, so it reads 0 for the first minutes after start.
 
+## Deleting one device's data
+
+**Data cleanup** lists the devices with stored traffic. Deleting one removes all of its flow records, for a device whose traffic should not count (forged or broken exports, or a test device). Block it first if it is still sending. A flow that another device also reported keeps counting through that device's copy.
+
