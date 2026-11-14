@@ -2,6 +2,8 @@
 
 ## Supported environment
 
+**Platform scope.** vyos-sflow is built for the x86-64 (amd64) routers that run VyOS today, and each release is tested end to end on that platform, including inside a native VyOS guest. Focusing on one platform is a deliberate choice that keeps every release fully verified; arm64 builds are not planned. An official container image is on the roadmap.
+
 - Linux amd64 (x86_64).
 - Direct executable use requires a writable data directory; systemd is optional.
 - Managed installation requires Bash, systemd, administrator access and standard Linux file/account utilities.
