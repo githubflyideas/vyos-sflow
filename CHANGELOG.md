@@ -2,7 +2,7 @@
 
 ## 1.2.16
 
-- Every Go module is on its newest version, as are the build's GitHub Actions; `govulncheck` no longer reports the known vulnerability the old module set carried. DuckDB stays on 1.5 (Go driver 2.10506): DuckDB 2.0 needs a CPU with AVX2 and would stop with "illegal instruction" on routers without it, such as PC Engines APU, Atom and older Celeron boxes.
+- Every Go module is on its newest version, as are the build's GitHub Actions; `govulncheck` no longer reports the known vulnerability the old module set carried. DuckDB stays on 1.5.
 - Each release is now tested by upgrading a data directory written by the latest published release.
 
 ## 1.2.15
