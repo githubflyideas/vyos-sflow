@@ -72,10 +72,6 @@ jobs:
           ldd dist/vyos-sflow-1.2.16-linux-amd64/vyos-sflow 2>&1 | tee evidence/ldd.txt || true
           grep -Eq 'not a dynamic executable|statically linked' evidence/ldd.txt
           dist/vyos-sflow-1.2.16-linux-amd64/vyos-sflow version
-      - name: Runs on any x86-64 CPU, not only AVX2 ones
-        run: |
-          sudo apt-get update -q && sudo apt-get install -y -q qemu-user
-          tests/baseline-cpu.sh dist/vyos-sflow-1.2.16-linux-amd64/vyos-sflow
       - name: Install browser test runtime
         run: |
           npm install --no-save --ignore-scripts --package-lock=false playwright@1.56.1

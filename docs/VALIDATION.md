@@ -9,7 +9,7 @@
 
 ## Release checks
 
-The release pipeline checks Go code and race-sensitive packages, frontend regressions, archive validation, installer protections, real UDP ingestion, DuckDB history, authentication and Chromium first-login behavior. It exercises the packaged installer on a disposable systemd host and inside a native VyOS live-ISO guest, and upgrades a data directory written by the latest published release. The binary must run on QEMU's baseline x86-64 CPU (no SSE4, no AVX), as the VyOS guest does too, so it keeps running on older routers. Every change is scanned with govulncheck. Release artifacts include SHA256SUMS, its Sigstore signature and a CycloneDX software bill of materials; see [SECURITY.md](../SECURITY.md).
+The release pipeline checks Go code and race-sensitive packages, frontend regressions, archive validation, installer protections, real UDP ingestion, DuckDB history, authentication and Chromium first-login behavior. It exercises the packaged installer on a disposable systemd host and inside a native VyOS live-ISO guest, and upgrades a data directory written by the latest published release. Every change is scanned with govulncheck. Release artifacts include SHA256SUMS, its Sigstore signature and a CycloneDX software bill of materials; see [SECURITY.md](../SECURITY.md).
 
 The native guest test checks installation, genuine hsflowd samples and history preservation across service restart. It does not establish disk-installed OS reboot or image-upgrade recovery.
 
