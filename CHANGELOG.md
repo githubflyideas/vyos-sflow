@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.16
+
+- Every dependency is on its newest version, DuckDB's Go driver among them (2.10506 to 2.20000), as are the build's GitHub Actions. A data directory written by 1.2.15 opens with all its history, and 1.2.15 still opens one this version has written, so going back stays possible.
+- Each release is now tested by upgrading a data directory written by the latest published release.
+
 ## 1.2.15
 
 - Sign-ins, failed sign-ins and lock-outs, sign-outs, password changes and resets, accounts created and deleted, sources blocked and unblocked, and deleted data are written to the service log as `audit:` lines naming who did it and from where. Clearing all history used to leave no trace at all.

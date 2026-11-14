@@ -8,7 +8,7 @@ On a disposable Linux runner, install QEMU, p7zip, Expect, Go and Node.js 22. Th
 go test ./tests/vmguest
 node --test tests/vyos_vm_test.cjs
 node tests/vyos_vm.cjs \
-  --artifact dist/vyos-sflow-1.2.15-linux-amd64.run \
+  --artifact dist/vyos-sflow-1.2.16-linux-amd64.run \
   --work-dir "$RUNNER_TEMP" --evidence evidence/vyos-vm \
   --timeout 1800
 ```

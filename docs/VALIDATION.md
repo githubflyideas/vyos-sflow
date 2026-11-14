@@ -9,7 +9,7 @@
 
 ## Release checks
 
-The release pipeline checks Go code and race-sensitive packages, frontend regressions, archive validation, installer protections, real UDP ingestion, DuckDB history, authentication and Chromium first-login behavior. It exercises the packaged installer on a disposable systemd host and inside a native VyOS live-ISO guest. Release artifacts include SHA256SUMS.
+The release pipeline checks Go code and race-sensitive packages, frontend regressions, archive validation, installer protections, real UDP ingestion, DuckDB history, authentication and Chromium first-login behavior. It exercises the packaged installer on a disposable systemd host and inside a native VyOS live-ISO guest, and upgrades a data directory written by the latest published release. Every change is scanned with govulncheck. Release artifacts include SHA256SUMS, its Sigstore signature and a CycloneDX software bill of materials; see [SECURITY.md](../SECURITY.md).
 
 The native guest test checks installation, genuine hsflowd samples and history preservation across service restart. It does not establish disk-installed OS reboot or image-upgrade recovery.
 
@@ -35,6 +35,6 @@ bash packaging/test-install.sh
 node --test tests/self_installer_test.cjs
 ```
 
-The version number comes from `cmd/vyos-sflow/startup.go`; the commit is only known when passed with `-ldflags "-X main.commit=..."`, otherwise `version` prints `(unknown)`. `./vyos-sflow version` should print the checked-out commit, for example `vyos-sflow 1.2.15 (<commit>)`. Release binaries are additionally linked statically; the exact command is the "Build static Linux release candidate" step in `.github/workflows/ci.yml`. Release archives store files with owner and group `0`/`root`.
+The version number comes from `cmd/vyos-sflow/startup.go`; the commit is only known when passed with `-ldflags "-X main.commit=..."`, otherwise `version` prints `(unknown)`. `./vyos-sflow version` should print the checked-out commit, for example `vyos-sflow 1.2.16 (<commit>)`. Release binaries are additionally linked statically; the exact command is the "Build static Linux release candidate" step in `.github/workflows/ci.yml`. Release archives store files with owner and group `0`/`root`.
 
 See [VM acceptance](VYOS-VM-TEST.md). Run installation tests only on disposable hosts.

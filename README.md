@@ -40,11 +40,11 @@ exit
 In a writable directory on the router:
 
 ```sh
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.15/vyos-sflow-1.2.15-linux-amd64.tar.gz &&
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.15/SHA256SUMS &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.16/vyos-sflow-1.2.16-linux-amd64.tar.gz &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.16/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
-tar -xzf vyos-sflow-1.2.15-linux-amd64.tar.gz &&
-cd vyos-sflow-1.2.15-linux-amd64 &&
+tar -xzf vyos-sflow-1.2.16-linux-amd64.tar.gz &&
+cd vyos-sflow-1.2.16-linux-amd64 &&
 ./vyos-sflow serve
 ```
 
