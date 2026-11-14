@@ -18,7 +18,7 @@ The native guest test checks installation, genuine hsflowd samples and history p
 ## Operational limits
 
 - Recovery after VyOS image upgrades is not supported. Back up before OS changes.
-- Hardware forwarding throughput, VPP and ARM64 have not been validated.
+- Hardware forwarding throughput and VPP have not been validated.
 - UDP can lose packets. Traffic totals are sample-derived estimates, not exact interface counters.
 - Memory limits are safeguards, not measured throughput guarantees. Leave resources for routing and monitor disk use.
 - Maintain independent backups; full recovery from every disk-full/storage-failure scenario is not guaranteed.
