@@ -1,12 +1,12 @@
 module github.com/githubflyideas/vyos-sflow
 
-go 1.25.0
+go 1.26.0
 
 toolchain go1.27.4
 
 require (
 	github.com/duckdb/duckdb-go/v2 v2.10506.0
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.50.0
 )
 
 require (
