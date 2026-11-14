@@ -15,7 +15,7 @@ Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and
 | TUI | One command for a temporary view over SSH |
 | History | The latest 48 hours, stored with DuckDB™ |
 | UI text | 15 interface languages |
-| Build | Linux amd64, including VyOS |
+| Build | Linux amd64 on any x86-64 CPU, including VyOS |
 
 ## Get started in 3 steps
 

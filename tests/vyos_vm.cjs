@@ -860,6 +860,10 @@ async function main(argv) {
       "qemu-system-x86_64",
       "-accel",
       acceleration,
+      // QEMU's baseline CPU (no SSE4, no AVX), as on older routers: a
+      // build that needs more must fail here, with KVM too.
+      "-cpu",
+      "qemu64",
       "-m",
       "3072",
       "-smp",
