@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.14
+
+- Samples from hosts that sample after receive offload (frames over 64 KB) are counted again.
+
 ## 1.2.13
 
 - Data cleanup can delete one device's stored data.

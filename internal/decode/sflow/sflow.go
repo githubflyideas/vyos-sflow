@@ -357,6 +357,7 @@ func (d *Datagram) counterSample(b []byte, expanded bool, now time.Time) error {
 	return nil
 }
 
-// maxFrame is the largest frame_length accepted: the largest IP packet with
-// its link-layer header, far above any jumbo frame.
-const maxFrame = 65535 + 64
+// maxFrame is the largest frame_length accepted. Hosts that sample after
+// receive offload (GRO) report packets over 64 KB; Linux builds them up to
+// 512 KiB (BIG TCP). Anything larger is not a packet.
+const maxFrame = 512 << 10
