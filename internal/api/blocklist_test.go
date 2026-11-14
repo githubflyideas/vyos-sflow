@@ -49,6 +49,7 @@ func TestBlockingIsTheAdministrators(t *testing.T) {
 
 // The block and unblock round trip, and say no to what they cannot do.
 func TestBlockAndUnblock(t *testing.T) {
+	logged := captureLog(t)
 	dir := t.TempDir()
 	bl, err := collector.NewBlocklist(dir)
 	if err != nil {
@@ -94,6 +95,14 @@ func TestBlockAndUnblock(t *testing.T) {
 	}
 	if bl.Has(mustAddr(t, "192.0.2.5")) {
 		t.Error("still blocked after a 200 unblock")
+	}
+	for _, want := range []string{
+		`audit: source blocked exporter="192.0.2.5" note="noisy test rig" by="local" ip=192.0.2.1`,
+		`audit: source unblocked exporter="192.0.2.5" by="local" ip=192.0.2.1`,
+	} {
+		if !strings.Contains(logged.String(), want+"\n") {
+			t.Errorf("missing %q in\n%s", want, logged)
+		}
 	}
 }
 

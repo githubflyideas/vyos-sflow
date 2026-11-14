@@ -81,6 +81,7 @@ func (s *Server) changePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	u := userOf(r)
 	if u == "" || !s.checkPassword(u, in.Old) {
+		audit(r, "password change refused: wrong current password", "user", u)
 		writeJSON(w, http.StatusForbidden, map[string]string{"error": "wrong_old"})
 		return
 	}
@@ -92,6 +93,7 @@ func (s *Server) changePassword(w http.ResponseWriter, r *http.Request) {
 		fail(w, err)
 		return
 	}
+	audit(r, "password changed", "user", u)
 	// A password is changed because the old one is no longer trusted, so
 	// the sessions it opened go with it. The one making the change stays:
 	// logging somebody out of the tab they are working in, as a reward for
@@ -181,6 +183,11 @@ func (s *Server) putUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Reset {
+		audit(r, "password reset", "user", in.User)
+	} else {
+		audit(r, "user created", "user", in.User)
+	}
+	if in.Reset {
 		// a password is reset because the old one is no longer trusted, so
 		// the sessions it opened go with it
 		s.mu.Lock()
@@ -215,5 +222,6 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
+	audit(r, "user deleted", "user", u)
 	writeJSON(w, http.StatusOK, map[string]string{})
 }

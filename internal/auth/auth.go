@@ -257,8 +257,14 @@ func write(dir string, entries []Entry, admin string) error {
 type Checker struct {
 	plain  map[string]string
 	hashes map[string]string
-	mu     sync.Mutex
-	ok     map[[32]byte]bool
+	// decoy is a stored hash checked, and its answer ignored, for a name
+	// that has no account: a wrong name then costs as much time as a wrong
+	// password, and the time a refusal takes does not say which names
+	// exist. It is a real one so its cost (iterations, key length) is
+	// exactly an account's.
+	decoy string
+	mu    sync.Mutex
+	ok    map[[32]byte]bool
 }
 
 // NewChecker accepts plain (user → password) and hashed entries.
@@ -266,6 +272,9 @@ func NewChecker(plain map[string]string, hashed []Entry) *Checker {
 	c := &Checker{plain: plain, hashes: map[string]string{}, ok: map[[32]byte]bool{}}
 	for _, e := range hashed {
 		c.hashes[e.User] = e.Hash
+		if c.decoy == "" {
+			c.decoy = e.Hash
+		}
 	}
 	return c
 }
@@ -277,6 +286,9 @@ func (c *Checker) Check(user, pw string) bool {
 	}
 	h, ok := c.hashes[user]
 	if !ok {
+		if c.decoy != "" {
+			Verify(c.decoy, pw)
+		}
 		return false
 	}
 	k := sha256.Sum256([]byte(user + "\x00" + pw + "\x00" + h))

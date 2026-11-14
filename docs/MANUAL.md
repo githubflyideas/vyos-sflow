@@ -33,6 +33,16 @@ Administrators can clear all historical flow records and summaries through the c
 
 For the README foreground command, history and accounts are in `./vyso_sflow_data` relative to the directory where you launch the process. Keep that directory when restarting or replacing the executable. An installed service uses `/config/vyos-sflow/data` by default. History expires automatically after 48 hours. Stop the service before backing up the entire directory, including account files and Parquet data. Keep backups private.
 
+## Audit trail
+
+Signing in and out, failed sign-ins and lock-outs (five failures from one address lock it out for a minute), password changes and resets, accounts created and deleted, sources blocked and unblocked, and deleted data each write one line to the service log, starting with `audit:` and naming the account it concerns, who did it (`by`, `local` for the terminal view on this machine) and the address it came from. Passwords never appear in it. For an installed service:
+
+```sh
+sudo journalctl -u vyos-sflow.service --no-pager | grep audit:
+```
+
+The journal keeps these lines as long as the system's journal settings keep its logs; keep them longer by forwarding the journal to your log server.
+
 The installer refuses nonempty existing data directories. Follow the installation guide for upgrades; never delete a data directory merely to get past a warning. Existing accounts are not reset. Restart after changing a password with the command-line tool to revoke existing sessions.
 
 ## Troubleshooting
@@ -44,7 +54,7 @@ sudo systemctl status vyos-sflow.service
 sudo journalctl -u vyos-sflow.service -n 50 --no-pager
 ```
 
-For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is chosen at the prompt or with `-addr`; the sFlow UDP listener uses all interfaces. The installed service uses the addresses in its `service.env` (all interfaces in the shipped template). Restrict management access to a private network; HTTP is unencrypted and TLS is optional. See the installation guide for configuration and the validation document for compatibility limits.
+For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is chosen at the prompt or with `-addr`; the sFlow UDP listener uses all interfaces. The installed service uses the addresses in its `service.env` (all interfaces in the shipped template). Restrict management access to a private network; HTTP is unencrypted and TLS is optional. Over TLS the dashboard asks browsers to keep using HTTPS for a year (HSTS); a browser ignores that while it has not accepted the certificate. See the installation guide for configuration and the validation document for compatibility limits.
 
 ## How the numbers are counted
 
@@ -54,6 +64,10 @@ For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is
 - **Sampling rate 0.** Treated as 1 in 1 and shown as 1:0; such an agent is misconfigured.
 - **Impossible values.** A sample with a frame larger than 65,599 bytes, a sampling rate above 1 in 16,777,216, or a record above 64 TiB is refused; the count is in the log and in the status data as `implausible`.
 - **Recent minutes.** Data for a minute keeps arriving for about a minute after it; until then the minute is shown as received so far. *Current bandwidth* is the average over the last five complete minutes, so it reads 0 for the first minutes after start.
+
+## Name lookups
+
+vyos-sflow does not look up host names by itself: the dashboard and the terminal view show addresses. The API offers `POST /api/resolve` to a signed-in client, which asks for the reverse DNS (PTR) names of up to 500 addresses. Those queries go to the resolver this machine is configured to use, the same one its other programs use, at most two a second, and an answer is kept for two minutes. Private addresses are asked about as well, so a resolver outside your network would learn which internal addresses were looked up; point the system at an internal resolver if that matters.
 
 ## Deleting one device's data
 

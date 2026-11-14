@@ -43,6 +43,7 @@ func (s *Server) postBlock(w http.ResponseWriter, r *http.Request) {
 		fail(w, err)
 		return
 	}
+	audit(r, "source blocked", "exporter", a.Unmap(), "note", strings.TrimSpace(in.Note))
 	writeJSON(w, http.StatusOK, map[string]any{"blocked": s.Col.Block.List()})
 }
 
@@ -66,5 +67,6 @@ func (s *Server) deleteBlock(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "not_blocked"})
 		return
 	}
+	audit(r, "source unblocked", "exporter", a.Unmap())
 	writeJSON(w, http.StatusOK, map[string]any{"blocked": s.Col.Block.List()})
 }

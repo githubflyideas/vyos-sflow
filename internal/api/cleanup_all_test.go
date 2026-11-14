@@ -55,6 +55,7 @@ func TestCleanupRouteRequiresAdmin(t *testing.T) {
 	}
 }
 func TestCleanupHandlerClearsAllFlowHistoryPreservesIdentity(t *testing.T) {
+	logged := captureLog(t)
 	dir := t.TempDir()
 	opt := store.Options{Dir: dir, Threads: 1, EnforceSingleStream: true, StreamAgent: "192.0.2.1", StreamSubAgent: 7}
 	st, err := store.Open(opt)
@@ -109,6 +110,9 @@ func TestCleanupHandlerClearsAllFlowHistoryPreservesIdentity(t *testing.T) {
 	h.ServeHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatalf("cleanup: %d %s", w.Code, w.Body)
+	}
+	if !strings.Contains(logged.String(), `audit: all flow history deleted records=`) || !strings.Contains(logged.String(), `by="admin" ip=192.0.2.1`) {
+		t.Errorf("deleting all history left no audit line naming who did it:\n%s", logged)
 	}
 	p.FlushRows()
 	p.FlushRollups()

@@ -1,0 +1,35 @@
+name: codeql
+# Static analysis of the Go code for security mistakes. It does not gate a
+# release (linux-ci does); its findings appear under Security › Code scanning.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      CGO_ENABLED: '1'
+      GOFLAGS: -buildvcs=false
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.4'
+          cache: true
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: go
+          build-mode: manual
+      - name: Build
+        run: go build ./...
+      - uses: github/codeql-action/analyze@v3

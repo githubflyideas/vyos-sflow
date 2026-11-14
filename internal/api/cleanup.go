@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/githubflyideas/vyos-sflow/internal/store"
 	"io"
-	"log"
 	"mime"
 	"net/http"
 	"net/netip"
@@ -55,6 +54,7 @@ func (s *Server) postCleanup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	done.Bytes = max(0, disk-s.Store.Usage().DiskBytes)
+	audit(r, "all flow history deleted", "records", done.Rows)
 	writeJSON(w, http.StatusOK, done)
 }
 
@@ -92,6 +92,6 @@ func (s *Server) postPurgeExporter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	done.Bytes = max(0, disk-s.Store.Usage().DiskBytes)
-	log.Printf("cleanup: deleted %d flow records of device %s", done.Rows, a.Unmap())
+	audit(r, "device flow records deleted", "exporter", a.Unmap(), "records", done.Rows)
 	writeJSON(w, http.StatusOK, done)
 }

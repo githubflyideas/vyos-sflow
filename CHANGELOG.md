@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.15
+
+- Sign-ins, failed sign-ins and lock-outs, sign-outs, password changes and resets, accounts created and deleted, sources blocked and unblocked, and deleted data are written to the service log as `audit:` lines naming who did it and from where. Clearing all history used to leave no trace at all.
+- A sign-in with a name that has no account takes as long to refuse as one with a wrong password, so the time a refusal takes no longer tells which names exist.
+- Over TLS the dashboard sends `Strict-Transport-Security`.
+- Releases carry a signature for `SHA256SUMS` (Sigstore, made by the release workflow) and a software bill of materials (CycloneDX); `SECURITY.md` says how to verify them and how to report a vulnerability.
+- Every change is scanned with `govulncheck` before a release; CodeQL and Dependabot watch the code and its dependencies.
+- The manual describes the audit trail and how host-name lookups are made.
+
 ## 1.2.14
 
 - Samples from hosts that sample after receive offload (frames over 64 KB) are counted again.

@@ -194,8 +194,8 @@ func (f *failLimiter) blocked(ip string) bool {
 	return st != nil && f.clock().Before(st.lock)
 }
 
-// fail records a failed attempt.
-func (f *failLimiter) fail(ip string) {
+// fail records a failed attempt and reports whether it locked ip out.
+func (f *failLimiter) fail(ip string) (locked bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	now := f.clock()
@@ -218,7 +218,9 @@ func (f *failLimiter) fail(ip string) {
 	if st.n >= maxFails {
 		st.lock = now.Add(lockFor)
 		st.n, st.first = 0, now
+		return true
 	}
+	return false
 }
 
 func (f *failLimiter) ok(ip string) {
@@ -257,7 +259,10 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 				return
 			}
 			if !s.checkPassword(u, p) {
-				s.fails.fail(ip)
+				audit(r, "login failed", "user", u, "via", "basic")
+				if s.fails.fail(ip) {
+					audit(r, "login locked out for a minute", "user", u)
+				}
 				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "login"})
 				return
 			}
@@ -323,11 +328,15 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	ip := clientIP(r)
 	if s.fails.blocked(ip) {
+		audit(r, "login refused while locked out", "user", in.User)
 		tooMany(w)
 		return
 	}
 	if !s.checkPassword(in.User, in.Password) {
-		s.fails.fail(ip)
+		audit(r, "login failed", "user", in.User)
+		if s.fails.fail(ip) {
+			audit(r, "login locked out for a minute", "user", in.User)
+		}
 		time.Sleep(500 * time.Millisecond)
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "wrong user or password"})
 		return
@@ -348,6 +357,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	must := s.mustChangeNow(in.Password)
 	s.sessions[tok] = session{user: in.User, exp: now.Add(12 * time.Hour), mustChange: must}
 	s.mu.Unlock()
+	audit(r, "login", "user", in.User)
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: tok, Path: "/", HttpOnly: true,
 		SameSite: http.SameSiteStrictMode, Secure: secureCookie(r)})
 	writeJSON(w, http.StatusOK, map[string]any{"user": in.User, "must_change": must})
@@ -372,8 +382,12 @@ func secureCookie(r *http.Request) bool {
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie(cookieName); err == nil {
 		s.mu.Lock()
+		se, had := s.sessions[c.Value]
 		delete(s.sessions, c.Value)
 		s.mu.Unlock()
+		if had {
+			audit(r, "logout", "user", se.user)
+		}
 	}
 	// The clearing cookie must match the one it replaces on the attributes
 	// browsers compare, or the real one is left in place.

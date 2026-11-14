@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/tls"
 	"io/fs"
 	"net/http/httptest"
 	"regexp"
@@ -84,5 +85,23 @@ func TestEmbeddedPageCompatibleWithPolicy(t *testing.T) {
 				t.Errorf("%s uses %q, which the CSP blocks", name, banned)
 			}
 		}
+	}
+}
+
+// HSTS goes out over TLS only: on plain HTTP a browser ignores it, and the
+// same installation is reached both ways.
+func TestHSTSOverTLSOnly(t *testing.T) {
+	h := (&Server{Static: web.FS()}).Handler()
+	plain := httptest.NewRecorder()
+	h.ServeHTTP(plain, httptest.NewRequest("GET", "/", nil))
+	if got := plain.Header().Get("Strict-Transport-Security"); got != "" {
+		t.Errorf("plain HTTP: %q", got)
+	}
+	r := httptest.NewRequest("GET", "/", nil)
+	r.TLS = &tls.ConnectionState{}
+	secure := httptest.NewRecorder()
+	h.ServeHTTP(secure, r)
+	if got := secure.Header().Get("Strict-Transport-Security"); got != "max-age=31536000" {
+		t.Errorf("TLS: %q", got)
 	}
 }

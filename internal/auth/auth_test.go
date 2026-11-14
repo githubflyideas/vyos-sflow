@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestDefaultPasswordContract(t *testing.T) {
@@ -90,5 +91,26 @@ func TestDelete(t *testing.T) {
 	es, _ := Load(dir)
 	if len(es) != 1 || es[0].User != "admin" || !NewChecker(nil, es).Check("admin", "a") {
 		t.Fatalf("%+v", es)
+	}
+}
+
+// A name with no account takes as long to refuse as a wrong password, so
+// the time a refusal takes does not tell which names exist.
+func TestUnknownNameCostsAsMuchAsWrongPassword(t *testing.T) {
+	c := NewChecker(nil, []Entry{{User: "admin", Hash: Hash("right-password-1")}})
+	took := func(user string) time.Duration {
+		best := time.Duration(1 << 62)
+		for range 2 {
+			start := time.Now()
+			if c.Check(user, "wrong-password-1") {
+				t.Fatal("accepted")
+			}
+			best = min(best, time.Since(start))
+		}
+		return best
+	}
+	wrong, unknown := took("admin"), took("nobody")
+	if unknown < wrong/2 {
+		t.Fatalf("an unknown name is refused in %v, a wrong password in %v", unknown, wrong)
 	}
 }

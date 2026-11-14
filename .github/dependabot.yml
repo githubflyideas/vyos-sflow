@@ -1,0 +1,12 @@
+# Weekly pull requests for outdated Go modules (DuckDB's bindings among them)
+# and GitHub Actions; security fixes are proposed as soon as they are known.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

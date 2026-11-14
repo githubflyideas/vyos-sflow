@@ -21,6 +21,13 @@ func securityHeaders(next http.Handler) http.Handler {
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "no-referrer")
 		h.Set("Cross-Origin-Opener-Policy", "same-origin")
+		if r.TLS != nil {
+			// Only over TLS, where a browser takes it (RFC 6797 ignores it on
+			// plain HTTP, and on a certificate it has not accepted). No
+			// includeSubDomains: the name this runs under is often shared
+			// with other machines that may not all speak HTTPS.
+			h.Set("Strict-Transport-Security", "max-age=31536000")
+		}
 		next.ServeHTTP(w, r)
 	})
 }
