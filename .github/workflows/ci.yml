@@ -130,7 +130,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.27.4'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: vyos-sflow-1.2.15-linux-amd64
           path: dist
@@ -174,7 +174,7 @@ jobs:
           if gh release view "v$v" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "v$v is already released"; echo "new=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           awk -v h="## $v" '$0==h{on=1;next} /^## /{if(on)exit} on' CHANGELOG.md > notes.md
           echo "ver=$v" >> "$GITHUB_OUTPUT"; echo "new=true" >> "$GITHUB_OUTPUT"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: steps.v.outputs.new == 'true'
         with:
           name: vyos-sflow-1.2.15-linux-amd64
