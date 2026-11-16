@@ -69,7 +69,8 @@ func TestSeriesMarksWhereTheDataBegins(t *testing.T) {
 // the bucket it covers, not over the whole bucket: no ramp at the start.
 func TestFirstBucketCountsOnlyTheCoveredPart(t *testing.T) {
 	s := chartStore(t)
-	// five-minute buckets (a 6-hour range), data from two minutes into one
+	// five-minute buckets (a range of six and a half hours), data from two
+	// minutes into one
 	base := time.Now().UTC().Add(-3 * time.Hour).Truncate(5 * time.Minute)
 	begin := base.Add(2 * time.Minute)
 	var rows []Row
@@ -79,7 +80,7 @@ func TestFirstBucketCountsOnlyTheCoveredPart(t *testing.T) {
 	if err := s.AppendRows(rows); err != nil {
 		t.Fatal(err)
 	}
-	q := Query{From: base.Add(-2 * time.Hour), To: base.Add(4 * time.Hour)}
+	q := Query{From: base.Add(-150 * time.Minute), To: base.Add(4 * time.Hour)}
 	if s.rollupOK(q, false) {
 		t.Skip("range answered from the summaries")
 	}

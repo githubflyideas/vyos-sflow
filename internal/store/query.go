@@ -380,10 +380,12 @@ func bucketCount(start, to time.Time, step time.Duration) int {
 	return n
 }
 
-// StepFor picks a bucket size giving at most ~300 points.
+// StepFor picks a bucket size giving at most 360 points, so that six hours
+// are still drawn minute by minute: in 5-minute buckets a burst of a few
+// minutes was averaged down to well below what the interface carried.
 func StepFor(span time.Duration) time.Duration {
 	for _, s := range []time.Duration{time.Minute, 5 * time.Minute, 15 * time.Minute, time.Hour, 3 * time.Hour, 6 * time.Hour, 24 * time.Hour} {
-		if span/s <= 300 {
+		if span/s <= 360 {
 			return s
 		}
 	}
@@ -498,12 +500,20 @@ type Totals struct {
 	Wire  uint64 `json:"wire"`
 	Pkts  uint64 `json:"pkts"`
 	Flows uint64 `json:"flows"`
-	Hosts uint64 `json:"hosts"` // internal addresses seen
-	Peers uint64 `json:"peers"` // external addresses seen
+	Hosts uint64 `json:"hosts,omitempty"` // internal addresses seen
+	Peers uint64 `json:"peers,omitempty"` // external addresses seen
 
 }
 
-func (s *Store) Totals(q Query) (Totals, error) {
+// Totals are the sums and the host counts of a range.
+func (s *Store) Totals(q Query) (Totals, error) { return s.totals(q, true) }
+
+// Sums is Totals without the host counts. Counting the distinct addresses
+// of two days reads every flow record and takes several times as long as
+// everything else the overview shows, which does not show them.
+func (s *Store) Sums(q Query) (Totals, error) { return s.totals(q, false) }
+
+func (s *Store) totals(q Query, hosts bool) (Totals, error) {
 	var t Totals
 	if s.rollupOK(q, false) {
 		one := func(sqlq string, dst ...any) error {
@@ -516,6 +526,9 @@ func (s *Store) Totals(q Query) (Totals, error) {
 		if err := one(`SELECT coalesce(CAST(CASE WHEN sum(bytes) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(bytes) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(flows) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(flows) END AS UBIGINT),0) FROM {r_ts} WHERE ts >= ? AND ts < ?`,
 			&t.Bytes, &t.Wire, &t.Pkts, &t.Flows); err != nil {
 			return t, err
+		}
+		if !hosts {
+			return t, nil
 		}
 		if err := one(`SELECT count(DISTINCT ip) FILTER (WHERE internal), count(DISTINCT ip) FILTER (WHERE NOT internal) FROM {r_host} WHERE ts >= ? AND ts < ?`, &t.Hosts, &t.Peers); err != nil {
 			return t, err
@@ -531,7 +544,7 @@ func (s *Store) Totals(q Query) (Totals, error) {
 	err = s.DB.QueryRow(fmt.Sprintf(`SELECT coalesce(CAST(CASE WHEN sum(bytes) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(bytes) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(flows) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(flows) END AS UBIGINT),0)
 		FROM %s WHERE %s`, src, where), args...).
 		Scan(&t.Bytes, &t.Wire, &t.Pkts, &t.Flows)
-	if err != nil {
+	if err != nil || !hosts {
 		return t, err
 	}
 	err = s.DB.QueryRow(s.hostCounts(q, where), args...).Scan(&t.Hosts, &t.Peers)

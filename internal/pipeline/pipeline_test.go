@@ -443,7 +443,7 @@ func TestSeriesNoGaps(t *testing.T) {
 	for _, tc := range []struct {
 		span time.Duration
 		step int64
-	}{{6 * time.Hour, 300}, {24 * time.Hour, 300}} {
+	}{{6 * time.Hour, 60}, {24 * time.Hour, 300}} {
 		q := store.Query{From: now.Add(-tc.span), To: now}
 		if tc.span > 6*time.Hour {
 			q.From = q.From.Truncate(time.Hour)

@@ -63,11 +63,6 @@ func limitParam(r *http.Request, def int) int {
 
 // ---------------------------------------------------------------- overview
 
-type slicePart struct {
-	Key  string `json:"key"`
-	Wire uint64 `json:"wire"`
-}
-
 func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 	q, err := parseQuery(r)
 	if err != nil {
@@ -75,7 +70,7 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	out := map[string]any{"from": q.From.UnixMilli(), "to": q.To.UnixMilli()}
-	tot, err := s.Store.Totals(q)
+	tot, err := s.Store.Sums(q)
 	if err != nil {
 		fail(w, err)
 		return
@@ -84,7 +79,7 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 	nowQ := q
 	nowQ.To = time.Now().UTC().Truncate(time.Minute)
 	nowQ.From = nowQ.To.Add(-5 * time.Minute)
-	if nt, err := s.Store.Totals(nowQ); err == nil {
+	if nt, err := s.Store.Sums(nowQ); err == nil {
 		out["now_bps"] = float64(nt.Wire) * 8 / 300
 	}
 
@@ -132,32 +127,6 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	out["peak_bps"], out["peak_at"] = peak, peakAt
-	donut := func(dim string, keep int) []slicePart {
-		rows, err := s.Store.TopN(q, dim, 20)
-		if err != nil {
-			return nil
-		}
-		var parts []slicePart
-		var other uint64
-		for i, t := range rows {
-			if i < keep && t.Key != "" {
-				parts = append(parts, slicePart{t.Key, t.Wire})
-			} else {
-				other += t.Wire
-			}
-		}
-		if other > 0 {
-			parts = append(parts, slicePart{"__other__", other})
-		}
-		return parts
-	}
-	out["proto"] = donut("proto", 2)
-	if hosts, err := s.Store.TopN(q, "host", 10); err == nil {
-		out["top_hosts"] = hosts
-	}
-	if apps, err := s.Store.TopN(q, "app", 10); err == nil {
-		out["top_apps"] = apps
-	}
 	writeJSON(w, http.StatusOK, out)
 }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.17
+
+- The overview opens in a fraction of a second at 24 and 48 hours, where it took many seconds.
+- A 6-hour chart is drawn minute by minute instead of in 5-minute averages, so short bursts show at their real height.
+
 ## 1.2.16
 
 - Every Go module is on its newest version, as are the build's GitHub Actions; `govulncheck` no longer reports the known vulnerability the old module set carried. DuckDB stays on 1.5.
