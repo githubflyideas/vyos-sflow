@@ -154,8 +154,25 @@ type IfaceCheck struct {
 func (c *Collector) IfaceChecks(now time.Time) []IfaceCheck {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	// The ports sFlow is enabled on, per device: the interfaces its flow
+	// samples come from. A device also sends the counters of other ports
+	// and its samples name the ports traffic left by, but only these are
+	// listed, as the device itself is configured.
+	sampled := map[netip.Addr]map[uint32]bool{}
+	for k := range c.sf {
+		if k.source>>32 != 0 || uint32(k.source) == 0 {
+			continue // a VLAN or another kind of source, not a port
+		}
+		if sampled[k.agent] == nil {
+			sampled[k.agent] = map[uint32]bool{}
+		}
+		sampled[k.agent][uint32(k.source)] = true
+	}
 	var out []IfaceCheck
 	for k, s := range c.ifc {
+		if ports := sampled[k.agent]; ports != nil && !ports[k.idx] {
+			continue
+		}
 		if !s.haveCnt || len(s.snaps) == 0 || now.Sub(s.cur.t) > 5*time.Minute {
 			continue
 		}

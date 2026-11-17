@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -366,6 +367,7 @@ func (f *FileChecker) Users() []string {
 		for u := range f.fixed {
 			out = append(out, u)
 		}
+		sort.Strings(out)
 		return out
 	}
 	es, _ := Load(f.dir)
@@ -380,8 +382,12 @@ func (f *FileChecker) Users() []string {
 // records (see adminOf).
 func (f *FileChecker) Admin() string {
 	if f.fixed != nil {
-		us := f.Users()
-		if len(us) > 0 {
+		// "admin" when it is one of them; otherwise the first by name, the
+		// same one every time (it was whichever the map gave first)
+		if _, ok := f.fixed["admin"]; ok {
+			return "admin"
+		}
+		if us := f.Users(); len(us) > 0 {
 			return us[0]
 		}
 		return ""

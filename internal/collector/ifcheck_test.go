@@ -16,9 +16,9 @@ type checkSink struct{}
 func (checkSink) Submit([]flow.Record)             {}
 func (checkSink) SubmitCounters([]flow.IfCounters) {}
 
-// Two ports, traffic in through 1 and out through 2, sampled 1 in 100 on
-// the way in, counters every 20 s: the samples add up to what the device
-// counted, per port and direction.
+// Two ports, traffic in through 1 and out through 2, sFlow enabled on 1
+// only, sampled 1 in 100, counters of both every 20 s: only port 1 is
+// listed, and its samples add up to what the device counted.
 func TestIfaceChecksAgainstCounters(t *testing.T) {
 	c := New(&checkSink{})
 	agent := netip.MustParseAddr("192.0.2.9")
@@ -59,17 +59,11 @@ func TestIfaceChecksAgainstCounters(t *testing.T) {
 		}
 	}
 	got := c.IfaceChecks(at)
-	if len(got) != 2 {
-		t.Fatalf("interfaces %+v", got)
+	if len(got) != 1 || got[0].IfIndex != 1 {
+		t.Fatalf("want only port 1, where sFlow is enabled: %+v", got)
 	}
-	for _, ic := range got {
-		dev, est := ic.DevInBps, ic.EstInBps
-		if ic.IfIndex == 2 {
-			dev, est = ic.DevOutBps, ic.EstOutBps
-		}
-		if dev <= 0 || math.Abs(est/dev-1) > 0.05 {
-			t.Errorf("if %d: estimated %.0f bps, device counted %.0f bps over %.0f s", ic.IfIndex, est, dev, ic.Seconds)
-		}
-		t.Logf("if %d: estimated %.0f bps, device %.0f bps (%.1f%%) over %.0f s", ic.IfIndex, est, dev, est/dev*100, ic.Seconds)
+	ic := got[0]
+	if dev, est := ic.DevInBps, ic.EstInBps; dev <= 0 || math.Abs(est/dev-1) > 0.05 {
+		t.Errorf("estimated %.0f bps, device counted %.0f bps over %.0f s", est, dev, ic.Seconds)
 	}
 }

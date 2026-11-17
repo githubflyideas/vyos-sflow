@@ -173,7 +173,7 @@ func serveConfigured(ctx context.Context, cfg settings.Config, initialPassword s
 	}
 	defer os.Remove(tokenPath)
 	_, port, _ := net.SplitHostPort(listener.LocalAddr())
-	srv := &api.Server{Store: st, Pipe: pipe, Col: col, DNS: dnsres.New(dnsres.Options{PerSecond: 2, TTL: 120 * time.Second}),
+	srv := &api.Server{Store: st, Pipe: pipe, Col: col, DNS: dnsres.New(dnsres.Options{PerSecond: 50, MaxConcurr: 32, TTL: 10 * time.Minute}),
 		Static: web.FS(), Version: version, BuildKind: "community", Check: checker.Check, Exists: checker.Exists, Accounts: checker, LocalTok: token, DataDir: cfg.Data, Started: time.Now(),
 		Listen: []api.ListenInfo{{Name: "sflow", Port: port}}}
 	mux := http.NewServeMux()

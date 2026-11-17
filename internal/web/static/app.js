@@ -511,7 +511,7 @@ async function talkers(el) {
  const [cl, sv, ov] = await Promise.all([api('topn', {dim: 'client', limit: 30}), api('topn', {dim: 'server', limit: 30}), api('overview')]);
  const tot = ov.totals || {};
  const table = (rows, head) => `<table><thead><tr><th><span class="vh">#</span></th><th>${t(head)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
-  ${(rows || []).map((r, i) => `<tr><td class="rank">${i + 1}</td><td>${esc(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">${emptyText()}</td></tr>`}
+  ${(rows || []).map((r, i) => `<tr><td class="rank">${i + 1}</td><td>${ipCell(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">${emptyText()}</td></tr>`}
   <tr class="sum"><td></td><td>${t('topn.global_total')}</td><td>${fmtBytes(tot.wire)}</td><td>${nf(tot.pkts || 0)}</td><td>${nf(tot.flows || 0)}</td></tr></tbody></table>`;
  el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}<p class="muted" id="topPerspectives">${esc(t('topn.perspectives'))}</p></div>
   ${panel('c6', t('ov.top_clients'), esc(t('topn.top_n', {n: 30})), table(cl.rows, 'col.client'))}
@@ -523,7 +523,7 @@ async function topTable(el, dim) {
  const d = await api('topn', {dim, limit: 66}), rows = d.rows || [];
  el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}</div>` + panel('c12', t('nav.topn'), '', `<label>${t('nav.topn')} <select id="topDim">${DIMS.map(k => `<option value="${k}" ${dim === k ? 'selected' : ''}>${dimLabel(k)}</option>`).join('')}</select></label>
  <table><thead><tr><th>${dimLabel(dim)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
- ${rows.map(r => `<tr><td>${esc(dim === 'proto' ? proto(r.key) : r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="4" class="empty">${emptyText()}</td></tr>`}</tbody></table>`) + '</div>';
+ ${rows.map(r => `<tr><td>${dim === 'proto' ? esc(proto(r.key)) : dim === 'app' ? esc(r.key) : ipCell(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="4" class="empty">${emptyText()}</td></tr>`}</tbody></table>`) + '</div>';
  $('#topDim').onchange = e => { state.dim = e.target.value; render(true); };
  bindMode(el);
 }
@@ -537,7 +537,7 @@ views.records = async el => {
  const tf = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
  el.innerHTML = panel('c12', t('rec.title'), esc(t('rec.latest', {n: nf(rows.length)})) + ' · ' + esc(t('rec.sorted')), `<p class="muted" id="recordWindow" data-from="${esc(d.from || '')}" data-to="${esc(d.to || '')}" data-limit="${esc(d.limit ?? '')}">${esc(t('rec.window', {from: d.from ? new Date(d.from).toLocaleString(LANG, {timeZone: 'UTC'}) + ' UTC' : '—', to: d.to ? new Date(d.to).toLocaleString(LANG, {timeZone: 'UTC'}) + ' UTC' : '—', limit: d.limit == null ? '—' : nf(d.limit)}))}</p><p class="muted" id="recordEstimates">${esc(t('rec.estimates'))}</p><form class="recf" id="recF"><input id="recIP" value="${esc(state.ip)}" placeholder="${esc(t('field.ip'))} (192.0.2.10)" spellcheck="false" autocomplete="off"><button class="btn">${esc(t('rec.filter'))}</button>${state.ip ? `<button type="button" class="btn" id="recClr">${esc(t('rec.all'))}</button>` : ''}</form>
  <div class="tablewrap"><table class="rec"><thead><tr><th>${t('rc.time')}</th><th>${t('rc.client')}</th><th>${t('rc.server')}</th><th>${t('rc.proto')}</th><th>${t('rc.app')}</th><th>${t('rc.traffic')}</th><th>${t('rc.packets')}</th><th>${t('rc.in_if')} → ${t('rc.out_if')}</th><th>${t('rc.sampling')}</th></tr></thead><tbody>
- ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${esc(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${esc(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>${Number.isFinite(r.mult) && r.mult > 0 ? esc(t('rec.multiplier', {n: nf(r.mult, 2)})) : '—'}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>
+ ${rows.map(r => `<tr><td class="nw">${esc(tf.format(new Date(r.ts)))}</td><td class="mono">${ipCell(r.client)}<span class="muted">:${r.cport}</span></td><td class="mono">${ipCell(r.server)}<span class="muted">:${r.port}</span></td><td>${esc(proto(r.proto))}</td><td>${esc(appLabel(r.app))}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td class="nw">${ifLabel(r.in_if)} → ${ifLabel(r.out_if)}</td><td>${Number.isFinite(r.mult) && r.mult > 0 ? esc(t('rec.multiplier', {n: nf(r.mult, 2)})) : '—'}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">${emptyText()}</td></tr>`}</tbody></table></div>
  ${pg || d.more ? `<div class="pager"><button class="btn" id="recPrev" ${pg ? '' : 'disabled'}>${esc(t('rec.prev'))}</button><span class="muted">${esc(t('rec.page', {n: nf(pg + 1)}))}</span><button class="btn" id="recNext" ${d.more ? '' : 'disabled'}>${esc(t('rec.next'))}</button></div>` : ''}`);
  $('#recF').onsubmit = e => { e.preventDefault(); state.ip = $('#recIP').value.trim(); state.rp = 0; render(true); };
  if ($('#recClr')) $('#recClr').onclick = () => { state.ip = ''; state.rp = 0; render(true); };
@@ -695,6 +695,34 @@ function refreshLabel() {
 
 
 let drawnAt = 0;
+// Addresses are shown with their reverse DNS names, internal ones too.
+// Names are asked for in one batch after a page is drawn and kept for the
+// session; an address without a name stays as it is.
+const ipCell = ip => `<span data-ip="${esc(ip)}">${esc(ip)}</span>`;
+const dnsNames = new Map();
+function showNames(root) {
+  root.querySelectorAll('[data-ip]').forEach(e => {
+    const n = dnsNames.get(e.dataset.ip);
+    if (n && !e.querySelector('.hn')) e.insertAdjacentHTML('beforeend', ` <span class="hn muted">${esc(n)}</span>`);
+  });
+}
+async function resolveNames(root, seq) {
+  // the server answers what it can within a second and keeps looking up
+  // the rest, so a page of addresses is asked about again a few times
+  for (let round = 0; round < 6 && seq === loadSeq; round++) {
+    const ask = [...new Set([...root.querySelectorAll('[data-ip]')].map(e => e.dataset.ip))].filter(ip => !dnsNames.has(ip)).slice(0, 500);
+    showNames(root);
+    if (!ask.length) return;
+    try {
+      const res = await fetch('/api/resolve', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ips: ask})});
+      if (!res.ok) return;
+      const got = await res.json();
+      ask.forEach(ip => { if (got[ip]) dnsNames.set(ip, got[ip]); });
+      if (seq === loadSeq) showNames(root);
+    } catch (e) { return; }
+    await new Promise(r => setTimeout(r, 1500));
+  }
+}
 async function render(push) {
   const seq = ++loadSeq;
   if (me?.must_change) state.v = 'account';
@@ -716,7 +744,7 @@ async function render(push) {
   } catch (e) {
     if (e.message !== 'login' && e.message !== 'stale' && seq === loadSeq) el.innerHTML = errorBox(e);
   }
-  if (seq === loadSeq) { drawnAt = Date.now(); focusableScroll(el); }
+  if (seq === loadSeq) { drawnAt = Date.now(); focusableScroll(el); resolveNames(el, seq); }
 }
 // A panel that scrolls sideways must be reachable with the keyboard to be
 // scrolled at all.

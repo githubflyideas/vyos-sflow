@@ -67,7 +67,7 @@ For direct execution the Web UI listens on `127.0.0.1:8066` unless an address is
 
 ## Name lookups
 
-vyos-sflow does not look up host names by itself: the dashboard and the terminal view show addresses. The API offers `POST /api/resolve` to a signed-in client, which asks for the reverse DNS (PTR) names of up to 500 addresses. Those queries go to the resolver this machine is configured to use, the same one its other programs use, at most two a second, and an answer is kept for two minutes. Private addresses are asked about as well, so a resolver outside your network would learn which internal addresses were looked up; point the system at an internal resolver if that matters.
+The rankings and the flow records show each address with its reverse DNS (PTR) name, internal addresses included. The names are asked of the resolver this machine is configured to use, the same one its other programs use, at most 50 a second, and an answer is kept for ten minutes; an address without a PTR record is shown as it is. Private addresses are asked about too, so a resolver outside your network would learn which internal addresses were looked up; point the system at an internal resolver if that matters. The terminal view shows addresses only.
 
 ## Deleting one device's data
 

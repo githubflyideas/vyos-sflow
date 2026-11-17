@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.18
+
+- The interface list shows only the ports sFlow is enabled on.
+- Addresses in the rankings and flow records are shown with their reverse DNS names, internal ones included.
+
 ## 1.2.17
 
 - The overview opens in a fraction of a second at 24 and 48 hours, where it took many seconds.
