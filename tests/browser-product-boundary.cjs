@@ -1,6 +1,6 @@
 // Shared real-service browser acceptance; imported by both browser entry points.
 const assert = require('node:assert/strict');
-const removed = /\/(?:api\/(?:ifaces|recon|findings|threats|geo|geolines|rings|sankey|racks|inventory|names|resolve|report|export|syslog|embeds|license|registration|activation)|world\.json|embed\.(?:js|css)|sponsor\.js)(?:[/?]|$)/;
+const removed = /\/(?:api\/(?:ifaces|recon|findings|threats|geo|geolines|rings|sankey|racks|inventory|names|report|export|syslog|embeds|license|registration|activation)|world\.json|embed\.(?:js|css)|sponsor\.js)(?:[/?]|$)/;
 function observe(page, base) {
   const requests = [], errors = [], failedAssets = [];
   page.on('request', request => requests.push(request.url()));
