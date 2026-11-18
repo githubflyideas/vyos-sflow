@@ -71,11 +71,12 @@ type sfKey struct {
 type sfState struct {
 	lastPool, lastSeq, lastDrops uint32
 	init                         bool
-	winMiss, winRecv             float64
+	winDrops, winRecv            float64
+	winDg, winDgLost             uint64 // the agent's datagram counts when the window began
 	evalAt                       time.Time
 	eff                          float64
 	rate                         uint32
-	lost, drops                  uint64
+	drops                        uint64
 }
 
 type sfAgent struct {
@@ -304,7 +305,7 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 			st = &sfState{evalAt: now}
 			c.sf[sfKey{agentAddr, d.SubAgent, s.SourceID}] = st
 		}
-		if !st.update(s, now) || !s.Decoded {
+		if !st.update(s, now, ag) || !s.Decoded {
 			continue
 		}
 		r := s.Record
@@ -325,47 +326,58 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 	return true
 }
 
-// update tracks the effective sampling rate: the configured rate, raised
-// by the samples that never arrived, lost on the way (gaps in the sequence
-// numbers) or dropped by the agent itself (its drop counter). The agent's
-// sample_pool is not used: vendors count it differently (H3C among them),
-// and a rate derived from it scaled a 1:10240 port by about 1:12200,
-// a fifth more traffic than the interface carried.
-func (st *sfState) update(s *sflow.FlowSample, now time.Time) bool {
+// update tracks the effective sampling rate: the rate the agent declares,
+// raised by what never arrived. Two losses are counted, both as the agent
+// itself numbers them:
+//
+//   - datagrams lost on the way: gaps in the datagram sequence numbers,
+//     the same for every sampler of the agent;
+//   - samples the agent dropped before sending: its drop counter.
+//
+// Neither the samples' own sequence numbers nor sample_pool are used.
+// Vendors number and count them differently: an H3C switch numbers the
+// samples of its samplers in one series, so each sampler saw half its
+// numbers missing and was scaled up more than twofold, and its pool scaled
+// another port a fifth too high.
+func (st *sfState) update(s *sflow.FlowSample, now time.Time, ag *sfAgent) bool {
 	// the same sample delivered again adds nothing
 	if st.init && s.Seq == st.lastSeq && s.Pool == st.lastPool {
 		return false
 	}
-	if st.init && s.Rate != st.rate {
-		// The agent's configured rate changed: what was measured against
-		// the old one is dropped, so the new samples are not scaled by it,
-		// and the declared rate applies until there is enough to measure.
-		st.eff = 0
-		st.winMiss, st.winRecv = 0, 0
+	if !st.init || s.Rate != st.rate {
+		// first sample, or the agent's configured rate changed: what was
+		// measured against the old one is dropped, so the new samples are
+		// not scaled by it, and the declared rate applies until there is
+		// enough to measure.
+		if st.init {
+			st.eff = 0
+		}
+		st.winDrops, st.winRecv = 0, 0
+		st.winDg, st.winDgLost = ag.datagrams, ag.lostDgram
 		st.evalAt = now
 	}
 	st.rate = s.Rate
 	if st.init {
 		st.winRecv++
-		if gap := s.Seq - st.lastSeq - 1; gap > 0 && gap < 1<<20 {
-			st.lost += uint64(gap)
-			st.winMiss += float64(gap)
-		}
 		if dd := s.Drops - st.lastDrops; dd < 1<<31 {
 			st.drops += uint64(dd)
-			st.winMiss += float64(dd)
+			st.winDrops += float64(dd)
 		}
 	}
 	st.init = true
 	st.lastPool, st.lastSeq, st.lastDrops = s.Pool, s.Seq, s.Drops
 	if now.Sub(st.evalAt) >= 30*time.Second && st.winRecv >= 30 {
 		cfg := float64(s.Rate)
-		e := cfg * (st.winRecv + st.winMiss) / st.winRecv
+		e := cfg * (st.winRecv + st.winDrops) / st.winRecv
+		if dg, lost := ag.datagrams-st.winDg, ag.lostDgram-st.winDgLost; dg > 0 {
+			e *= float64(dg+lost) / float64(dg)
+		}
 		if e > cfg*4 {
 			e = cfg // implausible: a counter reset, not three quarters lost
 		}
 		st.eff = e
-		st.winMiss, st.winRecv = 0, 0
+		st.winDrops, st.winRecv = 0, 0
+		st.winDg, st.winDgLost = ag.datagrams, ag.lostDgram
 		st.evalAt = now
 	}
 	return true
@@ -429,14 +441,13 @@ func (c *Collector) Sources() []SourceInfo {
 		if c.streamEnforced {
 			si.Domain = c.allowedSubAgent
 		}
-		var lost, drops uint64
+		var drops uint64
 		rates := map[uint32]bool{}
 		var effSum, effN float64
 		for k, st := range c.sf {
 			if k.agent != ag.addr {
 				continue
 			}
-			lost += st.lost
 			drops += st.drops
 			rates[st.rate] = true
 			if st.eff > 0 {
@@ -444,11 +455,24 @@ func (c *Collector) Sources() []SourceInfo {
 				effN++
 			}
 		}
+		// lost on the way: datagrams missing from the agent's numbering,
+		// counted as the share of datagrams; dropped by the agent: its drop
+		// counter, as the share of samples
+		var transit float64
+		if t := ag.datagrams + ag.lostDgram; t > 0 {
+			transit = float64(ag.lostDgram) / float64(t)
+		}
+		lost := uint64(0)
+		if transit > 0 && transit < 1 {
+			lost = uint64(float64(ag.samples) * transit / (1 - transit))
+		}
 		si.LostRecords = lost + drops
+		si.TransitPct = transit * 100
+		if t := ag.samples + drops; t > 0 {
+			si.DropPct = float64(drops) / float64(t) * 100
+		}
 		if t := ag.samples + si.LostRecords; t > 0 {
 			si.LostPct = float64(si.LostRecords) / float64(t) * 100
-			si.TransitPct = float64(lost) / float64(t) * 100
-			si.DropPct = float64(drops) / float64(t) * 100
 		}
 		var rs []int
 		for r := range rates {

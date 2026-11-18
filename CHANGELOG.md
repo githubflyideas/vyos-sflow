@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.21
+
+- Traffic and the interface check are scaled by the sampling rate the switch declares, raised only by datagrams lost on the way and samples the switch reports dropped. On switches that number the samples of their samplers in one series (H3C), 1.2.20 took the gaps for lost samples and counted about twice the traffic.
+- Losses on the way are reported from the datagram sequence numbers.
+
 ## 1.2.20
 
 - Traffic is scaled by the sampling rate the switch declares, raised only by samples lost on the way or dropped by the switch. The switch's sample_pool is no longer used for it.
