@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.19
+
+- A larger, wide logo in the header.
+- "Runtime diagnostics" is now "Collection status", and the overview's collection panel "Collection overview".
+- The grey theme is now light green, the default as before.
+- Expired data is removed once an hour.
+
 ## 1.2.18
 
 - The interface list shows only the ports sFlow is enabled on.

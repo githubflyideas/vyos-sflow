@@ -169,6 +169,9 @@ func (p *Pipeline) run(ctx context.Context) {
 	rowTick := time.NewTicker(time.Second)
 	rollTick := time.NewTicker(time.Minute)
 	sealTick := time.NewTicker(5 * time.Minute)
+	// data older than the 48 hours kept is removed once an hour
+	retainTick := time.NewTicker(time.Hour)
+	defer retainTick.Stop()
 	defer rowTick.Stop()
 	defer rollTick.Stop()
 	defer sealTick.Stop()
@@ -216,6 +219,7 @@ func (p *Pipeline) run(ctx context.Context) {
 			if err := p.st.Seal(now); err != nil {
 				p.fail(err)
 			}
+		case now := <-retainTick.C:
 			if err := p.st.Retain(now); err != nil {
 				p.fail(err)
 			}

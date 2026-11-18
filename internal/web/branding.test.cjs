@@ -11,3 +11,10 @@ test('embedded Web logo is the unchanged vyos-sflow project artwork', () => {
   assert.match(svg,/<title>vyos-sflow<\/title>/);
   assert.doesNotMatch(svg,/traffic66/i);
 });
+test('the header logo is the same artwork laid out wide', () => {
+  const svg=fs.readFileSync(path.join(__dirname,'static/logo-wide.svg'),'utf8');
+  const image=svg.match(/href="data:image\/png;base64,([A-Za-z0-9+/=]+)"/);
+  assert.ok(image,'the wide logo must embed the project PNG');
+  assert.deepEqual(Buffer.from(image[1],'base64'),fs.readFileSync(path.join(__dirname,'../../docs/images/vyos-sflow-logo-wide.png')));
+  assert.match(fs.readFileSync(path.join(__dirname,'static/index.html'),'utf8'),/class="logo" src="\/logo\?wide=1"/);
+});

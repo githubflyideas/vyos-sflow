@@ -2,7 +2,7 @@
 
 The vyos-sflow source code and documentation are licensed under the [Apache License 2.0](LICENSE). As stated in section 6 of that license, it does not grant permission to use the trade names, trademarks, service marks or product names of the licensor.
 
-The copyright holder reserves all rights in the names "vyos-sflow" and "Traffic66" and in the vyos-sflow logo (`docs/images/vyos-sflow-logo.png`, `internal/web/static/logo.svg`) as identifiers of this project. This notice does not claim that any of them is a registered trademark.
+The copyright holder reserves all rights in the names "vyos-sflow" and "Traffic66" and in the vyos-sflow logo (`docs/images/vyos-sflow-logo.png`, `docs/images/vyos-sflow-logo-wide.png`, `internal/web/static/logo.svg`, `internal/web/static/logo-wide.svg`) as identifiers of this project. This notice does not claim that any of them is a registered trademark.
 
 Without separate permission you may:
 

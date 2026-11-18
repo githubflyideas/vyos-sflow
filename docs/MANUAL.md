@@ -31,7 +31,7 @@ Administrators can clear all historical flow records and summaries through the c
 
 ## Data and accounts
 
-For the README foreground command, history and accounts are in `./vyso_sflow_data` relative to the directory where you launch the process. Keep that directory when restarting or replacing the executable. An installed service uses `/config/vyos-sflow/data` by default. History expires automatically after 48 hours. Stop the service before backing up the entire directory, including account files and Parquet data. Keep backups private.
+For the README foreground command, history and accounts are in `./vyso_sflow_data` relative to the directory where you launch the process. Keep that directory when restarting or replacing the executable. An installed service uses `/config/vyos-sflow/data` by default. History expires automatically after 48 hours; the service removes what has expired once an hour. Stop the service before backing up the entire directory, including account files and Parquet data. Keep backups private.
 
 ## Audit trail
 

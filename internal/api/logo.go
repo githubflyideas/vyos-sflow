@@ -10,7 +10,12 @@ func (s *Server) logo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox")
-	b, err := fs.ReadFile(s.Static, "logo.svg")
+	// the header uses the wide one, the artwork and the name side by side
+	name := "logo.svg"
+	if r.URL.Query().Get("wide") == "1" {
+		name = "logo-wide.svg"
+	}
+	b, err := fs.ReadFile(s.Static, name)
 	if err != nil {
 		http.NotFound(w, r)
 		return

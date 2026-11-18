@@ -35,7 +35,7 @@ async function loadLang(code) {
   themeLabel();
 }
 // the theme button shows the current theme; a click goes to the next one
-const SWATCH = {light: '#ffffff', gray: '#dde3ec', slate: '#4a5363', navy: '#16264a', black: '#000000'};
+const SWATCH = {light: '#ffffff', gray: '#cfe8d6', slate: '#4a5363', navy: '#16264a', black: '#000000'};
 function themeLabel() {
   const b = $('#theme'), cur = window.t66Theme ? t66Theme.get() : 'gray';
   const sw = $('#themes');

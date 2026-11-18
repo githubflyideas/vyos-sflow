@@ -15,7 +15,8 @@
     else document.documentElement.setAttribute('data-theme', x);
     // the built-in logo has a dark and a light version
     var q = '/logo?dark=' + (DARK[x] ? 1 : 0);
-    var set = function () { document.querySelectorAll('img.logo').forEach(function (i) { if (i.getAttribute('src').split('&')[0] !== q) i.src = q; }); };
+    // the header's wide logo keeps wide=1
+    var set = function () { document.querySelectorAll('img.logo').forEach(function (i) { var w = /[?&]wide=1/.test(i.getAttribute('src')), want = q + (w ? '&wide=1' : ''); if (i.getAttribute('src') !== want) i.src = want; }); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', set); else set();
   }
   apply(get());
