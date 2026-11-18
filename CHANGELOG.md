@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.20
+
+- Traffic is scaled by the sampling rate the switch declares, raised only by samples lost on the way or dropped by the switch. The switch's sample_pool is no longer used for it.
+
 ## 1.2.19
 
 - A larger, wide logo in the header.
