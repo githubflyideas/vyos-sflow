@@ -23,6 +23,7 @@
   "range.6h": "6 giờ",
   "range.24h": "24 giờ",
   "range.48h": "48 giờ",
+  "top.keep": "Chỉ lưu 48 giờ gần nhất",
   "field.ip": "Máy",
   "field.client": "Client",
   "field.server": "Server",

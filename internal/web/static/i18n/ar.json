@@ -23,6 +23,7 @@
   "range.6h": "6 ساعات",
   "range.24h": "24 ساعة",
   "range.48h": "48 ساعة",
+  "top.keep": "تُحفظ آخر 48 ساعة فقط",
   "field.ip": "المضيف",
   "field.client": "العميل",
   "field.server": "الخادم",

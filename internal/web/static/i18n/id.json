@@ -23,6 +23,7 @@
   "range.6h": "6 jam",
   "range.24h": "24 jam",
   "range.48h": "48 jam",
+  "top.keep": "Hanya 48 jam terakhir yang disimpan",
   "field.ip": "Host",
   "field.client": "Klien",
   "field.server": "Server",

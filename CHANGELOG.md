@@ -3,6 +3,7 @@
 ## 1.2.20
 
 - Traffic is scaled by the sampling rate the switch declares, raised only by samples lost on the way or dropped by the switch. The switch's sample_pool is no longer used for it.
+- Every page and the sign-in page say that only the last 48 hours are kept.
 
 ## 1.2.19
 

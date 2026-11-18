@@ -23,6 +23,7 @@
   "range.6h": "6 小时",
   "range.24h": "24 小时",
   "range.48h": "48 小时",
+  "top.keep": "仅保存最近 48 小时",
   "field.ip": "主机",
   "field.client": "客户端",
   "field.server": "服务端",

@@ -23,6 +23,7 @@
   "range.6h": "6 時間",
   "range.24h": "24 時間",
   "range.48h": "48 時間",
+  "top.keep": "保存は直近 48 時間のみ",
   "field.ip": "ホスト",
   "field.client": "クライアント",
   "field.server": "サーバー",

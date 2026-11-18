@@ -100,6 +100,9 @@ nav.dash button[aria-current="page"] .ni{opacity:1}
 .range{display:flex;border:1px solid var(--line-2);border-radius:7px;overflow:hidden;margin-inline-start:auto}
 .range button{border:0;border-inline-start:1px solid var(--line);background:var(--surface);padding:5px 11px;cursor:pointer;color:var(--ink-2);white-space:nowrap}
 .range button:first-child{border-inline-start:0}
+.keep{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-weight:600;font-size:12.5px;white-space:nowrap}
+.login .keep{display:flex;width:fit-content;margin:0 0 4px}
+.keep::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .range button[aria-pressed="true"]{background:var(--accent-fill);color:var(--on-accent)}
 .refresh{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
 .btn{border:1px solid var(--line-2);background:var(--surface);border-radius:7px;padding:5px 11px;cursor:pointer;color:var(--ink-2);font-size:13px}

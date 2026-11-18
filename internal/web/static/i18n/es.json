@@ -23,6 +23,7 @@
   "range.6h": "6 horas",
   "range.24h": "24 horas",
   "range.48h": "48 horas",
+  "top.keep": "Solo se guardan las últimas 48 horas",
   "field.ip": "Equipo",
   "field.client": "Cliente",
   "field.server": "Servidor",
