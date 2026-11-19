@@ -16,6 +16,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -64,9 +65,20 @@ type Server struct {
 	rates    rates
 }
 
+// A session lasts sessionIdle after its last use and never longer than
+// sessionMax after sign-in: used every day, a stolen cookie still stops
+// working within a week. A user has at most sessionsPerUser at a time; a
+// new sign-in beyond that ends the oldest.
+const (
+	sessionIdle     = 12 * time.Hour
+	sessionMax      = 7 * 24 * time.Hour
+	sessionsPerUser = 32
+)
+
 type session struct {
-	user string
-	exp  time.Time
+	user    string
+	exp     time.Time
+	created time.Time
 	// mustChange: signed in with the default password; only changing it
 	// is allowed until then
 	mustChange bool
@@ -171,12 +183,6 @@ func (s *Server) Handler() http.Handler {
 		if !strings.HasPrefix(r.URL.Path, "/api/") {
 			mux.ServeHTTP(w, r)
 			return
-		}
-		// /api/v1/ is the versioned name of every route; /api/ stays as
-		// its alias, so existing clients keep working
-		if rest, ok := strings.CutPrefix(r.URL.Path, "/api/v1/"); ok {
-			r = r.Clone(r.Context())
-			r.URL.Path, r.URL.RawPath = "/api/"+rest, ""
 		}
 		if !known(r.URL.Path) {
 			apiError(w, http.StatusNotFound, "not_found")
@@ -344,8 +350,11 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 				delete(s.sessions, c.Value)
 				ok = false
 			}
-			if ok && time.Now().Before(se.exp) {
-				se.exp = time.Now().Add(12 * time.Hour)
+			if ok && time.Now().Before(se.exp) && time.Now().Before(se.created.Add(sessionMax)) {
+				se.exp = time.Now().Add(sessionIdle)
+				if end := se.created.Add(sessionMax); se.exp.After(end) {
+					se.exp = end
+				}
 				s.sessions[c.Value] = se
 				s.mu.Unlock()
 				if se.mustChange && !allowedBeforeChange[r.URL.Path] {
@@ -416,7 +425,19 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	// the default password of a new installation is changed before
 	// anything else (not in the demo, nor with -password)
 	must := s.mustChangeNow(in.Password)
-	s.sessions[tok] = session{user: in.User, exp: now.Add(12 * time.Hour), mustChange: must}
+	var mine []string
+	for k, v := range s.sessions {
+		if v.user == in.User {
+			mine = append(mine, k)
+		}
+	}
+	if len(mine) >= sessionsPerUser {
+		sort.Slice(mine, func(i, j int) bool { return s.sessions[mine[i]].created.Before(s.sessions[mine[j]].created) })
+		for _, k := range mine[:len(mine)-sessionsPerUser+1] {
+			delete(s.sessions, k)
+		}
+	}
+	s.sessions[tok] = session{user: in.User, exp: now.Add(sessionIdle), created: now, mustChange: must}
 	s.mu.Unlock()
 	audit(r, "login", "user", in.User)
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: tok, Path: "/", HttpOnly: true,

@@ -2,12 +2,12 @@
  "openapi": "3.1.0",
  "info": {
   "title": "vyos-sflow API",
-  "version": "1",
-  "description": "Every route is under /api/v1/; the same route without v1 (/api/...) is an alias kept for existing clients. Request and response fields are snake_case. Errors are {\"error\": code, \"message\": text}: the code is stable and listed below, the text is for people. A wrong method is answered 405 with an Allow header."
+  "version": "internal",
+  "description": "Internal: the routes the web page and the terminal view use. It is not a supported public interface and may change in any release; it is kept here so a test can hold it equal to the route table. Request and response fields are snake_case. Errors are {\"error\": code, \"message\": text}: the code is stable and listed below, the text is for people. A wrong method is answered 405 with an Allow header."
  },
  "servers": [
   {
-   "url": "/api/v1"
+   "url": "/api"
   }
  ],
  "security": [

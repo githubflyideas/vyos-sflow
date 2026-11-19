@@ -169,7 +169,7 @@ func serveConfigured(ctx context.Context, cfg settings.Config, initialPassword s
 	}
 	token := hex.EncodeToString(tokenBytes)
 	tokenPath := filepath.Join(cfg.Data, ".tui-token")
-	if err := os.WriteFile(tokenPath, []byte(token), 0600); err != nil {
+	if err := writePrivate(tokenPath, token); err != nil {
 		return err
 	}
 	defer os.Remove(tokenPath)
@@ -212,7 +212,7 @@ func serveConfigured(ctx context.Context, cfg settings.Config, initialPassword s
 	// tui -data finds this run's web address here, so a service on a port
 	// other than 8066 can still be attached to
 	urlPath := filepath.Join(cfg.Data, ".tui-url")
-	if err := os.WriteFile(urlPath, []byte(localURL(scheme, ln.Addr())), 0600); err != nil {
+	if err := writePrivate(urlPath, localURL(scheme, ln.Addr())); err != nil {
 		return err
 	}
 	defer os.Remove(urlPath)
@@ -329,4 +329,24 @@ func localURL(scheme string, a net.Addr) string {
 		host = "127.0.0.1"
 	}
 	return scheme + "://" + net.JoinHostPort(host, port)
+}
+
+// writePrivate writes a file only this user can read. A file left by an
+// earlier run is removed first rather than written over: os.WriteFile keeps
+// the permissions an existing file has, so a token written into a file
+// someone had made readable, or a link they had put there, would be
+// readable to them too.
+func writePrivate(path, content string) error {
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return err
+	}
+	if _, err := f.WriteString(content); err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
 }
