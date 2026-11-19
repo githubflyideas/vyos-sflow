@@ -68,6 +68,12 @@ func (s *Store) SeriesBy(q Query, by, measure string, k int) (*Series, error) {
 		// values are known, a week by client is a group for nearly every row
 		inner = fmt.Sprintf(`SELECT %s, %s, wire, pkts FROM %s WHERE %s AND %s`, bucket, d.key, s.Source(q.From, q.To), where, d.cond)
 		args = wargs
+		if by == "host" {
+			// each end once, as TopNBy does it: no list per row
+			src := s.Source(q.From, q.To)
+			inner = fmt.Sprintf(`SELECT %[1]s, client, wire, pkts FROM %[2]s WHERE %[3]s UNION ALL SELECT %[1]s, server, wire, pkts FROM %[2]s WHERE %[3]s AND server <> client`, bucket, src, where)
+			args = append(append([]any{}, wargs...), wargs...)
+		}
 	}
 	m := "w"
 	if measure == "pkts" {

@@ -254,11 +254,28 @@ func (s *Store) TopNBy(q Query, dim string, limit int, by string, asc ...bool) (
 		return nil, err
 	}
 	inner := fmt.Sprintf("SELECT %s AS k, bytes, wire, pkts, flows FROM %s WHERE %s", d.expr, s.Source(q.From, q.To), where)
+	if dim == "host" {
+		// each end of a flow once: the client's rows and the server's rows,
+		// the server's only where it is not the client. The same as
+		// unnest(list_distinct([client, server])) without building a list
+		// per row, which made the 48-hour ranking two and a half times
+		// slower.
+		src := s.Source(q.From, q.To)
+		inner = fmt.Sprintf("SELECT client AS k, bytes, wire, pkts, flows FROM %[1]s WHERE %[2]s UNION ALL SELECT server, bytes, wire, pkts, flows FROM %[1]s WHERE %[2]s AND server <> client", src, where)
+		args = append(append([]any{}, args...), args...)
+	}
 	if d.rollup != "" && s.rollupOK(q, false) {
 		inner = "SELECT val AS k, bytes, wire, pkts, flows FROM r_dim WHERE ts>=? AND ts<? AND dim=?"
 		args = []any{q.From.UTC(), q.To.UTC(), d.rollup}
 	}
-	rows, err := s.DB.Query(fmt.Sprintf("SELECT k, coalesce(CAST(CASE WHEN sum(bytes) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(bytes) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(wire) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(wire) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(pkts) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(pkts) END AS UBIGINT),0), coalesce(CAST(CASE WHEN sum(flows) > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE sum(flows) END AS UBIGINT),0) FROM (%s) GROUP BY k ORDER BY sum(%s) %s, k LIMIT %d", inner, order, direction, limit), args...)
+	// The sums are capped at the largest unsigned 64-bit value for the
+	// rows returned only: capping every group first did the same work for
+	// each of the millions of addresses two days hold.
+	clamp := func(c string) string {
+		return "coalesce(CAST(CASE WHEN " + c + " > 18446744073709551615::HUGEINT THEN 18446744073709551615::HUGEINT ELSE " + c + " END AS UBIGINT),0)"
+	}
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT k, %s, %s, %s, %s FROM (SELECT k, sum(bytes) AS b, sum(wire) AS w, sum(pkts) AS p, sum(flows) AS f FROM (%s) GROUP BY k ORDER BY sum(%s) %s, k LIMIT %d) ORDER BY %s %s, k",
+		clamp("b"), clamp("w"), clamp("p"), clamp("f"), inner, order, direction, limit, map[string]string{"wire": "w", "bytes": "b", "pkts": "p", "flows": "f"}[order], direction), args...)
 	if err != nil {
 		return nil, err
 	}

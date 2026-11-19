@@ -174,7 +174,7 @@
   "cl.confirm_all2": "Não é possível desfazer. Confirmar a exclusão de todo o histórico?",
   "cl.done": "{n} registros apagados, {s} liberados.",
   "cl.dev_title": "Excluir os dados de um equipamento",
-  "cl.dev_sub": "Para um equipamento cujo tráfego não deve contar, como um que enviou exportações falsificadas ou com erro. Se ainda estiver enviando, bloqueie-o primeiro.",
+  "cl.dev_sub": "Para um equipamento cujo tráfego não deve contar, como um que enviou exportações falsificadas ou com erro. Se ainda estiver enviando, bloqueie-o primeiro (em blocked.txt, veja a Ajuda).",
   "cl.dev_run": "Excluir os dados deste equipamento",
   "cl.dev_confirm": "Excluir todo o tráfego guardado de {x}? Não é possível desfazer.",
   "cl.dev_none": "Nenhum dado de equipamento guardado.",

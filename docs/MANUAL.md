@@ -35,7 +35,7 @@ For the README foreground command, history and accounts are in `./vyso_sflow_dat
 
 ## Audit trail
 
-Signing in and out, failed sign-ins and lock-outs (five failures from one address lock it out for a minute), password changes and resets, accounts created and deleted, sources blocked and unblocked, and deleted data each write one line to the service log, starting with `audit:` and naming the account it concerns, who did it (`by`, `local` for the terminal view on this machine) and the address it came from. Passwords never appear in it. For an installed service:
+Signing in and out, failed sign-ins and lock-outs (five failures from one address lock it out for a minute), password changes and resets, accounts created and deleted, and deleted data each write one line to the service log, starting with `audit:` and naming the account it concerns, who did it (`by`, `local` for the terminal view on this machine) and the address it came from. Passwords never appear in it. For an installed service:
 
 ```sh
 sudo journalctl -u vyos-sflow.service --no-pager | grep audit:
@@ -71,4 +71,4 @@ The rankings and the flow records show each address with its reverse DNS (PTR) n
 
 ## Deleting one device's data
 
-**Data cleanup** lists the devices with stored traffic. Deleting one removes all of its flow records, for a device whose traffic should not count (forged or broken exports, or a test device). Block it first if it is still sending. A flow that another device also reported keeps counting through that device's copy.
+**Data cleanup** lists the devices with stored traffic. Deleting one removes all of its flow records, for a device whose traffic should not count (forged or broken exports, or a test device). If it is still sending, block it first: stop the service, add the device's address on a line of its own to `blocked.txt` in the data directory, and start the service again; its datagrams are then dropped on arrival. (The running service writes counts back into that file, so an edit made while it runs is lost.) A flow that another device also reported keeps counting through that device's copy.

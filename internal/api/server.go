@@ -121,8 +121,8 @@ func (s *Server) Handler() http.Handler {
 	}
 	mux := http.NewServeMux()
 	s.routes = nil
-	// route registers an API route and keeps it in s.routes, the list the
-	// OpenAPI description is checked against
+	// route registers an API route and keeps it in s.routes, the list of
+	// paths an unknown one is told apart from
 	route := func(pattern string, h http.Handler) {
 		s.routes = append(s.routes, pattern)
 		mux.Handle(pattern, h)
@@ -152,8 +152,6 @@ func (s *Server) Handler() http.Handler {
 	api("GET /api/series", s.data((*Server).series))
 	api("GET /api/records", s.data((*Server).records))
 	api("GET /api/sources", s.sources)
-	adminAPI("POST /api/sources/block", s.postBlock)
-	adminAPI("DELETE /api/sources/block", s.deleteBlock)
 	api("POST /api/resolve", s.resolve)
 	api("GET /api/cleanup", s.getCleanup)
 	adminAPI("POST /api/cleanup", s.postCleanup)

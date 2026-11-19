@@ -34,8 +34,6 @@ var errorText = map[string]string{
 	"no_user":            "There is no such user.",
 	"self":               "You cannot delete yourself.",
 	"last_user":          "The last user cannot be deleted.",
-	"not_blocked":        "That device is not blocked.",
-	"no_collector":       "There is no collector to change.",
 	"not_available":      "This is not available in this edition.",
 	"not_found":          "There is no such API route.",
 	"method_not_allowed": "The route does not take this method; Allow lists the ones it takes.",

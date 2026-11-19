@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"sort"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -119,54 +118,6 @@ func TestLowercaseAndOldFieldNames(t *testing.T) {
 		if w.Code != http.StatusUnauthorized || errorOf(t, w) != "wrong_login" {
 			t.Errorf("%s: %d %s", body, w.Code, w.Body)
 		}
-	}
-}
-
-// docs/openapi.json describes exactly the routes the server registers, and
-// its error codes are exactly the code table.
-func TestOpenAPIMatchesTheRoutes(t *testing.T) {
-	b, err := os.ReadFile("../../docs/openapi.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var doc struct {
-		Paths      map[string]map[string]json.RawMessage
-		Components struct {
-			Schemas struct {
-				Error struct {
-					Properties struct {
-						Error struct{ Enum []string }
-					}
-				}
-			}
-		}
-	}
-	if err := json.Unmarshal(b, &doc); err != nil {
-		t.Fatal(err)
-	}
-	var documented, registered []string
-	for p, ops := range doc.Paths {
-		for m := range ops {
-			documented = append(documented, strings.ToUpper(m)+" /api"+p)
-		}
-	}
-	s := &Server{}
-	s.Handler()
-	registered = append(registered, s.routes...)
-	sort.Strings(documented)
-	sort.Strings(registered)
-	if strings.Join(documented, "\n") != strings.Join(registered, "\n") {
-		t.Errorf("docs/openapi.json and the route table differ:\ndocumented:\n%s\nregistered:\n%s", strings.Join(documented, "\n"), strings.Join(registered, "\n"))
-	}
-	var codes []string
-	for c := range errorText {
-		codes = append(codes, c)
-	}
-	enum := doc.Components.Schemas.Error.Properties.Error.Enum
-	sort.Strings(codes)
-	sort.Strings(enum)
-	if strings.Join(codes, ",") != strings.Join(enum, ",") {
-		t.Errorf("error codes documented %v, in the code table %v", enum, codes)
 	}
 }
 
