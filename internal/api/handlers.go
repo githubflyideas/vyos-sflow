@@ -94,7 +94,7 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Query().Get("dir") {
 	case "", "in", "out":
 	default:
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "dir is in or out"})
+		apiError(w, http.StatusBadRequest, "bad_dir")
 		return
 	}
 	if dir := r.URL.Query().Get("dir"); dir == "in" || dir == "out" {
@@ -311,7 +311,9 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) resolve(w http.ResponseWriter, r *http.Request) {
-	var in struct{ IPs []string }
+	var in struct {
+		IPs []string `json:"ips"`
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64<<10)).Decode(&in); err != nil {
 		fail(w, err)
 		return

@@ -224,23 +224,6 @@ func (c *Collector) Tick(now time.Time) {
 
 }
 
-// fixTimes moves records whose exporter clock is far off to receive time,
-// preserving their duration.
-func (c *Collector) fixTimes(recs []flow.Record, now time.Time) {
-	if !c.Live {
-		return
-	}
-	for i := range recs {
-		r := &recs[i]
-		if r.End.After(now.Add(2*time.Minute)) || r.End.Before(now.Add(-3*time.Hour)) {
-			d := now.Sub(r.End)
-			r.End = r.End.Add(d)
-			r.Start = r.Start.Add(d)
-			c.Skewed.Add(1)
-		}
-	}
-}
-
 func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 	d, err := sflow.Decode(b, now)
 	c.mu.Lock()

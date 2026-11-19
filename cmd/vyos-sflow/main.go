@@ -31,6 +31,7 @@ import (
 	"github.com/githubflyideas/vyos-sflow/internal/pipeline"
 	"github.com/githubflyideas/vyos-sflow/internal/settings"
 	"github.com/githubflyideas/vyos-sflow/internal/store"
+	"github.com/githubflyideas/vyos-sflow/internal/tlscert"
 	"github.com/githubflyideas/vyos-sflow/internal/tui"
 	"github.com/githubflyideas/vyos-sflow/internal/web"
 )
@@ -194,12 +195,15 @@ func serveConfigured(ctx context.Context, cfg settings.Config, initialPassword s
 	}
 	defer ln.Close()
 	scheme := "http"
-	if cfg.TLSCert != "" {
-		cert, err := tls.LoadX509KeyPair(cfg.TLSCert, cfg.TLSKey)
+	if cfg.TLSCert != "" || cfg.TLSKey != "" {
+		// the page shows what it is served with: names, expiry and the
+		// fingerprint a browser warning quotes, and /tls.crt hands it out
+		conf, info, err := tlscert.Load(cfg.Data, cfg.TLSCert, cfg.TLSKey)
 		if err != nil {
 			return err
 		}
-		ln = tls.NewListener(ln, &tls.Config{Certificates: []tls.Certificate{cert}, MinVersion: tls.VersionTLS12})
+		srv.Cert = &info
+		ln = tls.NewListener(ln, conf)
 		scheme = "https"
 	}
 	hs := &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 60 * time.Second, IdleTimeout: 60 * time.Second}

@@ -194,7 +194,7 @@ async function api(path, extra = {}, filters = state.f) {
   if (res.status === 403 && me) { const j = await res.clone().json().catch(() => ({})); if (j.error === 'change_password') { me.must_change = true; go('account'); throw new Error('login'); } }
   const j = await res.json().catch(() => ({}));
   checkLoad(seq);
-  if (!res.ok) { const e = new Error(j.error || res.statusText); e.kind = j.kind; throw e; }
+  if (!res.ok) { const e = new Error(j.message || j.error || res.statusText); e.code = j.error; e.kind = j.kind; throw e; }
   return j;
 }
 // ------------------------------------------------------------ tooltip & charts
@@ -587,7 +587,7 @@ views.cleanup = async (el) => {
     try {
       const res = await fetch('/api/cleanup/exporter', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({exporter: x, confirm: true})});
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j.error || res.statusText);
+      if (!res.ok) throw new Error(j.message || j.error || res.statusText);
       clDone = t('cl.dev_done', {n: nf(j.rows || 0), x});
       loadStatus(); render();
     } catch (error) {
@@ -603,7 +603,7 @@ views.cleanup = async (el) => {
     try {
       const res = await fetch('/api/cleanup', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({all:true, confirm:true})});
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j.error || res.statusText);
+      if (!res.ok) throw new Error(j.message || j.error || res.statusText);
       clDone = t('cl.done', {n: nf(j.rows || 0), s: fmtBytes(j.bytes || 0)});
       loadStatus(); render();
     } catch (error) {
@@ -648,7 +648,7 @@ views.account = async (el) => {
       ${users.limit > 0 ? `<p class="muted" style="font-size:13px;margin:8px 0 0">${esc(t('acct.users_count', {used: users.users.length, n: users.limit}))}</p>` : ''}
       <p id="userMsg" style="font-size:13px;margin:8px 0 0"></p>`) : ''}
   </div>`;
-  const errText = c => t('acct.err_' + c) !== 'acct.err_' + c ? t('acct.err_' + c) : c;
+  const errText = (c, m) => t('acct.err_' + c) !== 'acct.err_' + c ? t('acct.err_' + c) : (m || c);
   const say = (id, ok, text) => { const n = $(id); if (n) { n.style.color = ok ? 'var(--good)' : 'var(--crit)'; n.textContent = text; } };
   const pf = $('#pwForm');
   if (pf) pf.onsubmit = async e => {
@@ -657,7 +657,7 @@ views.account = async (el) => {
     if (pf.new.value !== pf.again.value) return say('#pwMsg', false, t('acct.err_mismatch'));
     const r = await fetch('/api/password', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({old, new: pf.new.value})});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) return say('#pwMsg', false, errText(j.error));
+    if (!r.ok) return say('#pwMsg', false, errText(j.error, j.message));
     sessionStorage.removeItem('t66.old');
     toast(t('acct.saved'));
     if (m.must_change) { me.must_change = false; go('overview'); } else render();
@@ -665,7 +665,7 @@ views.account = async (el) => {
   const putUser = async (user, password, reset = false) => {
     const r = await fetch('/api/users', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user, password, reset})});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { say('#userMsg', false, errText(j.error)); return false; }
+    if (!r.ok) { say('#userMsg', false, errText(j.error, j.message)); return false; }
     toast(t('acct.added')); render(); return true;
   };
   const au = $('#addUser');
@@ -676,7 +676,7 @@ views.account = async (el) => {
     if (!confirm(t('acct.confirm_del', {u: b.dataset.udel}))) return;
     const r = await fetch('/api/users?user=' + encodeURIComponent(b.dataset.udel), {method: 'DELETE'});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) return say('#userMsg', false, errText(j.error));
+    if (!r.ok) return say('#userMsg', false, errText(j.error, j.message));
     render();
   });
 };

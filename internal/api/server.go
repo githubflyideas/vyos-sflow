@@ -30,9 +30,10 @@ import (
 
 // Server wires the API together.
 type Server struct {
-	Store *store.Store
-	Pipe  *pipeline.Pipeline
-	Col   *collector.Collector
+	routes []string // the API routes, as "METHOD /path", set by Handler
+	Store  *store.Store
+	Pipe   *pipeline.Pipeline
+	Col    *collector.Collector
 
 	DNS *dnsres.Resolver
 
@@ -107,13 +108,20 @@ func (s *Server) Handler() http.Handler {
 		go s.sampleRates()
 	}
 	mux := http.NewServeMux()
-	mux.Handle("POST /api/login", s.sameOriginOnly(s.login))
-	mux.Handle("POST /api/logout", s.sameOriginOnly(s.logout))
+	s.routes = nil
+	// route registers an API route and keeps it in s.routes, the list the
+	// OpenAPI description is checked against
+	route := func(pattern string, h http.Handler) {
+		s.routes = append(s.routes, pattern)
+		mux.Handle(pattern, h)
+	}
+	route("POST /api/login", s.sameOriginOnly(s.login))
+	route("POST /api/logout", s.sameOriginOnly(s.logout))
 
 	mux.HandleFunc("GET /logo", s.logo)
-	mux.HandleFunc("GET /api/loginhint", s.loginHint)
+	route("GET /api/loginhint", http.HandlerFunc(s.loginHint))
 	mux.HandleFunc("GET /tls.crt", s.certDownload)
-	api := func(pattern string, h http.HandlerFunc) { mux.Handle(pattern, s.auth(h)) }
+	api := func(pattern string, h http.HandlerFunc) { route(pattern, s.auth(h)) }
 	// adminAPI is api plus the administrator check. The permission belongs
 	// in this table rather than inside each handler: a new route's gate is
 	// then a decision someone makes while writing the route down, instead
@@ -139,9 +147,10 @@ func (s *Server) Handler() http.Handler {
 	adminAPI("POST /api/cleanup", s.postCleanup)
 	adminAPI("POST /api/cleanup/exporter", s.postPurgeExporter)
 
-	mux.HandleFunc("/api/", http.NotFound)
 	static := http.FileServer(http.FS(s.Static))
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// GET only: a route that matched every method would answer for the API
+	// paths too, and the mux would never say 405 to a wrong method
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		// no-cache on every file: after an upgrade the browser must not keep
@@ -150,8 +159,57 @@ func (s *Server) Handler() http.Handler {
 		w.Header().Set("Cache-Control", "no-cache")
 		static.ServeHTTP(w, r)
 	})
-	return securityHeaders(mux)
+	paths := map[string]bool{}
+	for _, p := range s.routes {
+		_, path, _ := strings.Cut(p, " ")
+		paths[strings.TrimSuffix(path, "{name}")] = true
+	}
+	known := func(path string) bool {
+		return paths[path] || strings.HasPrefix(path, "/api/manual/images/") && len(path) > len("/api/manual/images/")
+	}
+	return securityHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/api/") {
+			mux.ServeHTTP(w, r)
+			return
+		}
+		// /api/v1/ is the versioned name of every route; /api/ stays as
+		// its alias, so existing clients keep working
+		if rest, ok := strings.CutPrefix(r.URL.Path, "/api/v1/"); ok {
+			r = r.Clone(r.Context())
+			r.URL.Path, r.URL.RawPath = "/api/"+rest, ""
+		}
+		if !known(r.URL.Path) {
+			apiError(w, http.StatusNotFound, "not_found")
+			return
+		}
+		mux.ServeHTTP(&jsonStatus{ResponseWriter: w}, r)
+	}))
 }
+
+// jsonStatus turns the mux's own plain-text 405 into the API's JSON error;
+// the Allow header the mux set stays.
+type jsonStatus struct {
+	http.ResponseWriter
+	swallow bool
+}
+
+func (j *jsonStatus) WriteHeader(code int) {
+	if code == http.StatusMethodNotAllowed && !j.swallow {
+		j.swallow = true
+		apiError(j.ResponseWriter, code, "method_not_allowed")
+		return
+	}
+	j.ResponseWriter.WriteHeader(code)
+}
+
+func (j *jsonStatus) Write(b []byte) (int, error) {
+	if j.swallow {
+		return len(b), nil
+	}
+	return j.ResponseWriter.Write(b)
+}
+
+func (j *jsonStatus) Unwrap() http.ResponseWriter { return j.ResponseWriter }
 
 // failLimiter locks out a client address after repeated failed logins.
 type failLimiter struct {
@@ -231,13 +289,13 @@ func (f *failLimiter) ok(ip string) {
 
 func tooMany(w http.ResponseWriter) {
 	w.Header().Set("Retry-After", "60")
-	writeJSON(w, http.StatusTooManyRequests, map[string]string{"error": "too many failed logins; try again in a minute"})
+	apiError(w, http.StatusTooManyRequests, "too_many_attempts")
 }
 
 func (s *Server) auth(next http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !sameOrigin(r) {
-			writeJSON(w, http.StatusForbidden, map[string]string{"error": "cross_origin"})
+			apiError(w, http.StatusForbidden, "cross_origin")
 			return
 		}
 		if tok := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "); tok != "" && s.LocalTok != "" &&
@@ -246,7 +304,7 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 			// onboarding. Recheck the account file so changing the password
 			// unlocks local clients without restarting the service.
 			if !s.Demo && s.Accounts != nil && s.Accounts.HasDefault() && !allowedBeforeChange[r.URL.Path] {
-				writeJSON(w, http.StatusForbidden, map[string]string{"error": "change_password"})
+				apiError(w, http.StatusForbidden, "change_password")
 				return
 			}
 			next(w, r.WithContext(context.WithValue(r.Context(), localKey{}, true)))
@@ -263,7 +321,7 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 				if s.fails.fail(ip) {
 					audit(r, "login locked out for a minute", "user", u)
 				}
-				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "login"})
+				apiError(w, http.StatusUnauthorized, "login")
 				return
 			}
 			s.fails.ok(ip)
@@ -273,7 +331,7 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 			// to admin and the password every installation starts with, for
 			// as long as nobody got round to changing it.
 			if s.mustChangeNow(p) && !allowedBeforeChange[r.URL.Path] {
-				writeJSON(w, http.StatusForbidden, map[string]string{"error": "change_password"})
+				apiError(w, http.StatusForbidden, "change_password")
 				return
 			}
 			next(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, u)))
@@ -291,7 +349,7 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 				s.sessions[c.Value] = se
 				s.mu.Unlock()
 				if se.mustChange && !allowedBeforeChange[r.URL.Path] {
-					writeJSON(w, http.StatusForbidden, map[string]string{"error": "change_password"})
+					apiError(w, http.StatusForbidden, "change_password")
 					return
 				}
 				next(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, se.user)))
@@ -299,7 +357,7 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 			}
 			s.mu.Unlock()
 		}
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "login"})
+		apiError(w, http.StatusUnauthorized, "login")
 	})
 }
 
@@ -321,9 +379,12 @@ func (s *Server) checkPassword(u, p string) bool {
 }
 
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
-	var in struct{ User, Password string }
+	var in struct {
+		User     string `json:"user"`
+		Password string `json:"password"`
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
+		apiError(w, http.StatusBadRequest, "bad_json")
 		return
 	}
 	ip := clientIP(r)
@@ -338,7 +399,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 			audit(r, "login locked out for a minute", "user", in.User)
 		}
 		time.Sleep(500 * time.Millisecond)
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "wrong user or password"})
+		apiError(w, http.StatusUnauthorized, "wrong_login")
 		return
 	}
 	s.fails.ok(ip)
@@ -423,20 +484,27 @@ func fail(w http.ResponseWriter, err error) {
 	}
 	var pe *fs.PathError
 	var le *os.LinkError
-	if kind == "" && (errors.As(err, &pe) || errors.As(err, &le)) {
+	var re requestError
+	switch {
+	case kind != "":
+		log.Printf("api: database (%s): %v", kind, err)
+		w.Header().Set("Retry-After", "30")
+		writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "database_" + kind, "message": errorText["database_"+kind], "kind": kind})
+	case errors.As(err, &pe) || errors.As(err, &le):
 		// a file could not be read or written: the reason goes to the log,
 		// not the server's paths to the browser
 		log.Printf("api: %v", err)
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "file"})
-		return
+		apiError(w, http.StatusInternalServerError, "file")
+	case isJSONError(err):
+		apiError(w, http.StatusBadRequest, "bad_json")
+	case errors.As(err, &re):
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad_request", "message": re.msg})
+	default:
+		// a refusal worded by the code that refused it (a filter, a range,
+		// a cleanup request): its wording is ours, so it is the message
+		log.Printf("api: refused: %v", err)
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad_request", "message": msg})
 	}
-	if kind == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": msg})
-		return
-	}
-	log.Printf("api: database (%s): %v", kind, err)
-	w.Header().Set("Retry-After", "30")
-	writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "database " + kind, "kind": kind})
 }
 
 // rates samples pipeline counters once per second.
@@ -490,7 +558,7 @@ func sameOrigin(r *http.Request) bool {
 func (s *Server) sameOriginOnly(h http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !sameOrigin(r) {
-			writeJSON(w, http.StatusForbidden, map[string]string{"error": "cross_origin"})
+			apiError(w, http.StatusForbidden, "cross_origin")
 			return
 		}
 		h(w, r)

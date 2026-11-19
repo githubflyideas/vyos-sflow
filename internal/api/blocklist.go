@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/netip"
 	"strings"
@@ -14,7 +13,7 @@ import (
 // nothing to block and saying so beats a nil dereference.
 func (s *Server) blocklist(w http.ResponseWriter) bool {
 	if s.Col == nil || s.Col.Block == nil {
-		writeJSON(w, http.StatusConflict, map[string]string{"error": "no_collector"})
+		apiError(w, http.StatusConflict, "no_collector")
 		return false
 	}
 	return true
@@ -31,12 +30,12 @@ func (s *Server) postBlock(w http.ResponseWriter, r *http.Request) {
 		Note     string `json:"note"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in); err != nil {
-		fail(w, errors.New("bad request"))
+		apiError(w, http.StatusBadRequest, "bad_json")
 		return
 	}
 	a, err := netip.ParseAddr(strings.TrimSpace(in.Exporter))
 	if err != nil {
-		fail(w, errors.New("bad address"))
+		apiError(w, http.StatusBadRequest, "bad_exporter")
 		return
 	}
 	if err := s.Col.Block.Add(a, strings.TrimSpace(in.Note), time.Now()); err != nil {
@@ -55,7 +54,7 @@ func (s *Server) deleteBlock(w http.ResponseWriter, r *http.Request) {
 	}
 	a, err := netip.ParseAddr(strings.TrimSpace(r.URL.Query().Get("exporter")))
 	if err != nil {
-		fail(w, errors.New("bad address"))
+		apiError(w, http.StatusBadRequest, "bad_exporter")
 		return
 	}
 	had, err := s.Col.Block.Remove(a)
@@ -64,7 +63,7 @@ func (s *Server) deleteBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !had {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "not_blocked"})
+		apiError(w, http.StatusNotFound, "not_blocked")
 		return
 	}
 	audit(r, "source unblocked", "exporter", a.Unmap())

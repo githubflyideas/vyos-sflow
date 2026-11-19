@@ -73,3 +73,7 @@ The rankings and the flow records show each address with its reverse DNS (PTR) n
 
 **Data cleanup** lists the devices with stored traffic. Deleting one removes all of its flow records, for a device whose traffic should not count (forged or broken exports, or a test device). Block it first if it is still sending. A flow that another device also reported keeps counting through that device's copy.
 
+
+## HTTP API
+
+Everything the web page shows comes from a JSON API under `/api/v1/`, described route by route in [openapi.json](openapi.json) (OpenAPI 3.1). The older `/api/` names answer the same way and stay for existing scripts. A script signs in with HTTP Basic authentication, for example `curl -u admin:PASSWORD http://ROUTER_IP:8066/api/v1/overview?range=1h`; deleting data, blocking devices and managing users need the administrator. Request and response fields are snake_case. An error is `{"error": code, "message": text}`: the code is one of a fixed list in openapi.json and does not change between releases, the text is for people. A route asked with the wrong method answers 405 with an `Allow` header naming the methods it takes.

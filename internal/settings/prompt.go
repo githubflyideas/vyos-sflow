@@ -31,7 +31,7 @@ func (c *Config) PromptWebAddress(interactive bool, in io.Reader, out io.Writer,
 	default:
 		addr, err := netip.ParseAddr(host)
 		if err != nil || addr.Zone() != "" || !(addr.IsPrivate() || addr.Unmap().IsLoopback()) {
-			return fmt.Errorf("Web address must be a private local IP, 0.0.0.0 for all interfaces, or Enter for loopback only")
+			return fmt.Errorf("web address must be a private local IP, 0.0.0.0 for all interfaces, or Enter for loopback only")
 		}
 		if addr.Unmap().IsLoopback() {
 			host = addr.Unmap().String()
@@ -45,7 +45,7 @@ func (c *Config) PromptWebAddress(interactive bool, in io.Reader, out io.Writer,
 			}
 		}
 		if !found {
-			return fmt.Errorf("Web address %s is not assigned to a local interface", host)
+			return fmt.Errorf("web address %s is not assigned to a local interface", host)
 		}
 		host = addr.Unmap().String()
 	}
