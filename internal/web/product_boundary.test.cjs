@@ -10,7 +10,7 @@ test('only basic product views, dimensions and assets ship', () => {
  assert.doesNotMatch(js, /api\(['"](?:ifaces|findings|geo|rings|sankey|threats|recon)|\/api\/(?:embeds|syslog|report)|views\.(?:detail|names|racks)/);
  assert.match(js, /const DIMS = \['host', 'app', 'proto'\]/);
  assert.doesNotMatch(js, /7d|30d|datetime-local|state\.r = 'custom'/);
- assert.match(js, /const RANGES = \['15m', '1h', '6h', '24h', '48h'\]/);
+ assert.match(js, /const RANGES = \['15m', '30m', '1h', '6h', '12h', '24h', '48h'\]/);
  assert.match(js, /'48h': 1728e5/);
  for (const f of ['world.json','embed.js','embed.css']) assert.equal(fs.existsSync(path.join(root,f)),false,f);
  for (const f of fs.readdirSync(path.join(root,'i18n'))) {

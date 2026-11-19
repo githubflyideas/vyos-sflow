@@ -62,22 +62,29 @@ var (
 )
 
 // sFlow, 1:1000, random frame sizes, 3% of datagrams lost on the way.
+// The loss is shown, not counted back in: on some switches (H3C) the
+// datagram numbers skip with nothing lost, and adding the gaps back scaled
+// the traffic past the interface counters. What arrives is counted at the
+// declared rate, so the total is short by what was lost.
 func TestSFlowSampledWithDatagramLoss(t *testing.T) {
 	c, p, st := setup(t)
 	agent := netip.MustParseAddr("10.0.0.2")
 	rng := rand.New(rand.NewPCG(1, 2))
 	const rate = 1000
 	start := time.Now().UTC().Truncate(time.Minute).Add(-20 * time.Minute)
-	var truth float64
+	var truth, arrived float64
 	var pool, seq, dseq uint32
+	var pending float64
 	var batch []encode.SFlowSample
 	now := start
 	send := func() {
 		dseq++
 		if rng.Float64() >= 0.03 {
 			c.Handle(encode.SFlow(agent, 0, dseq, 1000, batch, nil), agent, now)
+			arrived += pending
 		}
 		batch = batch[:0]
+		pending = 0
 	}
 	const packets = 60_000_000 // ten minutes at 100 kpps
 	for i := 0; i < packets; i++ {
@@ -87,6 +94,7 @@ func TestSFlowSampledWithDatagramLoss(t *testing.T) {
 		if i%rate != rate-1 {
 			continue
 		}
+		pending += float64(ip+18) * rate
 		now = start.Add(time.Duration(float64(i) / packets * float64(10*time.Minute)))
 		seq++
 		cl, sv := clients[rng.IntN(len(clients))], servers[rng.IntN(len(servers))]
@@ -100,5 +108,12 @@ func TestSFlowSampledWithDatagramLoss(t *testing.T) {
 		send()
 	}
 	got := wireTotal(t, p, st, agent.String(), start.Add(-time.Hour), start.Add(time.Hour))
-	check(t, "sFlow 1:1000 with 3% datagram loss", got, truth, 0.01)
+	check(t, "sFlow 1:1000 with 3% datagram loss: what arrived", got, arrived, 0.001)
+	if r := got / truth; r < 0.95 || r > 0.99 {
+		t.Errorf("total %.1f%% of the traffic, want about 97%%: the lost 3%% is neither counted nor overcompensated", r*100)
+	}
+	src := c.Sources()
+	if len(src) != 1 || src[0].TransitPct < 2 || src[0].TransitPct > 4 {
+		t.Errorf("the loss is not shown: %+v", src)
+	}
 }

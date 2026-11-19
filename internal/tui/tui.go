@@ -24,7 +24,7 @@ import (
 
 // Options configure the TUI.
 type Options struct {
-	URL, Token, User, Password, Lang string
+	URL, Token, Lang string
 }
 
 // ------------------------------------------------------------ i18n
@@ -165,8 +165,8 @@ type page struct {
 }
 
 var pageKeys = []string{"overview", "top", "traffic", "sources", "help"}
-var ranges = []string{"15m", "1h", "6h", "24h", "48h"}
-var rangeDur = []time.Duration{15 * time.Minute, time.Hour, 6 * time.Hour, 24 * time.Hour, 48 * time.Hour}
+var ranges = []string{"15m", "30m", "1h", "6h", "12h", "24h", "48h"}
+var rangeDur = []time.Duration{15 * time.Minute, 30 * time.Minute, time.Hour, 6 * time.Hour, 12 * time.Hour, 24 * time.Hour, 48 * time.Hour}
 var dims = []string{"host", "app", "proto"}
 var units = []string{"bps", "bytes", "pps"}
 var intervals = []time.Duration{2 * time.Second, 5 * time.Second, 10 * time.Second, 30 * time.Second}
@@ -217,7 +217,7 @@ func (a *app) t(k string, kv ...string) string {
 
 func newApp(opt Options) *app {
 	tr, en := loadDict(detectLang(opt.Lang))
-	return &app{opt: opt, tr: tr, en: en, cl: &http.Client{Timeout: 20 * time.Second}, rng: 1, ival: 1,
+	return &app{opt: opt, tr: tr, en: en, cl: &http.Client{Timeout: 20 * time.Second}, rng: 2, ival: 1, // rng 2: one hour
 		refresh: make(chan struct{}, 1), w: 120, h: 36}
 }
 
@@ -387,8 +387,6 @@ func (a *app) do(method, path string, q url.Values, body io.Reader, v any) error
 	}
 	if a.opt.Token != "" {
 		req.Header.Set("Authorization", "Bearer "+a.opt.Token)
-	} else if a.opt.User != "" {
-		req.SetBasicAuth(a.opt.User, a.opt.Password)
 	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")

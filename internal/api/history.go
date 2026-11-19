@@ -9,7 +9,7 @@ import (
 
 const maxHistory = 48 * time.Hour
 
-var ranges = map[string]time.Duration{"5m": 5 * time.Minute, "15m": 15 * time.Minute, "1h": time.Hour, "6h": 6 * time.Hour, "24h": 24 * time.Hour, "48h": maxHistory}
+var ranges = map[string]time.Duration{"5m": 5 * time.Minute, "15m": 15 * time.Minute, "30m": 30 * time.Minute, "1h": time.Hour, "6h": 6 * time.Hour, "12h": 12 * time.Hour, "24h": 24 * time.Hour, "48h": maxHistory}
 
 // historyWindow bounds queries, not retention; no stored data is deleted.
 func historyWindow(v url.Values, now time.Time) (from, to time.Time, err error) {

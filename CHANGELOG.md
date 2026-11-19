@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.22
+
+- Traffic is counted at the sampling rate the switch declares, raised only by the samples it reports dropping. Gaps in sequence numbers are shown, not counted in: on H3C they appear with nothing lost.
+- The in and out charts add up every port sFlow is enabled on, so a link of several member ports is shown whole.
+- New ranges: 30 minutes and 12 hours.
+- TOP replaces Top 66; the main talkers list 33 clients and 33 servers.
+- The API is for the web page and the terminal view only: HTTP Basic is no longer accepted, and the terminal view runs on the router itself.
+- Sessions end a week after sign-in; a user keeps at most 32.
+- Errors carry a fixed code and a message; a wrong method answers 405.
+- With -tls-cert the status shows the certificate in use.
+
 ## 1.2.21
 
 - Traffic and the interface check are scaled by the sampling rate the switch declares, raised only by datagrams lost on the way and samples the switch reports dropped. On switches that number the samples of their samplers in one series (H3C), 1.2.20 took the gaps for lost samples and counted about twice the traffic.

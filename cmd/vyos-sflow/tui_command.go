@@ -34,7 +34,6 @@ func runTUICommand(ctx context.Context, args []string, h commandHooks) error {
 	}
 	endpoint := fs.String("url", "http://127.0.0.1:8066", "existing service URL (attach only)")
 	data := fs.String("data", dataDefault, "existing service data directory (attach only)")
-	user := fs.String("user", "", "existing account authentication (attach only)")
 	lang := fs.String("lang", "", "language code")
 	listen := fs.String("listen", "0.0.0.0:6343", "temporary session sFlow UDP address")
 	if err := fs.Parse(args); err != nil {
@@ -50,7 +49,7 @@ func runTUICommand(ctx context.Context, args []string, h commandHooks) error {
 	listenExplicit := false
 	fs.Visit(func(f *flag.Flag) {
 		switch f.Name {
-		case "url", "user", "data":
+		case "url", "data":
 			attach = true
 		case "listen":
 			listenExplicit = true
@@ -88,25 +87,18 @@ func runTUICommand(ctx context.Context, args []string, h commandHooks) error {
 			*endpoint = strings.TrimSpace(string(b))
 		}
 	}
-	opt := tui.Options{URL: *endpoint, User: *user, Lang: *lang}
-	if *user != "" {
-		opt.Password = h.getenv("VYOS_SFLOW_PASSWORD")
-		if opt.Password == "" {
-			var err error
-			opt.Password, err = h.secret("password: ")
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		b, err := os.ReadFile(filepath.Join(*data, ".tui-token"))
-		if err != nil {
-			return fmt.Errorf("cannot read existing service token; use -data or -user to attach: %w", err)
-		}
-		opt.Token = strings.TrimSpace(string(b))
-		if opt.Token == "" {
-			return errors.New("existing service token is empty; use -user to attach")
-		}
+	// The terminal view runs on the machine the service runs on, over SSH,
+	// and attaches with that machine's own token from the data directory.
+	// It does not sign in from elsewhere with a password: the service takes
+	// no HTTP Basic, and a browser is the way in from another machine.
+	opt := tui.Options{URL: *endpoint, Lang: *lang}
+	b, err := os.ReadFile(filepath.Join(*data, ".tui-token"))
+	if err != nil {
+		return fmt.Errorf("cannot read the running service's token; run the terminal view on the machine the service runs on, as a user who can read its data directory (-data): %w", err)
+	}
+	opt.Token = strings.TrimSpace(string(b))
+	if opt.Token == "" {
+		return errors.New("the running service's token is empty; restart the service")
 	}
 	return h.view(ctx, opt)
 }

@@ -71,7 +71,7 @@ func TestBasicPagesOnlyRequestSupportedAPI(t *testing.T) {
 }
 
 func TestHistoryRangesMatch48HourBoundary(t *testing.T) {
-	want := []string{"15m", "1h", "6h", "24h", "48h"}
+	want := []string{"15m", "30m", "1h", "6h", "12h", "24h", "48h"}
 	if !slices.Equal(ranges, want) {
 		t.Fatalf("ranges: %v", ranges)
 	}
@@ -95,7 +95,7 @@ func TestUnrestrictedStreamNeedsNoIdentity(t *testing.T) {
 	}))
 	defer srv.Close()
 	a := newApp(Options{URL: srv.URL, Lang: "en"})
-	p := a.load(view{pg: 3, rng: 1, w: 120})
+	p := a.load(view{pg: 3, rng: 2, w: 120})
 	if p.err != "" {
 		t.Fatal(p.err)
 	}
@@ -112,7 +112,7 @@ func TestUnconfiguredStreamDiagnostics(t *testing.T) {
 	}))
 	defer srv.Close()
 	a := newApp(Options{URL: srv.URL, Lang: "en"})
-	p := a.load(view{pg: 3, rng: 1, w: 120})
+	p := a.load(view{pg: 3, rng: 2, w: 120})
 	var text strings.Builder
 	for _, l := range p.top {
 		text.WriteString(l.plain())

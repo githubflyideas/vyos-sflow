@@ -316,33 +316,10 @@ func (s *Server) auth(next http.HandlerFunc) http.Handler {
 			next(w, r.WithContext(context.WithValue(r.Context(), localKey{}, true)))
 			return
 		}
-		if u, p, ok := r.BasicAuth(); ok {
-			ip := clientIP(r)
-			if s.fails.blocked(ip) {
-				tooMany(w)
-				return
-			}
-			if !s.checkPassword(u, p) {
-				audit(r, "login failed", "user", u, "via", "basic")
-				if s.fails.fail(ip) {
-					audit(r, "login locked out for a minute", "user", u)
-				}
-				apiError(w, http.StatusUnauthorized, "login")
-				return
-			}
-			s.fails.ok(ip)
-			// The forced change applies here as well. It used to be checked
-			// only on the cookie path, where it is carried by the session,
-			// so Basic auth walked straight past it: the whole API answered
-			// to admin and the password every installation starts with, for
-			// as long as nobody got round to changing it.
-			if s.mustChangeNow(p) && !allowedBeforeChange[r.URL.Path] {
-				apiError(w, http.StatusForbidden, "change_password")
-				return
-			}
-			next(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, u)))
-			return
-		}
+		// HTTP Basic is not taken: the API is the web page's and the
+		// terminal view's, not an interface for scripts, so a password is
+		// given only at /api/login, where failures are slowed and locked
+		// out, and never again with every request.
 		if c, err := r.Cookie(cookieName); err == nil {
 			s.mu.Lock()
 			se, ok := s.sessions[c.Value]

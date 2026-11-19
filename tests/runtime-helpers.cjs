@@ -4,11 +4,12 @@ const http = require('node:http');
 const https = require('node:https');
 const {performance} = require('node:perf_hooks');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-function request(url, {expected = 200, payload, auth, jar, ca, timeout = 5000} = {}) {
+function rawRequest(url, {expected = 200, payload, auth, jar, cookie, ca, timeout = 5000} = {}) {
   return new Promise((resolve, reject) => {
     const headers = {};
     if (auth) headers.Authorization = auth;
     if (jar && jar.cookie) headers.Cookie = jar.cookie;
+    if (cookie) headers.Cookie = cookie;
     const body = payload === undefined ? undefined : JSON.stringify(payload);
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     const req = (url.startsWith('https:') ? https : http).request(url,
@@ -30,6 +31,33 @@ function request(url, {expected = 200, payload, auth, jar, ca, timeout = 5000} =
     req.on('error', () => reject(new Error('HTTP transport failed')));
     req.end(body);
   });
+}
+// The service takes no HTTP Basic authentication: a client signs in at
+// /api/login and sends the session cookie. Tests still name the account
+// with basic(password); request() signs in with it, keeps the session per
+// service and account, and signs in again once when a restarted service
+// no longer knows the session. A sign-in that fails sends no credentials,
+// so a test expecting 401 still gets it. rawAuth sends a header as is.
+const sessions = new Map();
+async function signIn(origin, auth, ca) {
+  const [user, ...rest] = Buffer.from(auth.slice(6), 'base64').toString().split(':');
+  const jar = {};
+  try { await rawRequest(origin + '/api/login', {payload: {user, password: rest.join(':')}, jar, ca}); } catch (_) { return null; }
+  return jar.cookie || null;
+}
+async function request(url, options = {}) {
+  const {auth, rawAuth, ...rest} = options;
+  if (rawAuth) return rawRequest(url, {...rest, auth: rawAuth});
+  if (!auth || !auth.startsWith('Basic ')) return rawRequest(url, {...rest, auth});
+  const key = new URL(url).origin + ' ' + auth;
+  for (let attempt = 0; ; attempt++) {
+    if (!sessions.has(key)) sessions.set(key, await signIn(new URL(url).origin, auth, rest.ca));
+    const cookie = sessions.get(key);
+    try { return await rawRequest(url, {...rest, cookie}); } catch (e) {
+      if (attempt > 0 || !cookie) throw e;
+      sessions.delete(key);
+    }
+  }
 }
 async function waitFor(check, message, {timeout = 45000, interval = 200, alive = () => true} = {}) {
   const end = performance.now() + timeout;

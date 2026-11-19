@@ -18,12 +18,16 @@ func contractServer(t *testing.T) http.Handler {
 	t.Helper()
 	fc := auth.NewFileChecker("", map[string]string{"admin": "admin-secret-1"})
 	s := &Server{Accounts: fc, Check: fc.Check, Exists: fc.Exists, Static: fstest.MapFS{"index.html": {Data: []byte("<!doctype html>")}}}
-	return s.Handler()
+	h := s.Handler()
+	// every request comes from the signed-in administrator
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		signIn(s, r, "admin")
+		h.ServeHTTP(w, r)
+	})
 }
 
 func call(h http.Handler, method, path, body string) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(method, path, strings.NewReader(body))
-	r.SetBasicAuth("admin", "admin-secret-1")
 	if body != "" {
 		r.Header.Set("Content-Type", "application/json")
 	}

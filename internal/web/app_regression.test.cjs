@@ -146,7 +146,7 @@ test('empty series shows an explicit empty state rather than a blank chart', () 
   h.testing.tsChart(el, {times:[], areas:[]});
   assert.match(el.innerHTML, /empty.nodata/);
 });
-test('direction identifies the selected exporter/interface and leaves KPI scope explicit', async () => {
+test('direction names the sampled ports and leaves KPI scope explicit', async () => {
   for (const dir of ['in', 'out']) for (const iface of ['192.0.2.1/7', '']) {
     const h = harness(), el = h.element();
     h.context.ResizeObserver = class { observe() {} };
@@ -156,7 +156,7 @@ test('direction identifies the selected exporter/interface and leaves KPI scope 
     await rendering;
     assert.match(el.innerHTML, /ov.kpi_scope/);
     assert.match(el.innerHTML, /ov.direction_scope/);
-    assert.ok(el.innerHTML.includes(iface || 'ov.direction_empty'));
+    assert.ok(el.innerHTML.includes(iface ? '192.0.2.1 / 7' : 'ov.direction_empty'));
   }
 });
 test('Top explains overlapping inferred roles and global rather than displayed-row totals', async () => {
