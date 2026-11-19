@@ -150,6 +150,9 @@ const bar = (x, max, col) => `<div class="sb"><span style="width:${Math.max(1.5,
 const VIEWS = ['overview', 'topn', 'records', 'sources', 'account', 'cleanup', 'help'];
 const DIMS = ['host', 'app', 'proto'];
 const RANGES = ['15m', '30m', '1h', '6h', '12h', '24h', '48h'];
+// the buttons say M, H, D: short in every language; the full name in the
+// viewer's language is the tooltip and what a screen reader says
+const RANGE_SHORT = {'15m': '15M', '30m': '30M', '1h': '1H', '6h': '6H', '12h': '12H', '24h': '1D', '48h': '2D'};
 const REFRESH_MS = {'15m': 20000, '30m': 30000, '1h': 30000, '6h': 60000, '12h': 60000, '24h': 60000, '48h': 300000};
 const LIVE_VIEWS = new Set(['overview', 'topn', 'records', 'sources']);
 const state = {v: 'overview', r: '1h', dim: 'host', f: [], od: '', tm: 'talkers', ip: ''};
@@ -171,7 +174,7 @@ let clockSkew = 0, waiting = null, setup = null;
 const spanMs = () => ({'15m': 9e5, '30m': 18e5, '1h': 36e5, '6h': 216e5, '12h': 432e5, '24h': 864e5, '48h': 1728e5})[state.r];
 const rangeLabel = () => t('range.' + state.r);
 function renderRange() {
- $('#range').innerHTML = RANGES.map(r => `<button data-r="${r}" aria-pressed="${r === state.r}">${t('range.' + r)}</button>`).join('');
+ $('#range').innerHTML = RANGES.map(r => `<button data-r="${r}" aria-pressed="${r === state.r}" title="${esc(t('range.' + r))}" aria-label="${esc(t('range.' + r))}">${RANGE_SHORT[r]}</button>`).join('');
 }
 function tickClock() {
   try { $('#clock').textContent = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(new Date(Date.now() + clockSkew)); } catch (e) {}

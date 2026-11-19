@@ -166,6 +166,9 @@ type page struct {
 
 var pageKeys = []string{"overview", "top", "traffic", "sources", "help"}
 var ranges = []string{"15m", "30m", "1h", "6h", "12h", "24h", "48h"}
+
+// the range as the web page labels it: M, H, D
+var rangeShort = []string{"15M", "30M", "1H", "6H", "12H", "1D", "2D"}
 var rangeDur = []time.Duration{15 * time.Minute, 30 * time.Minute, time.Hour, 6 * time.Hour, 12 * time.Hour, 24 * time.Hour, 48 * time.Hour}
 var dims = []string{"host", "app", "proto"}
 var units = []string{"bps", "bytes", "pps"}
@@ -679,7 +682,7 @@ func (a *app) frame() []string {
 			hdr = append(hdr, seg{dim, lab})
 		}
 	}
-	hdr = append(hdr, seg{"", "  " + a.t("range."+ranges[a.rng]) + " · " + a.t("tui.unit."+units[a.unit]) + " · " + a.t("tui.every", "s", fmt.Sprint(intervals[a.ival].Seconds()))})
+	hdr = append(hdr, seg{"", "  " + rangeShort[a.rng] + " · " + a.t("tui.unit."+units[a.unit]) + " · " + a.t("tui.every", "s", fmt.Sprint(intervals[a.ival].Seconds()))})
 	if a.paused {
 		hdr = append(hdr, seg{bold + yellow, "  ‖ " + a.t("tui.paused")})
 	} else if a.loading {
