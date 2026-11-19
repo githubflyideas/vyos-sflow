@@ -625,6 +625,17 @@ let clDone = '';
 // everything else worth reading stay visible to everyone.
 const adm = () => !!(me && me.admin);
 const admOnly = html => adm() ? html : '';
+// The certificate the page is served with, over HTTPS: what it is valid
+// for, until when, and the fingerprint a browser's warning quotes, to
+// compare before trusting it; it can be downloaded to install.
+const certPanel = () => {
+  const c = selfStatus && selfStatus.tls;
+  if (!c) return '';
+  const row = (k, v) => `<tr><th>${esc(t(k))}</th><td class="mono">${esc(v)}</td></tr>`;
+  return panel('c12', t('cert.title'), esc(t(c.self_signed ? 'cert.self' : 'cert.given')), `<table class="accttable">
+    ${row('cert.names', (c.names || []).join(', ') || '—')}${row('cert.expires', c.expires || '—')}${row('cert.fingerprint', c.fingerprint || '—')}</table>
+    <p style="margin:10px 0 0"><a class="btn" href="/tls.crt" download>${esc(t('cert.download'))}</a></p>`);
+};
 views.account = async (el) => {
   await loadMe();
   const m = me || {};
@@ -651,6 +662,7 @@ views.account = async (el) => {
       <form class="acctinline" id="addUser" autocomplete="off"><input name="user" placeholder="${esc(t('acct.user'))}" required> <input type="password" name="pw" placeholder="${esc(t('acct.new'))}" autocomplete="new-password" required> <button class="primary" type="submit">${t('acct.add')}</button></form>
       ${users.limit > 0 ? `<p class="muted" style="font-size:13px;margin:8px 0 0">${esc(t('acct.users_count', {used: users.users.length, n: users.limit}))}</p>` : ''}
       <p id="userMsg" style="font-size:13px;margin:8px 0 0"></p>`) : ''}
+    ${certPanel()}
   </div>`;
   const errText = (c, m) => t('acct.err_' + c) !== 'acct.err_' + c ? t('acct.err_' + c) : (m || c);
   const say = (id, ok, text) => { const n = $(id); if (n) { n.style.color = ok ? 'var(--good)' : 'var(--crit)'; n.textContent = text; } };

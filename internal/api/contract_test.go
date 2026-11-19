@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/githubflyideas/vyos-sflow/internal/auth"
+	"github.com/githubflyideas/vyos-sflow/internal/tlscert"
 )
 
 func contractServer(t *testing.T) http.Handler {
@@ -221,5 +222,39 @@ func TestSessionLimits(t *testing.T) {
 	}
 	if c := me(first); c != http.StatusUnauthorized {
 		t.Errorf("the oldest session survived %d newer ones: %d", sessionsPerUser, c)
+	}
+}
+
+// Every answer under /api/ that is not a success is the JSON error, the
+// manual's missing image included.
+func TestManualNotFoundIsJSON(t *testing.T) {
+	h := contractServer(t)
+	for _, path := range []string{"/api/manual/images/missing.png", "/api/manual/images/..%2fx"} {
+		w := call(h, "GET", path, "")
+		if w.Code != http.StatusNotFound || errorOf(t, w) != "not_found" {
+			t.Errorf("%s: %d %s", path, w.Code, w.Body)
+		}
+	}
+}
+
+// /tls.crt hands out the certificate in use, self-signed or given at start,
+// and only the certificate: a key kept in the same file never leaves.
+func TestCertificateDownload(t *testing.T) {
+	dir := t.TempDir()
+	cert := "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUZm9yLXRlc3Qtb25seS1ub3QtYS1jZXJ0MAoGCCqGSM49\n-----END CERTIFICATE-----\n"
+	key := "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgc2VjcmV0LWtleQ==\n-----END PRIVATE KEY-----\n"
+	path := dir + "/both.pem"
+	if err := os.WriteFile(path, []byte(key+cert), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := &Server{Static: fstest.MapFS{}, Cert: &tlscert.Info{SelfSigned: false, CertPath: path}}
+	h := s.Handler()
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/tls.crt", nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "BEGIN CERTIFICATE") {
+		t.Fatalf("a certificate given at start: %d %s", w.Code, w.Body)
+	}
+	if strings.Contains(w.Body.String(), "PRIVATE KEY") || strings.Contains(w.Body.String(), "c2VjcmV0") {
+		t.Fatalf("the private key left with the certificate: %s", w.Body)
 	}
 }

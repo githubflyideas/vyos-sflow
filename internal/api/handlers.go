@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"net/http"
@@ -378,7 +379,7 @@ func (s *Server) series(w http.ResponseWriter, r *http.Request) {
 // are handed to anyone who opens the page, and somebody who does not
 // trust the certificate yet cannot sign in to fetch it.
 func (s *Server) certDownload(w http.ResponseWriter, r *http.Request) {
-	if s.Cert == nil || !s.Cert.SelfSigned || s.Cert.CertPath == "" {
+	if s.Cert == nil || s.Cert.CertPath == "" {
 		http.NotFound(w, r)
 		return
 	}
@@ -387,9 +388,26 @@ func (s *Server) certDownload(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	// Only the certificates: a file given with -tls-cert may hold the
+	// private key as well, and that must never leave.
+	var out []byte
+	for {
+		var blk *pem.Block
+		blk, b = pem.Decode(b)
+		if blk == nil {
+			break
+		}
+		if blk.Type == "CERTIFICATE" {
+			out = append(out, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: blk.Bytes})...)
+		}
+	}
+	if len(out) == 0 {
+		http.NotFound(w, r)
+		return
+	}
 	w.Header().Set("Content-Type", "application/x-pem-file")
 	w.Header().Set("Content-Disposition", `attachment; filename="vyos-sflow.crt"`)
-	w.Write(b)
+	w.Write(out)
 }
 
 // certInfo describes the certificate the web UI is served with, so the

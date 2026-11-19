@@ -22,7 +22,7 @@ func (s *Server) manual(w http.ResponseWriter, r *http.Request) {
 	}
 	b, err := fs.ReadFile(docs.FS, name)
 	if err != nil {
-		http.Error(w, "no manual", http.StatusNotFound)
+		apiError(w, http.StatusNotFound, "not_found")
 		return
 	}
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
@@ -36,7 +36,7 @@ func (s *Server) manualImage(w http.ResponseWriter, r *http.Request) {
 	name := path.Base(r.PathValue("name"))
 	b, err := fs.ReadFile(docs.FS, "images/"+name)
 	if err != nil || path.Ext(name) != ".png" {
-		http.NotFound(w, r)
+		apiError(w, http.StatusNotFound, "not_found")
 		return
 	}
 	w.Header().Set("Content-Type", "image/png")
