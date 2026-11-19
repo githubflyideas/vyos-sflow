@@ -217,6 +217,9 @@ tr.on>td{background:var(--surface-2)}
 .acctmust{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:var(--accent-soft);color:var(--ink);font-weight:600}
 .accttable{width:100%;margin-bottom:12px}
 .accttable td{padding:8px 4px;border-bottom:1px solid var(--line)}
+/* a fingerprint is read character by character: wrapped, never cut off */
+.accttable .certval{word-break:break-all;white-space:normal}
+.accttable th{text-align:start;white-space:nowrap;padding:8px 12px 8px 4px;font-weight:600;vertical-align:top}
 .acctinline{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .acctinline input{min-width:0;flex:1 1 140px}
 

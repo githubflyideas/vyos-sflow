@@ -631,7 +631,7 @@ const admOnly = html => adm() ? html : '';
 const certPanel = () => {
   const c = selfStatus && selfStatus.tls;
   if (!c) return '';
-  const row = (k, v) => `<tr><th>${esc(t(k))}</th><td class="mono">${esc(v)}</td></tr>`;
+  const row = (k, v) => `<tr><th>${esc(t(k))}</th><td class="mono certval">${esc(v)}</td></tr>`;
   return panel('c12', t('cert.title'), esc(t(c.self_signed ? 'cert.self' : 'cert.given')), `<table class="accttable">
     ${row('cert.names', (c.names || []).join(', ') || '—')}${row('cert.expires', c.expires || '—')}${row('cert.fingerprint', c.fingerprint || '—')}</table>
     <p style="margin:10px 0 0"><a class="btn" href="/tls.crt" download>${esc(t('cert.download'))}</a></p>`);

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.23
+
+- Over HTTPS the account page shows the certificate in use: what it is valid for, its expiry and its SHA-256 fingerprint, with a download link.
+- /tls.crt also serves a certificate given with -tls-cert, and only its certificates, never a key kept in the same file.
+- /api/manual answers a missing file with the JSON error.
+
 ## 1.2.22
 
 - Traffic is counted at the sampling rate the switch declares, raised only by the samples it reports dropping. Gaps in sequence numbers are shown, not counted in: on H3C they appear with nothing lost.
