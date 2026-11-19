@@ -46,7 +46,7 @@ func TestCleanupRouteRequiresAdmin(t *testing.T) {
 	s := &Server{Accounts: fc, Check: fc.Check, Exists: fc.Exists}
 	h := s.Handler()
 	r := httptest.NewRequest("POST", "/api/cleanup", strings.NewReader(`{"all":true,"confirm":true}`))
-	r.SetBasicAuth("alice", "alice-secret")
+	signIn(s, r, "alice")
 	r.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -93,7 +93,7 @@ func TestCleanupHandlerClearsAllFlowHistoryPreservesIdentity(t *testing.T) {
 	s := &Server{Store: st, Pipe: p, Accounts: fc, Check: fc.Check, Exists: fc.Exists}
 	h := s.Handler()
 	r := httptest.NewRequest("GET", "/api/cleanup", nil)
-	r.SetBasicAuth("admin", "admin-secret")
+	signIn(s, r, "admin")
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	var preview map[string]json.RawMessage
@@ -104,7 +104,7 @@ func TestCleanupHandlerClearsAllFlowHistoryPreservesIdentity(t *testing.T) {
 		t.Fatalf("not all-only: %s", w.Body)
 	}
 	r = httptest.NewRequest("POST", "/api/cleanup", strings.NewReader(`{"all":true,"confirm":true}`))
-	r.SetBasicAuth("admin", "admin-secret")
+	signIn(s, r, "admin")
 	r.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, r)

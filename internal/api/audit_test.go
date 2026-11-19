@@ -128,10 +128,11 @@ func TestAuditTrailOfDeviceDeletion(t *testing.T) {
 	fc := auth.NewFileChecker(dir, nil)
 	s := &Server{Store: st, Pipe: p, Accounts: fc, Check: fc.Check, Exists: fc.Exists}
 	r := httptest.NewRequest("POST", "/api/cleanup/exporter", strings.NewReader(`{"exporter":"192.0.2.44","confirm":true}`))
-	r.SetBasicAuth("admin", "admin-secret-1")
 	r.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
-	s.Handler().ServeHTTP(w, r)
+	h := s.Handler()
+	signIn(s, r, "admin")
+	h.ServeHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatalf("delete: %d %s", w.Code, w.Body)
 	}

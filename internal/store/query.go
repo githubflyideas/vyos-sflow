@@ -168,26 +168,33 @@ func (q Query) where() (string, []any, error) {
 			args = append(args, v)
 		case "iface", "iface_in", "iface_out":
 			// exporter/ifindex: either direction, or only what came in
-			// through it, or only what went out through it
-			i := strings.LastIndexByte(v, '/')
-			if i <= 0 {
-				return "", nil, fmt.Errorf("bad interface %q", v)
+			// through it, or only what went out through it. Several,
+			// separated by commas, are any of them: the member ports of
+			// one link sampled one by one.
+			var any []string
+			for _, one := range strings.Split(v, ",") {
+				one = strings.TrimSpace(one)
+				i := strings.LastIndexByte(one, '/')
+				if i <= 0 {
+					return "", nil, fmt.Errorf("bad interface %q", one)
+				}
+				n, err := strconv.Atoi(one[i+1:])
+				if err != nil {
+					return "", nil, fmt.Errorf("bad interface %q", one)
+				}
+				switch f.Field {
+				case "iface_in":
+					any = append(any, "(exporter = ? AND in_if = ?)")
+					args = append(args, one[:i], n)
+				case "iface_out":
+					any = append(any, "(exporter = ? AND out_if = ?)")
+					args = append(args, one[:i], n)
+				default:
+					any = append(any, "(exporter = ? AND (in_if = ? OR out_if = ?))")
+					args = append(args, one[:i], n, n)
+				}
 			}
-			n, err := strconv.Atoi(v[i+1:])
-			if err != nil {
-				return "", nil, fmt.Errorf("bad interface %q", v)
-			}
-			switch f.Field {
-			case "iface_in":
-				c = "(exporter = ? AND in_if = ?)"
-				args = append(args, v[:i], n)
-			case "iface_out":
-				c = "(exporter = ? AND out_if = ?)"
-				args = append(args, v[:i], n)
-			default:
-				c = "(exporter = ? AND (in_if = ? OR out_if = ?))"
-				args = append(args, v[:i], n, n)
-			}
+			c = "(" + strings.Join(any, " OR ") + ")"
 		default:
 			return "", nil, fmt.Errorf("unknown filter field %q", f.Field)
 		}

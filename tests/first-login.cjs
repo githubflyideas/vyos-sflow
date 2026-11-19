@@ -26,6 +26,8 @@ async function main() {
       await req('/api/overview', 200, {jar});
       await req('/api/overview', 401, {auth: h.basic(DEFAULT)});
       await req('/api/overview', 200, {auth: h.basic(changed)});
+      // HTTP Basic is not taken, even with the right password
+      assert.equal((await req('/api/overview', 401, {rawAuth: h.basic(changed)})).error, 'login');
       await req('/api/password', 400, {auth: h.basic(changed), payload: {old: changed, new: DEFAULT}});
       await service.stop();
       env.VYOS_SFLOW_PASSWORD = h.password();
@@ -37,7 +39,7 @@ async function main() {
       await service.stop();
     } finally { await service.cleanup(); }
   });
-  console.log('PASS factory login, cookie/Basic/Bearer gate, password change/rejection and restart persistence');
+  console.log('PASS factory login, cookie/Bearer gate (no HTTP Basic), password change/rejection and restart persistence');
 }
 if (require.main === module) h.cli(main);
 module.exports = {main};

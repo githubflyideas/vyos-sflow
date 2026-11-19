@@ -7,7 +7,7 @@ Follow the three steps in the repository README: configure your exporter, extrac
 ## Read your traffic
 
 - **Overview:** the top indicators describe all traffic in the selected range. The chart can show all traffic, inbound or outbound. Direction is relative to the exporter/interface shown beside the chart, selected as the busiest interface in that range; it is not automatically the WAN interface and may change with the range. Below it, the device card and the interface table: each interface's speed, utilisation and traffic in and out as the device itself counts them, busiest first, with whether the samples match.
-- **Top 66:** the main talkers show the top 30 clients and top 30 servers side by side, or a table by host, application or protocol. Client/server roles are inferred, not necessarily the packet source and destination. Both lists describe the same traffic from different perspectives: do not add their totals. The all-traffic total includes entries outside the displayed ranking.
+- **TOP:** the main talkers show the top 33 clients and top 33 servers side by side, or a table by host, application or protocol. Client/server roles are inferred, not necessarily the packet source and destination. Both lists describe the same traffic from different perspectives: do not add their totals. The all-traffic total includes entries outside the displayed ranking.
 - **Flow records:** the newest records first, 100 to a page (use Previous/Next), over at most 24 hours, optionally for one host. The page shows its effective time window even when the global selection is 48 hours. Traffic and packet counts are estimates; the multiplier is the measured effective sampling rate and is not the exporter's configured sampling ratio.
 - **Diagnostics:** received samples, configured stream identity, reception diagnostics and interface reconciliation: each interface's own counters against what the samples add up to. A direction far below 100% is usually not sampled on the device; enable sFlow counter polling for this table.
 
@@ -19,7 +19,7 @@ The default UDP listener is `0.0.0.0:6343`. Configure the exporter to send sFlow
 
 ## Temporary terminal view
 
-Run `./vyos-sflow tui` over SSH for a one-command session. It looks for a running service first: the address a service writes into its data directory at start (`./vyso_sflow_data`, or `VYOS_SFLOW_DATA`) when that address answers, else `127.0.0.1:8066`. Options `-data`, `-url` or `-user` always connect to an existing service. If no local service is running, it starts a temporary collector, stores session data in a private temporary directory and connects the TUI through a loopback-only API. It still receives sFlow on UDP `0.0.0.0:6343`; configure sampling as described in the README and restrict UDP access to trusted devices.
+Run `./vyos-sflow tui` over SSH for a one-command session. It looks for a running service first: the address a service writes into its data directory at start (`./vyso_sflow_data`, or `VYOS_SFLOW_DATA`) when that address answers, else `127.0.0.1:8066`. Options `-data` or `-url` always connect to an existing service on this machine, with the token the service keeps in its data directory; the terminal view does not sign in from other machines (use the web page there). If no local service is running, it starts a temporary collector, stores session data in a private temporary directory and connects the TUI through a loopback-only API. It still receives sFlow on UDP `0.0.0.0:6343`; configure sampling as described in the README and restrict UDP access to trusted devices.
 
 Press `q` or `Ctrl+C` to exit. The session's collector stops and its temporary data is removed; this does not clear existing persistent history or accounts. If TUI connected to an already running service, that service continues running after you quit. For an explicit service address and account, use `./vyos-sflow tui -url http://ROUTER_IP:8066 -user admin`. Existing account restrictions still apply.
 
@@ -72,4 +72,3 @@ The rankings and the flow records show each address with its reverse DNS (PTR) n
 ## Deleting one device's data
 
 **Data cleanup** lists the devices with stored traffic. Deleting one removes all of its flow records, for a device whose traffic should not count (forged or broken exports, or a test device). Block it first if it is still sending. A flow that another device also reported keeps counting through that device's copy.
-

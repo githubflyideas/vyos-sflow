@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/githubflyideas/vyos-sflow/internal/tui"
@@ -55,7 +56,7 @@ func TestTUICommandRejectsNonTTYBeforeDiscovery(t *testing.T) {
 }
 
 func TestTUICommandExplicitTargetNeverStartsBackend(t *testing.T) {
-	for _, args := range [][]string{{"-url", "http://127.0.0.1:1"}, {"-data", t.TempDir()}, {"-user", "admin"}} {
+	for _, args := range [][]string{{"-url", "http://127.0.0.1:1"}, {"-data", t.TempDir()}} {
 		t.Run(args[0], func(t *testing.T) {
 			failure := errors.New("unreachable")
 			h := commandHooks{terminal: func() bool { return true }, getenv: func(string) string { return "password-for-test" },
@@ -104,5 +105,16 @@ func TestTUICommandExistingServiceRemainsUntouched(t *testing.T) {
 	b, err := os.ReadFile(tokenPath)
 	if err != nil || string(b) != "existing-secret" {
 		t.Fatal("service token changed")
+	}
+}
+
+// There is no signing in from another machine with a password: -user is
+// not an option.
+func TestTUICommandHasNoPasswordSignIn(t *testing.T) {
+	h := commandHooks{terminal: func() bool { return true }, getenv: func(string) string { return "" },
+		available: func(context.Context) (bool, error) { t.Error("discovery with an unknown option"); return false, nil }}
+	err := runTUICommand(context.Background(), []string{"-user", "admin"}, h)
+	if err == nil || !strings.Contains(err.Error(), "flag provided but not defined") {
+		t.Fatalf("-user: %v", err)
 	}
 }

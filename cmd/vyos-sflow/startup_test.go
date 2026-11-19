@@ -3,13 +3,15 @@ package main
 import (
 	"bytes"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func TestReleaseVersionDefault(t *testing.T) {
-	if version != "1.2.21" {
-		t.Fatalf("default version = %q, want 1.2.21", version)
+	if version != "1.2.22" {
+		t.Fatalf("default version = %q, want 1.2.22", version)
 	}
 }
 
@@ -46,5 +48,36 @@ func TestStartupLoopbackHint(t *testing.T) {
 		if got := strings.Contains(buf.String(), "reachable from this machine only"); got != want {
 			t.Errorf("%s: loopback hint=%v want %v: %s", addr, got, want, buf.String())
 		}
+	}
+}
+
+// The local token is written into a new file only this user can read, even
+// where an earlier run left a readable one or a link in its place.
+func TestTokenFileIsPrivate(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, ".tui-token")
+	if err := os.WriteFile(p, []byte("old"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := writePrivate(p, "new-token"); err != nil {
+		t.Fatal(err)
+	}
+	fi, err := os.Stat(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fi.Mode().Perm() != 0o600 {
+		t.Errorf("token file mode %v, want 0600", fi.Mode().Perm())
+	}
+	elsewhere := filepath.Join(dir, "elsewhere")
+	os.Remove(p)
+	if err := os.Symlink(elsewhere, p); err != nil {
+		t.Skip(err)
+	}
+	if err := writePrivate(p, "new-token"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(elsewhere); err == nil {
+		t.Error("the token was written through a link left in its place")
 	}
 }

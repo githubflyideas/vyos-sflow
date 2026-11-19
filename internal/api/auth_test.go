@@ -1,7 +1,6 @@
 package api
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -12,13 +11,12 @@ func TestFailedLoginsLockOut(t *testing.T) {
 	now := time.Unix(1700000000, 0)
 	s := &Server{Users: map[string]string{"admin": "right"}}
 	s.fails.now = func() time.Time { return now }
-	h := s.auth(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) })
+	s.sessions = map[string]session{}
 	try := func(ip, pw string) int {
-		r := httptest.NewRequest("GET", "/api/status", nil)
+		r := httptest.NewRequest("POST", "/api/login", strings.NewReader(`{"user":"admin","password":"`+pw+`"}`))
 		r.RemoteAddr = ip + ":40000"
-		r.SetBasicAuth("admin", pw)
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		s.login(w, r)
 		return w.Code
 	}
 	for i := 0; i < maxFails; i++ {

@@ -59,7 +59,7 @@ func TestEveryWriteIsDecided(t *testing.T) {
 		switch fn.Name {
 		case "adminAPI":
 			gated[pat] = true
-		case "api":
+		case "api", "route": // route: registered without either wrapper
 			open[pat] = true
 		}
 		return true

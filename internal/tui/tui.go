@@ -24,7 +24,7 @@ import (
 
 // Options configure the TUI.
 type Options struct {
-	URL, Token, User, Password, Lang string
+	URL, Token, Lang string
 }
 
 // ------------------------------------------------------------ i18n
@@ -165,8 +165,8 @@ type page struct {
 }
 
 var pageKeys = []string{"overview", "top", "traffic", "sources", "help"}
-var ranges = []string{"15m", "1h", "6h", "24h", "48h"}
-var rangeDur = []time.Duration{15 * time.Minute, time.Hour, 6 * time.Hour, 24 * time.Hour, 48 * time.Hour}
+var ranges = []string{"15m", "30m", "1h", "6h", "12h", "24h", "48h"}
+var rangeDur = []time.Duration{15 * time.Minute, 30 * time.Minute, time.Hour, 6 * time.Hour, 12 * time.Hour, 24 * time.Hour, 48 * time.Hour}
 var dims = []string{"host", "app", "proto"}
 var units = []string{"bps", "bytes", "pps"}
 var intervals = []time.Duration{2 * time.Second, 5 * time.Second, 10 * time.Second, 30 * time.Second}
@@ -217,7 +217,7 @@ func (a *app) t(k string, kv ...string) string {
 
 func newApp(opt Options) *app {
 	tr, en := loadDict(detectLang(opt.Lang))
-	return &app{opt: opt, tr: tr, en: en, cl: &http.Client{Timeout: 20 * time.Second}, rng: 1, ival: 1,
+	return &app{opt: opt, tr: tr, en: en, cl: &http.Client{Timeout: 20 * time.Second}, rng: 2, ival: 1, // rng 2: one hour
 		refresh: make(chan struct{}, 1), w: 120, h: 36}
 }
 
@@ -387,8 +387,6 @@ func (a *app) do(method, path string, q url.Values, body io.Reader, v any) error
 	}
 	if a.opt.Token != "" {
 		req.Header.Set("Authorization", "Bearer "+a.opt.Token)
-	} else if a.opt.User != "" {
-		req.SetBasicAuth(a.opt.User, a.opt.Password)
 	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -399,9 +397,12 @@ func (a *app) do(method, path string, q url.Values, body io.Reader, v any) error
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		var e struct{ Error string }
+		var e struct{ Error, Message string }
 		json.NewDecoder(res.Body).Decode(&e)
-		return fmt.Errorf("%d %s", res.StatusCode, e.Error)
+		if e.Message == "" {
+			e.Message = e.Error
+		}
+		return fmt.Errorf("%d %s", res.StatusCode, e.Message)
 	}
 	return json.NewDecoder(res.Body).Decode(v)
 }
@@ -415,10 +416,6 @@ func query(rng int, extra map[string]string) url.Values {
 }
 
 // ------------------------------------------------------------ keys
-
-func readKeys(out chan<- string) {
-	readKeysFrom(context.Background(), os.Stdin, out)
-}
 
 func readKeysFrom(ctx context.Context, input io.Reader, out chan<- string) {
 	defer close(out)
@@ -930,14 +927,6 @@ func fmtPps(v float64) string {
 	return fmt.Sprintf("%.0f pps", v)
 }
 
-func pct(v float64) string {
-	s := fmt.Sprintf("%.1f%%", v*100)
-	if v > 0 {
-		s = "+" + s
-	}
-	return s
-}
-
 // delta formats the change from base to cur. It is empty when the base is
 // too small to compare against (tiny is the floor), and capped, so that a
 // host that was nearly idle reads "new" or ">10×" rather than "+646539%".
@@ -961,17 +950,4 @@ func delta(cur, base, tiny float64) string {
 		return fmt.Sprintf("+%.0f%%", d*100)
 	}
 	return fmt.Sprintf("%.0f%%", d*100)
-}
-
-func barCells(v, maxv float64, width int) string {
-	if maxv <= 0 || width <= 0 {
-		return ""
-	}
-	eighths := int(math.Round(v / maxv * float64(width) * 8))
-	full := min(width, eighths/8)
-	s := strings.Repeat("█", full)
-	if r := eighths % 8; r > 0 && full < width {
-		s += string([]rune("▏▎▍▌▋▊▉")[r-1])
-	}
-	return s
 }

@@ -150,6 +150,7 @@ func probe(url string) ([]header, error) {
 type checker struct {
 	base, data, temporary, password, checkpoint string
 	client                                      *http.Client
+	session                                     string
 	lastStatus                                  int
 	waitDuration, interval                      time.Duration
 }
@@ -157,7 +158,40 @@ type checker struct {
 func newChecker(base, data, temporary string) *checker {
 	return &checker{base: base, data: data, temporary: temporary, client: &http.Client{Timeout: 5 * time.Second}, checkpoint: "guest_check", waitDuration: 120 * time.Second, interval: 2 * time.Second}
 }
+
+// signIn signs in at /api/login (the service takes no HTTP Basic) and
+// keeps the session cookie for the requests that follow.
+func (c *checker) signIn() error {
+	b, _ := json.Marshal(map[string]string{"user": "admin", "password": c.password})
+	r, e := c.client.Post(c.base+"/api/login", "application/json", bytes.NewReader(b))
+	if e != nil {
+		return errors.New("HTTP transport failure")
+	}
+	defer r.Body.Close()
+	io.Copy(io.Discard, io.LimitReader(r.Body, 1<<20))
+	c.session = ""
+	for _, k := range r.Cookies() {
+		if k.Name == "t66s" && k.Value != "" {
+			c.session = k.Value
+		}
+	}
+	if r.StatusCode != 200 || c.session == "" {
+		return errors.New("sign-in refused")
+	}
+	return nil
+}
+
 func (c *checker) request(method, path string, payload any, authenticated bool) (map[string]any, int, error) {
+	v, code, e := c.requestOnce(method, path, payload, authenticated)
+	if authenticated && code == http.StatusUnauthorized {
+		// a restarted service no longer knows the session
+		c.session = ""
+		v, code, e = c.requestOnce(method, path, payload, authenticated)
+	}
+	return v, code, e
+}
+
+func (c *checker) requestOnce(method, path string, payload any, authenticated bool) (map[string]any, int, error) {
 	var body io.Reader
 	if payload != nil {
 		b, e := json.Marshal(payload)
@@ -171,7 +205,12 @@ func (c *checker) request(method, path string, payload any, authenticated bool) 
 		return nil, 0, errors.New("invalid request")
 	}
 	if authenticated {
-		req.SetBasicAuth("admin", c.password)
+		if c.session == "" {
+			if e := c.signIn(); e != nil {
+				return nil, 0, e
+			}
+		}
+		req.AddCookie(&http.Cookie{Name: "t66s", Value: c.session})
 	}
 	if payload != nil {
 		req.Header.Set("Content-Type", "application/json")

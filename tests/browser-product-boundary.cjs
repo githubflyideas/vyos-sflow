@@ -27,18 +27,18 @@ async function verifySemantics(page) {
     const res = await response;
     assert.equal(res.status(), 200);
     const data = await res.json();
-    await page.waitForFunction(({dir, iface}) => document.querySelector(`[data-od="${dir}"]`)?.getAttribute('aria-pressed') === 'true' && document.querySelector('#directionIface')?.textContent === iface, {dir, iface:data.dir_iface || 'No sampled interface available'});
+    await page.waitForFunction(({dir, iface}) => document.querySelector(`[data-od="${dir}"]`)?.getAttribute('aria-pressed') === 'true' && document.querySelector('#directionIface')?.textContent === iface, {dir, iface:data.dir_iface ? Object.entries(data.dir_iface.split(',').reduce((by, one) => { const i = one.lastIndexOf('/'); (by[one.slice(0, i)] ||= []).push(one.slice(i + 1)); return by; }, {})).map(([e, ix]) => e + ' / ' + ix.join(' + ')).join(', ') : 'No sampled interface available'});
     assert.match(await page.locator('#kpiScope').innerText(), /All traffic/);
-    assert.match(await page.locator('#directionScope').innerText(), /exporter\/interface/);
+    assert.match(await page.locator("#directionScope").innerText(), /ports sFlow is enabled on/);
     assert.doesNotMatch(await page.locator('#directionScope').innerText(), /WAN/);
   }
   await page.locator('#nav [data-v=topn]').click();
   await page.locator('[data-tm=talkers]').waitFor({state:'visible'});
   await page.locator('[data-tm=talkers]').click();
   await page.locator('#topPerspectives').waitFor({state:'visible'});
-  assert.match(await page.locator('#topPerspectives').innerText(), /inferred.*same traffic.*do not add.*not just the Top 30/);
+  assert.match(await page.locator('#topPerspectives').innerText(), /inferred.*same traffic.*do not add.*not just the Top 33/);
   assert.equal(await page.locator('#v-topn .sum').count(), 2);
-  for (const text of await page.locator('#v-topn .sum').allTextContents()) assert.match(text, /not Top 30 subtotal/);
+  for (const text of await page.locator('#v-topn .sum').allTextContents()) assert.match(text, /not Top 33 subtotal/);
   await page.locator('#nav [data-v=records]').click();
   await page.locator('#recordWindow').waitFor({state:'visible'});
   const response = page.waitForResponse(r => new URL(r.url()).pathname === '/api/records' && new URL(r.url()).searchParams.get('range') === '48h');
@@ -84,13 +84,13 @@ async function verify(page) {
   for (const [view,endpoint] of [['overview','overview'],['topn','topn']]) {
     await page.locator(`#nav [data-v=${view}]`).click();
     await page.locator(`#v-${view}.on .panel`).first().waitFor({state:'visible'});
-    for (const range of ['15m','1h','6h','24h','48h']) {
+    for (const range of ['15m','30m','1h','6h','12h','24h','48h']) {
       const response = page.waitForResponse(r => new URL(r.url()).pathname === '/api/'+endpoint && new URL(r.url()).searchParams.get('range') === range);
       await page.locator(`#range [data-r="${range}"]`).click();
       assert.equal((await response).status(),200);
     }
   }
-  assert.deepEqual(await page.locator('#range [data-r]').evaluateAll(xs=>xs.map(x=>x.dataset.r)),['15m','1h','6h','24h','48h']);
+  assert.deepEqual(await page.locator('#range [data-r]').evaluateAll(xs=>xs.map(x=>x.dataset.r)),['15m','30m','1h','6h','12h','24h','48h']);
   await page.locator('#range [data-r="1h"]').click();
   for (const code of await page.locator('#lang option').evaluateAll(xs=>xs.map(x=>x.value))) {
     const catalogResponse = await page.request.get(new URL(`i18n/${code}.json`, page.url()).href);
@@ -128,7 +128,7 @@ async function verify(page) {
     assert.equal(await page.locator('#sponsor, #licText, #markChip, #markNote, body.marked').count(),0);
   }
   await page.setViewportSize({width:390,height:844});
-  assert.equal(await page.locator('#range [data-r]').count(),5);
+  assert.equal(await page.locator('#range [data-r]').count(),7);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth),true,'mobile horizontal overflow');
   await page.setViewportSize({width:1440,height:1000});
   for (const asset of ['/world.json','/embed.js','/embed.css','/sponsor.js']) {

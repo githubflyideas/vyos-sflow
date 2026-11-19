@@ -58,13 +58,13 @@ func TestRateIsTheDeclaredOneWhateverPoolAndSampleNumbers(t *testing.T) {
 	}
 }
 
-// Datagrams lost on the way raise the rate by exactly what is missing:
-// one datagram in five lost, each received one stands for 5/4.
-func TestRateCountsLostDatagrams(t *testing.T) {
+// Gaps in the datagram numbers do not change the rate: on H3C they are
+// there while nothing is lost, and counting them scaled the traffic past
+// the interface counters.
+func TestRateIgnoresDatagramGaps(t *testing.T) {
 	for _, rate := range []uint32{1024, 10240, 65535} {
-		got, want := newSampler().run(rate, 1, rate, 80, 4), float64(rate)*5/4
-		if got < want*0.97 || got > want*1.03 {
-			t.Errorf("1:%d with one datagram in five lost: rate %v, want about %v", rate, got, want)
+		if got := newSampler().run(rate, 1, rate, 80, 2); got != float64(rate) {
+			t.Errorf("1:%d with every other datagram number missing: rate %v, want %d", rate, got, rate)
 		}
 	}
 }

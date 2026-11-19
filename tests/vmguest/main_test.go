@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -133,13 +134,31 @@ func TestGuestLifecycleAndActualSourceProtocol(t *testing.T) {
 	password := "tryvyossflow66"
 	wire := "0"
 	proto := "sFlow v5"
+	sessions := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/healthz" {
 			io.WriteString(w, `{"status":"ok"}`)
 			return
 		}
-		user, p, ok := r.BasicAuth()
-		if !ok || user != "admin" || p != password {
+		// as the service does: a password only at /api/login, then the
+		// session cookie; no HTTP Basic
+		if r.URL.Path == "/api/login" {
+			var in map[string]string
+			json.NewDecoder(r.Body).Decode(&in)
+			if in["user"] != "admin" || in["password"] != password {
+				w.WriteHeader(401)
+				return
+			}
+			sessions++
+			http.SetCookie(w, &http.Cookie{Name: "t66s", Value: fmt.Sprint("s", sessions)})
+			io.WriteString(w, `{}`)
+			return
+		}
+		if _, _, basic := r.BasicAuth(); basic {
+			w.WriteHeader(401)
+			return
+		}
+		if k, err := r.Cookie("t66s"); err != nil || k.Value != fmt.Sprint("s", sessions) {
 			w.WriteHeader(401)
 			return
 		}

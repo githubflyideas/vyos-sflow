@@ -40,11 +40,11 @@ exit
 In a writable directory on the router:
 
 ```sh
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.21/vyos-sflow-1.2.21-linux-amd64.tar.gz &&
-curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.21/SHA256SUMS &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.22/vyos-sflow-1.2.22-linux-amd64.tar.gz &&
+curl -fLO https://github.com/githubflyideas/vyos-sflow/releases/download/v1.2.22/SHA256SUMS &&
 sha256sum --ignore-missing -c SHA256SUMS &&
-tar -xzf vyos-sflow-1.2.21-linux-amd64.tar.gz &&
-cd vyos-sflow-1.2.21-linux-amd64 &&
+tar -xzf vyos-sflow-1.2.22-linux-amd64.tar.gz &&
+cd vyos-sflow-1.2.22-linux-amd64 &&
 ./vyos-sflow serve
 ```
 
@@ -73,14 +73,14 @@ For a quick look over SSH, run one command:
 
 Standalone TUI history lasts only for that session. Its temporary data is removed on exit; existing accounts and `./vyso_sflow_data` are not cleared. Keep using `serve` or the optional system service when you want continuous collection and persistent history.
 
-Press `?` for keyboard help. For an explicitly selected service, use `-url http://ROUTER_IP:8066 -user admin`; the password is prompted without echoing. Explicit connection options never start a replacement collector if the connection fails.
+Press `?` for keyboard help. The terminal view runs on the router itself, over SSH, and attaches to the service there with the service's own token; `-data DIR` names the service's data directory when it is not the default. From another machine, use the web page. Explicit connection options never start a replacement collector if the connection fails.
 
 ## Reading the numbers
 
 | View | What the numbers mean |
 | --- | --- |
 | Overview | Top indicators cover all traffic in the selected range. Inbound/outbound chart directions are relative to the displayed exporter and interface, not automatically a WAN link. Interface traffic comes from the device’s own interface counters (the same values SNMP reads). |
-| Top 66 | The top 30 clients and top 30 servers are two perspectives on the same traffic. Roles are inferred; do not add the two lists together. The all-traffic total also includes entries outside the ranking. |
+| TOP | The top 33 clients and top 33 servers are two perspectives on the same traffic. Roles are inferred; do not add the two lists together. The all-traffic total also includes entries outside the ranking. |
 | Flow records | The newest records first, 100 to a page, over at most 24 hours, even with a global 48-hour selection. The page shows the effective window. The estimated multiplier is the measured effective sampling rate; it is not the router's configured sampling ratio. |
 | Diagnostics | Interface reconciliation compares each interface’s own counters with what the samples add up to; a direction far from 100% is usually not sampled on the device. |
 
@@ -99,7 +99,7 @@ Native VyOS capture of v1.2.9: the router's own sFlow samples real downloads at 
 
 **Client and server rankings**
 
-![Top 66 main talkers on VyOS](docs/images/screenshots/vyos/web-top.png)
+![TOP main talkers on VyOS](docs/images/screenshots/vyos/web-top.png)
 
 **Recent flow records**
 

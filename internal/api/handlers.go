@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/githubflyideas/vyos-sflow/internal/collector"
@@ -94,14 +95,23 @@ func (s *Server) overview(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Query().Get("dir") {
 	case "", "in", "out":
 	default:
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "dir is in or out"})
+		apiError(w, http.StatusBadRequest, "bad_dir")
 		return
 	}
 	if dir := r.URL.Query().Get("dir"); dir == "in" || dir == "out" {
-		ifk, err := s.Store.BusiestIface(q)
-		if err != nil {
-			fail(w, err)
-			return
+		// every port sFlow is enabled on, so a link made of several
+		// member ports, each sampled on its own, is shown whole; the
+		// busiest interface of the records when there is no collector
+		var ifk string
+		if s.Col != nil {
+			ifk = strings.Join(s.Col.SampledIfaces(), ",")
+		}
+		if ifk == "" {
+			var err error
+			if ifk, err = s.Store.BusiestIface(q); err != nil {
+				fail(w, err)
+				return
+			}
 		}
 		out["dir_iface"] = ifk
 		ds := &store.Series{Times: se.Times, Step: se.Step, SettledTo: se.SettledTo, DataFrom: se.DataFrom}
@@ -199,6 +209,7 @@ func (s *Server) sources(w http.ResponseWriter, r *http.Request) {
 	var out []sourceOut
 	var stale []map[string]any
 	srcs := s.Col.Sources()
+	agrees := countersAgree(s.Col.IfaceChecks(now))
 	active := map[string]bool{}
 	for _, si := range srcs {
 		if now.Sub(si.LastSeen) < 2*time.Minute {
@@ -223,7 +234,11 @@ func (s *Server) sources(w http.ResponseWriter, r *http.Request) {
 		case "assumed1":
 			issue("warn", "assumed_unsampled")
 		}
-		if si.TransitPct >= 1 {
+		// Gaps in the datagram numbers are only a hint: some switches (H3C)
+		// skip numbers while sending everything. Where the device's own
+		// interface counters agree with the samples, nothing is missing and
+		// the hint is not shown.
+		if si.TransitPct >= 1 && !agrees[si.Exporter] {
 			issue("warn", "loss")
 		}
 		if si.DropPct >= 1 {
@@ -311,7 +326,9 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) resolve(w http.ResponseWriter, r *http.Request) {
-	var in struct{ IPs []string }
+	var in struct {
+		IPs []string `json:"ips"`
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64<<10)).Decode(&in); err != nil {
 		fail(w, err)
 		return
@@ -417,4 +434,28 @@ func (s *Server) records(w http.ResponseWriter, r *http.Request) {
 		rows = rows[:limit]
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"rows": rows, "from": q.From, "to": q.To, "limit": limit, "offset": offset, "more": more})
+}
+
+// countersAgree lists the devices whose sampled interfaces carry, by the
+// samples, what their own counters say they carried (within 15%, in each
+// direction with traffic): their samples are all arriving.
+func countersAgree(ifs []collector.IfaceCheck) map[string]bool {
+	out := map[string]bool{}
+	bad := map[string]bool{}
+	for _, ic := range ifs {
+		for _, d := range [][2]float64{{ic.EstInBps, ic.DevInBps}, {ic.EstOutBps, ic.DevOutBps}} {
+			if d[1] < 1e6 { // too little traffic to judge by
+				continue
+			}
+			if r := d[0] / d[1]; r < 0.85 || r > 1.15 {
+				bad[ic.Exporter] = true
+			} else {
+				out[ic.Exporter] = true
+			}
+		}
+	}
+	for e := range bad {
+		delete(out, e)
+	}
+	return out
 }

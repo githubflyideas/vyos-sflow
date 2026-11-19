@@ -28,41 +28,30 @@ func newInstallation(t *testing.T) (*Server, *http.ServeMux) {
 	return s, mux
 }
 
-// TestBasicAuthObeysTheForcedChange: the forced password change used to be
-// checked only where a session carried it, so Basic auth walked past it
-// and the whole API answered to admin and the starting password.
-func TestBasicAuthObeysTheForcedChange(t *testing.T) {
+// HTTP Basic is not taken, with any password: a password is given only at
+// /api/login, where failures are slowed and locked out.
+func TestBasicAuthIsNotTaken(t *testing.T) {
 	_, mux := newInstallation(t)
-	basic := func(path, user, pass string) *httptest.ResponseRecorder {
-		r := httptest.NewRequest("GET", path, nil)
-		r.RemoteAddr = "192.0.2.1:1"
-		r.SetBasicAuth(user, pass)
-		w := httptest.NewRecorder()
-		mux.ServeHTTP(w, r)
-		return w
-	}
-	w := basic("/api/overview", "admin", auth.DefaultPassword)
-	if w.Code != http.StatusForbidden {
-		t.Errorf("Basic auth with the starting password: got %d, want 403", w.Code)
-	}
-	if !strings.Contains(w.Body.String(), "change_password") {
-		t.Errorf("expected change_password, got %s", w.Body)
-	}
-	// the calls needed to get out of that state still answer
-	if w := basic("/api/me", "admin", auth.DefaultPassword); w.Code != http.StatusOK {
-		t.Errorf("/api/me before the change: got %d, want 200", w.Code)
-	}
-	// and once the password is a real one, Basic auth works as before
 	r := httptest.NewRequest("POST", "/api/password", strings.NewReader(`{"old":"`+auth.DefaultPassword+`","new":"s3cret-password-1"}`))
 	r.RemoteAddr = "192.0.2.1:1"
 	r.SetBasicAuth("admin", auth.DefaultPassword)
-	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, r)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("change over Basic auth: got %d %s", rec.Code, rec.Body)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, r)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("password change over Basic: %d %s", w.Code, w.Body)
 	}
-	if w := basic("/api/overview", "admin", "s3cret-password-1"); w.Code != http.StatusOK {
-		t.Errorf("Basic auth after the change: got %d, want 200", w.Code)
+	c := login(t, mux, "admin", auth.DefaultPassword)
+	if c == nil {
+		t.Fatal("no session for the starting password")
+	}
+	for _, path := range []string{"/api/overview", "/api/me"} {
+		r := httptest.NewRequest("GET", path, nil)
+		r.SetBasicAuth("admin", auth.DefaultPassword)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("%s over Basic: %d", path, w.Code)
+		}
 	}
 }
 
@@ -86,9 +75,9 @@ func TestLocalTokenObeysTheForcedChange(t *testing.T) {
 	if w := call("/api/me", s.LocalTok); w.Code != http.StatusOK {
 		t.Fatalf("onboarding endpoint: %d %s", w.Code, w.Body)
 	}
-	// Complete the real password endpoint using the factory credentials.
+	// Complete the real password endpoint, signed in with the factory credentials.
 	r := httptest.NewRequest("POST", "/api/password", strings.NewReader(`{"old":"`+auth.DefaultPassword+`","new":"changed-password"}`))
-	r.SetBasicAuth("admin", auth.DefaultPassword)
+	r.AddCookie(login(t, mux, "admin", auth.DefaultPassword))
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, r)
 	if w.Code != http.StatusOK {

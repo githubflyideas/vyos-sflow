@@ -149,8 +149,8 @@ const bar = (x, max, col) => `<div class="sb"><span style="width:${Math.max(1.5,
 
 const VIEWS = ['overview', 'topn', 'records', 'sources', 'account', 'cleanup', 'help'];
 const DIMS = ['host', 'app', 'proto'];
-const RANGES = ['15m', '1h', '6h', '24h', '48h'];
-const REFRESH_MS = {'15m': 20000, '1h': 30000, '6h': 60000, '24h': 60000, '48h': 300000};
+const RANGES = ['15m', '30m', '1h', '6h', '12h', '24h', '48h'];
+const REFRESH_MS = {'15m': 20000, '30m': 30000, '1h': 30000, '6h': 60000, '12h': 60000, '24h': 60000, '48h': 300000};
 const LIVE_VIEWS = new Set(['overview', 'topn', 'records', 'sources']);
 const state = {v: 'overview', r: '1h', dim: 'host', f: [], od: '', tm: 'talkers', ip: ''};
 function readHash() {
@@ -159,7 +159,7 @@ function readHash() {
  state.r = RANGES.includes(p.get('r')) ? p.get('r') : '1h';
  state.dim = DIMS.includes(p.get('dim')) ? p.get('dim') : 'host';
  state.od = ['in', 'out'].includes(p.get('od')) ? p.get('od') : '';
- state.tm = p.get('tm') === 'table' ? 'table' : 'talkers';  // Top 66 opens on the two ends
+ state.tm = p.get('tm') === 'table' ? 'table' : 'talkers';  // TOP opens on the two ends
  state.ip = p.get('ip') || '';
  state.f = [];
 }
@@ -168,7 +168,7 @@ function writeHash(push) {
  if (push && h !== location.hash) history.pushState(null, '', h); else history.replaceState(null, '', h);
 }
 let clockSkew = 0, waiting = null, setup = null;
-const spanMs = () => ({'15m': 9e5, '1h': 36e5, '6h': 216e5, '24h': 864e5, '48h': 1728e5})[state.r];
+const spanMs = () => ({'15m': 9e5, '30m': 18e5, '1h': 36e5, '6h': 216e5, '12h': 432e5, '24h': 864e5, '48h': 1728e5})[state.r];
 const rangeLabel = () => t('range.' + state.r);
 function renderRange() {
  $('#range').innerHTML = RANGES.map(r => `<button data-r="${r}" aria-pressed="${r === state.r}">${t('range.' + r)}</button>`).join('');
@@ -194,7 +194,7 @@ async function api(path, extra = {}, filters = state.f) {
   if (res.status === 403 && me) { const j = await res.clone().json().catch(() => ({})); if (j.error === 'change_password') { me.must_change = true; go('account'); throw new Error('login'); } }
   const j = await res.json().catch(() => ({}));
   checkLoad(seq);
-  if (!res.ok) { const e = new Error(j.error || res.statusText); e.kind = j.kind; throw e; }
+  if (!res.ok) { const e = new Error(j.message || j.error || res.statusText); e.code = j.error; e.kind = j.kind; throw e; }
   return j;
 }
 // ------------------------------------------------------------ tooltip & charts
@@ -459,6 +459,8 @@ views.help = async (el) => {
   el.querySelectorAll('a[data-hlang]').forEach(a => a.onclick = e => { e.preventDefault(); helpLang = a.dataset.hlang; render(); window.scrollTo(0, 0); });
 };
 
+// "exp/2196,exp/2204" as "exp / 2196 + 2204"
+const ifaceList = v => { const by = {}; for (const one of v.split(',')) { const i = one.lastIndexOf('/'); (by[one.slice(0, i)] ||= []).push(one.slice(i + 1)); } return Object.entries(by).map(([e, ix]) => e + ' / ' + ix.join(' + ')).join(', '); };
 const dimLabel = d => t(d === 'app' ? 'col.service' : d === 'host' ? 'kpi.hosts' : 'col.proto');
 function drawSeries(el, series) {
  series = series || {times: [], names: [], values: []};
@@ -495,7 +497,7 @@ views.overview = async el => {
  ${panel('c4', t('ov.device'), '', `${devInfo}<div class="devnum"><div><div class="lab">${t('kpi.now')}</div><b>${fmtBps(d.now_bps)}</b></div><div><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><b>${fmtBytes(total.wire)}</b></div><div><div class="lab">${t('col.flows')}</div><b>${nf(total.flows || 0)}</b></div></div>
   <p class="muted" style="font-size:12px"><span id="kpiScope">${esc(t('ov.kpi_scope'))}</span> · ${t('col.pkts')} ${nf(total.pkts || 0)}</p>`)}
  <div class="panel c8"><div class="ph"><h2 id="bwTitle">${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
- ${state.od ? `<p class="muted" id="directionScope">${esc(t('ov.direction_scope'))} · <span id="directionIface">${d.dir_iface ? esc(d.dir_iface) : esc(t('ov.direction_empty'))}</span></p>` : ''}
+ ${state.od ? `<p class="muted" id="directionScope">${esc(t('ov.direction_scope'))} · <span id="directionIface">${d.dir_iface ? esc(ifaceList(d.dir_iface)) : esc(t('ov.direction_empty'))}</span></p>` : ''}
  <div class="chart" id="chStack"></div></div>
  ${panel('c12', t('ov.ifaces'), esc(t('ov.ifaces_sub')), ifs.length ? `<div class="tablewrap"><table><thead><tr><th>${t('ic.iface')}</th><th>${t('ov.speed')}</th><th>${t('ov.util_in')}</th><th>${t('ov.util_out')}</th><th class="num">${t('if.in')}</th><th class="num">${t('if.out')}</th><th>${t('col.status')}</th></tr></thead><tbody>
   ${ifs.map(r => { const [k, txt] = icState(r); return `<tr><td class="nw"><span class="dot ${k}"></span>${esc(r.exporter)} / ${r.ifindex}</td><td>${r.speed ? fmtBps(r.speed) : '—'}</td><td class="nw">${utilBar(r.dev_in_bps, r.speed)}</td><td class="nw">${utilBar(r.dev_out_bps, r.speed)}</td><td class="num">${fmtBps(r.dev_in_bps)}</td><td class="num">${fmtBps(r.dev_out_bps)}</td><td>${esc(txt)}</td></tr>`; }).join('')}</tbody></table></div>` : `<div class="empty">${esc(t('ic.none'))}</div>`)}
@@ -507,15 +509,17 @@ const modeSeg = () => `<div class="seg" role="group"><button data-tm="talkers" a
 const bindMode = el => el.querySelectorAll('[data-tm]').forEach(b => b.onclick = () => { state.tm = b.dataset.tm; render(true); });
 views.topn = el => state.tm === 'talkers' ? talkers(el) : topTable(el, state.dim);
 // the two ends: who sent and fetched the most, and who served the most
+// how many clients and servers the main talkers list
+const TALKERS = 33;
 async function talkers(el) {
- const [cl, sv, ov] = await Promise.all([api('topn', {dim: 'client', limit: 30}), api('topn', {dim: 'server', limit: 30}), api('overview')]);
+ const [cl, sv, ov] = await Promise.all([api('topn', {dim: 'client', limit: TALKERS}), api('topn', {dim: 'server', limit: TALKERS}), api('overview')]);
  const tot = ov.totals || {};
  const table = (rows, head) => `<table><thead><tr><th><span class="vh">#</span></th><th>${t(head)}</th><th>${t('col.traffic')}</th><th>${t('col.pkts')}</th><th>${t('col.flows')}</th></tr></thead><tbody>
   ${(rows || []).map((r, i) => `<tr><td class="rank">${i + 1}</td><td>${ipCell(r.key)}</td><td>${fmtBytes(r.wire)}</td><td>${nf(r.pkts || 0)}</td><td>${nf(r.flows || 0)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">${emptyText()}</td></tr>`}
   <tr class="sum"><td></td><td>${t('topn.global_total')}</td><td>${fmtBytes(tot.wire)}</td><td>${nf(tot.pkts || 0)}</td><td>${nf(tot.flows || 0)}</td></tr></tbody></table>`;
  el.innerHTML = `<div class="grid"><div class="c12">${modeSeg()}<p class="muted" id="topPerspectives">${esc(t('topn.perspectives'))}</p></div>
-  ${panel('c6', t('ov.top_clients'), esc(t('topn.top_n', {n: 30})), table(cl.rows, 'col.client'))}
-  ${panel('c6', t('topn.top_servers'), esc(t('topn.top_n', {n: 30})), table(sv.rows, 'col.server'))}</div>`;
+  ${panel('c6', t('ov.top_clients'), esc(t('topn.top_n', {n: TALKERS})), table(cl.rows, 'col.client'))}
+  ${panel('c6', t('topn.top_servers'), esc(t('topn.top_n', {n: TALKERS})), table(sv.rows, 'col.server'))}</div>`;
  bindMode(el);
 }
 async function topTable(el, dim) {
@@ -587,7 +591,7 @@ views.cleanup = async (el) => {
     try {
       const res = await fetch('/api/cleanup/exporter', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({exporter: x, confirm: true})});
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j.error || res.statusText);
+      if (!res.ok) throw new Error(j.message || j.error || res.statusText);
       clDone = t('cl.dev_done', {n: nf(j.rows || 0), x});
       loadStatus(); render();
     } catch (error) {
@@ -603,7 +607,7 @@ views.cleanup = async (el) => {
     try {
       const res = await fetch('/api/cleanup', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({all:true, confirm:true})});
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j.error || res.statusText);
+      if (!res.ok) throw new Error(j.message || j.error || res.statusText);
       clDone = t('cl.done', {n: nf(j.rows || 0), s: fmtBytes(j.bytes || 0)});
       loadStatus(); render();
     } catch (error) {
@@ -648,7 +652,7 @@ views.account = async (el) => {
       ${users.limit > 0 ? `<p class="muted" style="font-size:13px;margin:8px 0 0">${esc(t('acct.users_count', {used: users.users.length, n: users.limit}))}</p>` : ''}
       <p id="userMsg" style="font-size:13px;margin:8px 0 0"></p>`) : ''}
   </div>`;
-  const errText = c => t('acct.err_' + c) !== 'acct.err_' + c ? t('acct.err_' + c) : c;
+  const errText = (c, m) => t('acct.err_' + c) !== 'acct.err_' + c ? t('acct.err_' + c) : (m || c);
   const say = (id, ok, text) => { const n = $(id); if (n) { n.style.color = ok ? 'var(--good)' : 'var(--crit)'; n.textContent = text; } };
   const pf = $('#pwForm');
   if (pf) pf.onsubmit = async e => {
@@ -657,7 +661,7 @@ views.account = async (el) => {
     if (pf.new.value !== pf.again.value) return say('#pwMsg', false, t('acct.err_mismatch'));
     const r = await fetch('/api/password', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({old, new: pf.new.value})});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) return say('#pwMsg', false, errText(j.error));
+    if (!r.ok) return say('#pwMsg', false, errText(j.error, j.message));
     sessionStorage.removeItem('t66.old');
     toast(t('acct.saved'));
     if (m.must_change) { me.must_change = false; go('overview'); } else render();
@@ -665,7 +669,7 @@ views.account = async (el) => {
   const putUser = async (user, password, reset = false) => {
     const r = await fetch('/api/users', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user, password, reset})});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { say('#userMsg', false, errText(j.error)); return false; }
+    if (!r.ok) { say('#userMsg', false, errText(j.error, j.message)); return false; }
     toast(t('acct.added')); render(); return true;
   };
   const au = $('#addUser');
@@ -676,7 +680,7 @@ views.account = async (el) => {
     if (!confirm(t('acct.confirm_del', {u: b.dataset.udel}))) return;
     const r = await fetch('/api/users?user=' + encodeURIComponent(b.dataset.udel), {method: 'DELETE'});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) return say('#userMsg', false, errText(j.error));
+    if (!r.ok) return say('#userMsg', false, errText(j.error, j.message));
     render();
   });
 };

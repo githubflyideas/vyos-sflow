@@ -51,7 +51,7 @@ func (s *Server) me(w http.ResponseWriter, r *http.Request) {
 // accounts returns the password file when it can be changed from here.
 func (s *Server) accounts(w http.ResponseWriter) *auth.FileChecker {
 	if s.Accounts == nil || s.Accounts.Fixed() || s.DataDir == "" {
-		writeJSON(w, http.StatusConflict, map[string]string{"error": "fixed"})
+		apiError(w, http.StatusConflict, "fixed")
 		return nil
 	}
 	return s.Accounts
@@ -74,19 +74,22 @@ func (s *Server) changePassword(w http.ResponseWriter, r *http.Request) {
 	if a == nil {
 		return
 	}
-	var in struct{ Old, New string }
+	var in struct {
+		Old string `json:"old"`
+		New string `json:"new"`
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
+		apiError(w, http.StatusBadRequest, "bad_json")
 		return
 	}
 	u := userOf(r)
 	if u == "" || !s.checkPassword(u, in.Old) {
 		audit(r, "password change refused: wrong current password", "user", u)
-		writeJSON(w, http.StatusForbidden, map[string]string{"error": "wrong_old"})
+		apiError(w, http.StatusForbidden, "wrong_old")
 		return
 	}
 	if err := checkNew(in.New); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		apiError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := auth.Set(s.DataDir, u, in.New); err != nil {
@@ -125,7 +128,7 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) *auth.FileChecker
 		return nil
 	}
 	if u := userOf(r); u == "" || u != a.Admin() {
-		writeJSON(w, http.StatusForbidden, map[string]string{"error": "not_admin"})
+		apiError(w, http.StatusForbidden, "not_admin")
 		return nil
 	}
 	return a
@@ -146,20 +149,21 @@ func (s *Server) putUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var in struct {
-		User, Password string
-		Reset          bool
+		User     string `json:"user"`
+		Password string `json:"password"`
+		Reset    bool   `json:"reset"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
+		apiError(w, http.StatusBadRequest, "bad_json")
 		return
 	}
 	in.User = strings.TrimSpace(in.User)
 	if in.User == "" || strings.ContainsAny(in.User, ": \t\r\n") || strings.HasPrefix(in.User, "#") || len(in.User) > 64 {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad_user"})
+		apiError(w, http.StatusBadRequest, "bad_user")
 		return
 	}
 	if err := checkNew(in.Password); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		apiError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	// Adding a name that is taken would quietly replace that person's
@@ -172,10 +176,10 @@ func (s *Server) putUser(w http.ResponseWriter, r *http.Request) {
 	}
 	switch {
 	case exists && !in.Reset:
-		writeJSON(w, http.StatusConflict, map[string]string{"error": "exists"})
+		apiError(w, http.StatusConflict, "exists")
 		return
 	case !exists && in.Reset:
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no_user"})
+		apiError(w, http.StatusNotFound, "no_user")
 		return
 	}
 	if err := auth.Set(s.DataDir, in.User, in.Password); err != nil {
@@ -210,16 +214,25 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	u := r.URL.Query().Get("user")
 	if u == "" {
-		var in struct{ User string }
+		var in struct {
+			User string `json:"user"`
+		}
 		json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in)
 		u = in.User
 	}
 	if u == userOf(r) {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "self"})
+		apiError(w, http.StatusBadRequest, "self")
 		return
 	}
 	if err := auth.Delete(s.DataDir, u); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		switch {
+		case errors.Is(err, auth.ErrLastUser):
+			apiError(w, http.StatusBadRequest, "last_user")
+		case strings.HasPrefix(err.Error(), "no user"):
+			apiError(w, http.StatusNotFound, "no_user")
+		default:
+			fail(w, err)
+		}
 		return
 	}
 	audit(r, "user deleted", "user", u)

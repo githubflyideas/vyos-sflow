@@ -3,6 +3,7 @@ package collector
 import (
 	"net/netip"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/githubflyideas/vyos-sflow/internal/flow"
@@ -130,6 +131,26 @@ func (c *Collector) noteCounters(agent netip.Addr, cs []flow.IfCounters, now tim
 			}
 		}
 	}
+}
+
+// SampledIfaces lists the ports sFlow is enabled on, as "exporter/ifindex",
+// sorted: the interfaces flow samples come from.
+func (c *Collector) SampledIfaces() []string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	seen := map[string]bool{}
+	for k := range c.sf {
+		if k.source>>32 != 0 || uint32(k.source) == 0 {
+			continue
+		}
+		seen[k.agent.String()+"/"+strconv.FormatUint(uint64(uint32(k.source)), 10)] = true
+	}
+	out := make([]string, 0, len(seen))
+	for k := range seen {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
 }
 
 // IfaceCheck is one interface: its traffic as the device counted it and as

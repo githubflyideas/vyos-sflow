@@ -31,7 +31,7 @@ func TestAPIWithoutRegistration(t *testing.T) {
 			if w.Code != http.StatusUnauthorized {
 				t.Fatalf("anonymous: %d %s", w.Code, w.Body)
 			}
-			r.SetBasicAuth("admin", "local-password")
+			signIn(s, r, "admin")
 			w = httptest.NewRecorder()
 			h.ServeHTTP(w, r)
 			if w.Code != http.StatusOK {
@@ -53,7 +53,7 @@ func TestAPIWithoutRegistration(t *testing.T) {
 	}
 	for _, method := range []string{"GET", "POST", "PUT", "DELETE"} {
 		r := httptest.NewRequest(method, "/api/license", strings.NewReader(`{"text":"obsolete activation"}`))
-		r.SetBasicAuth("admin", "local-password")
+		signIn(s, r, "admin")
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		if w.Code != http.StatusNotFound {

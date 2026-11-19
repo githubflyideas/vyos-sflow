@@ -15,7 +15,7 @@ func TestRemovedProductRoutes(t *testing.T) {
 	for _, path := range []string{"report", "sankey", "rings", "geolines", "ifaces", "recon", "threats", "threats/lists", "findings", "racks", "racks/device", "racks/iface", "inventory", "iface", "geo", "geo/dbip", "logo"} {
 		for _, method := range []string{"GET", "POST", "DELETE"} {
 			req := httptest.NewRequest(method, "/api/"+path, nil)
-			req.SetBasicAuth("admin", "secret")
+			signIn(s, req, "admin")
 			w := httptest.NewRecorder()
 			h.ServeHTTP(w, req)
 			if w.Code != 404 && w.Code != 405 {

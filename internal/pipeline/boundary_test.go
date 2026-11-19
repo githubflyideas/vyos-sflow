@@ -39,7 +39,8 @@ func TestDedupKeepsExpandedObservationAndDirection(t *testing.T) {
 	now := time.Now().UTC()
 	key := dkey{src: netip.MustParseAddr("10.0.0.1"), dst: netip.MustParseAddr("192.0.2.1")}
 	a := origin{exporter: netip.MustParseAddr("10.0.0.254"), obs: 0x12345678, dir: 1}
-	if p.isDup(now, key, a) || p.isDup(now, key, a) {
+	// reported twice by the same observer: its own traffic, never a duplicate
+	if first, again := p.isDup(now, key, a), p.isDup(now, key, a); first || again {
 		t.Fatal("same observation must not be a duplicate")
 	}
 	b := a

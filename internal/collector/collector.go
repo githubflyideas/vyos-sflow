@@ -224,23 +224,6 @@ func (c *Collector) Tick(now time.Time) {
 
 }
 
-// fixTimes moves records whose exporter clock is far off to receive time,
-// preserving their duration.
-func (c *Collector) fixTimes(recs []flow.Record, now time.Time) {
-	if !c.Live {
-		return
-	}
-	for i := range recs {
-		r := &recs[i]
-		if r.End.After(now.Add(2*time.Minute)) || r.End.Before(now.Add(-3*time.Hour)) {
-			d := now.Sub(r.End)
-			r.End = r.End.Add(d)
-			r.Start = r.Start.Add(d)
-			c.Skewed.Add(1)
-		}
-	}
-}
-
 func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 	d, err := sflow.Decode(b, now)
 	c.mu.Lock()
@@ -327,18 +310,14 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 }
 
 // update tracks the effective sampling rate: the rate the agent declares,
-// raised by what never arrived. Two losses are counted, both as the agent
-// itself numbers them:
-//
-//   - datagrams lost on the way: gaps in the datagram sequence numbers,
-//     the same for every sampler of the agent;
-//   - samples the agent dropped before sending: its drop counter.
-//
-// Neither the samples' own sequence numbers nor sample_pool are used.
-// Vendors number and count them differently: an H3C switch numbers the
-// samples of its samplers in one series, so each sampler saw half its
-// numbers missing and was scaled up more than twofold, and its pool scaled
-// another port a fifth too high.
+// raised only by the samples the agent says it dropped before sending (its
+// drop counter). No sequence number is used to guess at losses, neither
+// the samples' nor the datagrams', and neither is sample_pool. On an H3C
+// switch every one of them ran ahead of what was sent, by a fifth up to
+// more than half, while the declared rate matched the interface counters
+// of both sampled ports, in and out, within a few percent: each guess at
+// loss scaled the traffic past the counters (1.2 to 2.3 times). Gaps in
+// the datagram numbers are still shown as possible loss, not counted in.
 func (st *sfState) update(s *sflow.FlowSample, now time.Time, ag *sfAgent) bool {
 	// the same sample delivered again adds nothing
 	if st.init && s.Seq == st.lastSeq && s.Pool == st.lastPool {
@@ -369,9 +348,6 @@ func (st *sfState) update(s *sflow.FlowSample, now time.Time, ag *sfAgent) bool 
 	if now.Sub(st.evalAt) >= 30*time.Second && st.winRecv >= 30 {
 		cfg := float64(s.Rate)
 		e := cfg * (st.winRecv + st.winDrops) / st.winRecv
-		if dg, lost := ag.datagrams-st.winDg, ag.lostDgram-st.winDgLost; dg > 0 {
-			e *= float64(dg+lost) / float64(dg)
-		}
 		if e > cfg*4 {
 			e = cfg // implausible: a counter reset, not three quarters lost
 		}

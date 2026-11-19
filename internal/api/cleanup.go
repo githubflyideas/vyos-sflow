@@ -64,7 +64,7 @@ func (s *Server) postCleanup(w http.ResponseWriter, r *http.Request) {
 func (s *Server) postPurgeExporter(w http.ResponseWriter, r *http.Request) {
 	typ, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if typ != "application/json" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "application/json required"})
+		apiError(w, http.StatusBadRequest, "json_required")
 		return
 	}
 	var in struct {
@@ -72,12 +72,12 @@ func (s *Server) postPurgeExporter(w http.ResponseWriter, r *http.Request) {
 		Confirm  bool   `json:"confirm"`
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, 1024)).Decode(&in); err != nil || !in.Confirm {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "exporter and confirm=true required"})
+		apiError(w, http.StatusBadRequest, "confirm_required")
 		return
 	}
 	a, err := netip.ParseAddr(strings.TrimSpace(in.Exporter))
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad_exporter"})
+		apiError(w, http.StatusBadRequest, "bad_exporter")
 		return
 	}
 	disk := s.Store.Usage().DiskBytes
