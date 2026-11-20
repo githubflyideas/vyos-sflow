@@ -35,28 +35,24 @@ async function loadLang(code) {
   refreshLabel();
   themeLabel();
 }
-// Navigation labels take two lines, so long languages keep the bar narrow.
-// Each catalog marks where its label may break with "\n" (nav2.*): between
-// words, never inside one, so a Chinese word such as "flow records" stays
-// whole. Screen readers get the full name in one piece.
+// Navigation labels take one line each: the full catalog name (nav.*),
+// whole and unbroken.
 function navLabels() {
   document.querySelectorAll('[data-n]').forEach(el => {
-    const k = el.dataset.n, lines = String(t('nav2.' + k)).split('\n');
-    el.innerHTML = `<span class="vh">${esc(t('nav.' + k))}</span><span class="nl2" aria-hidden="true">${lines.map(l => `<span>${esc(l)}</span>`).join('')}</span>`;
+    el.textContent = t('nav.' + el.dataset.n);
   });
 }
-// The theme picker is five rings, three over two, one per theme, each
-// drawn in that theme's colour; a click (or arrow keys, as in any radio
-// group) switches at once. The rings are separate, the same size and
-// evenly spaced. The chosen ring keeps its size: it is filled in, with a
-// white ring inside.
+// The theme picker is five round buttons in a row, one per theme, each
+// filled with that theme's colour; a click (or arrow keys, as in any
+// radio group) switches at once. The buttons are separate, the same size
+// and evenly spaced. The chosen button keeps its size: it is outlined.
 const SWATCH = {light: '#ffffff', gray: '#cfe8d6', slate: '#4a5363', navy: '#16264a', black: '#000000'};
 function themeLabel() {
   const sw = $('#themes');
   if (!sw || !window.t66Theme) return;
   const cur = t66Theme.get(), list = t66Theme.list;
   sw.setAttribute('aria-label', t('theme.label'));
-  sw.innerHTML = list.map((k, i) => `<button type="button" role="radio" class="ring r${i}" data-th="${k}" aria-checked="${k === cur}" tabindex="${k === cur ? 0 : -1}" aria-label="${esc(t('theme.' + k))}" title="${esc(t('theme.label') + ': ' + t('theme.' + k))}" style="--c:${SWATCH[k]}"></button>`).join('');
+  sw.innerHTML = list.map((k, i) => `<button type="button" role="radio" class="tdot" data-th="${k}" aria-checked="${k === cur}" tabindex="${k === cur ? 0 : -1}" aria-label="${esc(t('theme.' + k))}" title="${esc(t('theme.label') + ': ' + t('theme.' + k))}" style="--c:${SWATCH[k]}"></button>`).join('');
 }
 function pickTheme(k, focus) {
   if (!window.t66Theme || !t66Theme.list.includes(k)) return;

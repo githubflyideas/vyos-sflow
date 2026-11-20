@@ -93,14 +93,17 @@ nav.dash button[aria-current="page"] .ni{opacity:1}
 
 .main{min-width:0}
 .topbar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.row1{display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap}
-.row1 h1{font-size:17px;font-weight:650;margin:0 8px 0 0}
+.row1{display:flex;align-items:center;gap:10px;padding:10px 20px;flex-wrap:wrap}
+.row1 h1{font-size:17px;font-weight:650;margin:0 4px 0 0}
 .range{display:flex;border:1px solid var(--line-2);border-radius:7px;overflow:hidden;margin-inline-start:auto}
 .range button{border:0;border-inline-start:1px solid var(--line);background:var(--surface);padding:5px 11px;cursor:pointer;color:var(--ink-2);white-space:nowrap}
 .range button:first-child{border-inline-start:0}
 .keep{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-weight:600;font-size:12.5px;white-space:nowrap}
 .login .keep{display:flex;width:fit-content;margin:0 0 4px}
 .keep::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+/* in the toolbar the retention note is plain text, not a pill */
+.row1 .keep{background:none;padding:0;border-radius:0;color:var(--ink-2);font-weight:500}
+.row1 .keep::before{display:none}
 .range button[aria-pressed="true"]{background:var(--accent-fill);color:var(--on-accent)}
 .refresh{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
 .btn{border:1px solid var(--line-2);background:var(--surface);border-radius:7px;padding:5px 11px;cursor:pointer;color:var(--ink-2);font-size:13px}
@@ -305,29 +308,22 @@ header.nms .linkbtn:hover{color:var(--hdr-ink)}
 .pager{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px 0}
 .pager .btn[disabled]{opacity:.45;cursor:default}
 @media (max-width:620px){header.nms .tools{gap:8px;min-width:0}header.nms .linkbtn span{display:none}header.nms select{max-width:92px}header.nms .brand .logo{width:auto;height:40px}}
-@media (max-width:1700px){header.nms{gap:12px;padding:0 14px}header.nms nav.dash button{padding:0 9px}header.nms .linkbtn span{display:none}header.nms select{max-width:120px}}
-@media (max-width:1365px){header.nms nav.dash button .ni{display:none}}
+@media (max-width:1700px){header.nms{gap:12px;padding:0 14px}header.nms nav.dash button{padding:0 8px}header.nms .linkbtn span{display:none}header.nms select{max-width:120px}}
+@media (max-width:1500px){header.nms nav.dash button .ni{display:none}}
 
-/* navigation labels on two lines: the break points come from the catalogs
-   (nav2.*), each line is kept whole, a label of one word is centred */
+/* navigation labels on one line: the full name, whole and unbroken */
 header.nms nav.dash button{line-height:1.2}
-.nl{display:flex;align-items:center;min-width:0}
-.nl2{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:2.4em}
-.nl2>span{display:block;white-space:nowrap}
-/* theme rings: three over two, separate and evenly spaced, one per theme.
-   --d ring size, --g gap; the lower row drops by sin 60deg x (--d + --g),
-   so every neighbouring pair has the same gap; the whole picker stays
-   within the logo's height (65px, 40px on phones) */
-.rings{--d:28px;--g:5px;--dy:calc(.8660254 * (var(--d) + var(--g)));--sw:3.5px;position:relative;flex:none;width:calc(3 * var(--d) + 2 * var(--g));height:calc(var(--d) + var(--dy))}
-.ring{position:absolute;top:0;width:var(--d);height:var(--d);margin:0;padding:0;border:var(--sw) solid var(--c);border-radius:50%;background:transparent;cursor:pointer;
-  box-shadow:0 0 0 1px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.5)}
-.ring.r0{inset-inline-start:0}.ring.r1{inset-inline-start:calc(var(--d) + var(--g))}.ring.r2{inset-inline-start:calc(2 * (var(--d) + var(--g)))}
-.ring.r3{top:var(--dy);inset-inline-start:calc((var(--d) + var(--g)) / 2)}.ring.r4{top:var(--dy);inset-inline-start:calc(1.5 * (var(--d) + var(--g)))}
-.ring:hover{box-shadow:0 0 0 1px #fff,inset 0 0 0 1px #fff}
-.ring[aria-checked="true"]{background:var(--c);box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 2px #fff,inset 0 0 0 3px rgba(0,0,0,.45)}
-.ring:focus-visible{outline:2px dashed #fff;outline-offset:2px;border-radius:50%}
-/* the phone logo is 40px tall, and so are the rings */
-@media (max-width:620px){.rings{--d:19px;--g:3px;--sw:2.5px}
+.nl{display:flex;align-items:center;min-width:0;white-space:nowrap}
+/* theme buttons: five round buttons in a row, one per theme, each filled
+   with that theme's colour (--c); the chosen one is outlined, and its size
+   never changes. The group sits in the page toolbar after the title,
+   fenced by a faint divider on each side. */
+.tdots{display:flex;align-items:center;gap:6px;flex:none;padding:3px 10px;border-inline-start:1px solid var(--line-2);border-inline-end:1px solid var(--line-2)}
+.tdot{width:17px;height:17px;margin:0;padding:0;border:1px solid rgba(0,0,0,.22);border-radius:50%;background:var(--c);cursor:pointer;flex:none}
+.tdot:hover{box-shadow:0 0 0 2px var(--line-2)}
+.tdot[aria-checked="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+.tdot:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:50%}
+@media (max-width:620px){
   header.nms{position:static}header.nms .tools{gap:6px}header.nms select{max-width:92px}
   header.nms nav.dash button{height:44px;padding:0 8px;font-size:13px}header.nms nav.dash .sep{margin:10px 2px}
   .keep{white-space:normal;max-width:100%}.range button{padding:5px 8px}}
