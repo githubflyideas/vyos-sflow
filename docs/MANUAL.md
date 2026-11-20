@@ -11,7 +11,7 @@ Follow the three steps in the repository README: configure your exporter, extrac
 - **Flow records:** the newest records first, 100 to a page (use Previous/Next), over at most 24 hours, optionally for one host. The page shows its effective time window even when the global selection is 48 hours. Traffic and packet counts are estimates; the multiplier is the measured effective sampling rate and is not the exporter's configured sampling ratio.
 - **Diagnostics:** received samples, configured stream identity, reception diagnostics and interface reconciliation: each interface's own counters against what the samples add up to. A direction far below 100% is usually not sampled on the device; enable sFlow counter polling for this table.
 
-Select a time range from 15 minutes to 48 hours. The default is one hour. Traffic values are estimates derived from samples, not exact interface counters. Port/application labels describe service ports rather than deep packet inspection. Choose your preferred interface language from the language selector, and one of five themes, from light to dark, with the five-leaf clover at the top right: each leaf is a theme, and a click (or the arrow keys) switches to it.
+Select a time range from 15 minutes to 48 hours. The default is one hour. Traffic values are estimates derived from samples, not exact interface counters. Port/application labels describe service ports rather than deep packet inspection. Choose your preferred interface language from the language selector, and one of five themes, from light to dark, with the five rings at the top right: each ring is a theme, and a click (or the arrow keys) switches to it.
 
 ## Receiving samples
 

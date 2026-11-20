@@ -1,6 +1,6 @@
 'use strict';
 // Accessibility points that once regressed: icon buttons must keep a name
-// when narrow layouts hide their text, the theme clover stays within the
+// when narrow layouts hide their text, the theme rings stay within the
 // logo's height, navigation labels break between words, and the page has
 // one banner and a main landmark on every screen.
 const test = require('node:test');
@@ -18,13 +18,15 @@ test('account and sign-out buttons are named whatever the width', () => {
   assert.match(js, /\[data-il\][^\n]*aria-label/);
 });
 
-test('theme clover is a named radio group never taller than the logo', () => {
-  assert.match(html, /class="clover" id="themes" role="radiogroup"/);
+test('theme rings are a named radio group never taller than the logo', () => {
+  assert.match(html, /class="rings" id="themes" role="radiogroup"/);
   assert.match(js, /role="radio"[^`]*aria-checked=/);
   assert.match(js, /aria-label="\$\{esc\(t\('theme\.' \+ k\)\)\}"/);
-  // the header logo is 65px tall (40px on phones); the clover stays within it
-  const sizes = [...css.matchAll(/\.clover\{(?:position:relative;flex:none;)?width:(\d+)px;height:(\d+)px\}/g)].map(m => Number(m[2]));
-  assert.deepEqual(sizes, [60, 40]);
+  // the header logo is 65px tall (40px on phones): ring + lower-row drop
+  // (sin 60deg x (ring + gap)) must stay within it
+  const sets = [...css.matchAll(/\.rings\{--d:(\d+)px;--g:(\d+)px;/g)].map(m => [Number(m[1]), Number(m[2])]);
+  assert.equal(sets.length, 2);
+  sets.forEach(([d, g], i) => assert.ok(d + 0.8660254 * (d + g) <= [65, 40][i], `rings ${d}/${g}`));
   assert.match(html, /class="logo" src="\/logo\?wide=1"[^>]*height="65"/);
   assert.match(css, /@media \(max-width:620px\)\{[^\n]*header\.nms \.brand \.logo\{width:auto;height:40px\}/);
 });

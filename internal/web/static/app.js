@@ -45,20 +45,18 @@ function navLabels() {
     el.innerHTML = `<span class="vh">${esc(t('nav.' + k))}</span><span class="nl2" aria-hidden="true">${lines.map(l => `<span>${esc(l)}</span>`).join('')}</span>`;
   });
 }
-// The theme picker is a five-leaf clover: one leaf per theme, in that
-// theme's colour; a click (or arrow keys, as in any radio group) switches
-// at once. All five leaves are the same path turned in steps of exactly
-// 72 degrees about the centre, with an even gap between them. The chosen
-// leaf keeps its size and shape: it gets a white ring over a dark one.
+// The theme picker is five rings, three over two, one per theme, each
+// drawn in that theme's colour; a click (or arrow keys, as in any radio
+// group) switches at once. The rings are separate, the same size and
+// evenly spaced. The chosen ring keeps its size: it is filled in, with a
+// white ring inside.
 const SWATCH = {light: '#ffffff', gray: '#cfe8d6', slate: '#4a5363', navy: '#16264a', black: '#000000'};
-const LEAF = 'M50 45C53 41 61 35 63.5 26C65.5 18 60 10.5 55 10.5C52.2 10.5 50.7 12 50 14C49.3 12 47.8 10.5 45 10.5C40 10.5 34.5 18 36.5 26C39 35 47 41 50 45Z';
 function themeLabel() {
   const sw = $('#themes');
   if (!sw || !window.t66Theme) return;
   const cur = t66Theme.get(), list = t66Theme.list;
   sw.setAttribute('aria-label', t('theme.label'));
-  sw.innerHTML = list.map((k, i) => `<button type="button" role="radio" data-th="${k}" aria-checked="${k === cur}" tabindex="${k === cur ? 0 : -1}" aria-label="${esc(t('theme.' + k))}"><svg viewBox="8 8 84 84" aria-hidden="true" focusable="false"><g transform="rotate(${i * 72} 50 50)"><path class="halo" d="${LEAF}"/><path class="leaf" d="${LEAF}" fill="${SWATCH[k]}"><title>${esc(t('theme.label') + ': ' + t('theme.' + k))}</title></path></g></svg></button>`).join('') +
-    '<svg class="clover-c" viewBox="8 8 84 84" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="2.5"/></svg>';
+  sw.innerHTML = list.map((k, i) => `<button type="button" role="radio" class="ring r${i}" data-th="${k}" aria-checked="${k === cur}" tabindex="${k === cur ? 0 : -1}" aria-label="${esc(t('theme.' + k))}" title="${esc(t('theme.label') + ': ' + t('theme.' + k))}" style="--c:${SWATCH[k]}"></button>`).join('');
 }
 function pickTheme(k, focus) {
   if (!window.t66Theme || !t66Theme.list.includes(k)) return;

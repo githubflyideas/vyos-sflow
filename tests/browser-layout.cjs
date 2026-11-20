@@ -1,6 +1,6 @@
 // Layout and accessibility of the web UI over synthetic API data, in Chromium:
 // no page ever scrolls sideways (phone to ultrawide, every language), the
-// traffic chart follows the window, the theme clover works and is never
+// traffic chart follows the window, the theme rings work and are never
 // taller than the logo, navigation labels break only where the catalog
 // says, the device card closes the overview, and axe finds no serious or
 // critical WCAG 2.1 AA violation on any page in any theme.
@@ -103,7 +103,7 @@ function payloads() {
         }
       }
       // 2. the header stays on one row from 1280px up
-      for (const w of [1280, 1366, 1920]) {
+      for (const w of [1280, 1366, 1440, 1501, 1600, 1701, 1920]) {
         await page.setViewportSize({width: w, height: 900}); await page.waitForTimeout(60);
         assert.equal(await page.evaluate(() => Math.round(document.querySelector('header.nms').getBoundingClientRect().height)), 80, `${lang} header wraps at ${w}px`);
       }
@@ -132,38 +132,47 @@ function payloads() {
     }
     console.log(`ok   no sideways scrolling: ${checked} language/page/width combinations; header one row at 1280+; nav labels`);
 
-    // 4. clover: one leaf per theme, a click switches, kept; never taller than the logo
+    // 4. rings: one per theme, a click switches, kept; never taller than the logo
     {
       const page = await open('en', 'gray');
       await show(page, 'overview');
+      const geometry = () => page.evaluate(() => {
+        const rs = [...document.querySelectorAll('#themes .ring')].map(b => { const r = b.getBoundingClientRect(); return {w: r.width, h: r.height, x: r.left + r.width / 2, y: r.top + r.height / 2, bw: getComputedStyle(b).borderTopWidth}; });
+        const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+        // neighbours: 0-1, 1-2 on top; 3-4 below; each lower ring touches two upper ones
+        const pairs = [[0, 1], [1, 2], [3, 4], [0, 3], [1, 3], [1, 4], [2, 4]].map(([a, b]) => dist(rs[a], rs[b]) - rs[0].w);
+        return {rs, pairs, box: document.querySelector('#themes').getBoundingClientRect().height, logo: document.querySelector('header .logo').getBoundingClientRect().height};
+      });
       for (const w of [320, 390, 620, 621, 768, 1280, 1366, 2560]) {
         await page.setViewportSize({width: w, height: 900}); await page.waitForTimeout(60);
-        const h = await page.evaluate(() => ({clover: document.querySelector('#themes').getBoundingClientRect().height, logo: document.querySelector('header .logo').getBoundingClientRect().height}));
-        assert.ok(h.clover > 0 && h.clover <= h.logo, `${w}px clover ${h.clover} > logo ${h.logo}`);
+        const g = await geometry();
+        assert.ok(g.box > 0 && g.box <= g.logo, `${w}px rings ${g.box} > logo ${g.logo}`);
+        // identical rings, round, same stroke; every neighbouring gap the same and > 0
+        assert.equal(new Set(g.rs.map(r => `${r.w}x${r.h}/${r.bw}`)).size, 1, `${w}px ring sizes ${JSON.stringify(g.rs)}`);
+        assert.equal(g.rs[0].w, g.rs[0].h);
+        assert.ok(Math.min(...g.pairs) > 0.9 && Math.max(...g.pairs) - Math.min(...g.pairs) < 0.1, `${w}px gaps ${g.pairs}`);
+        if (w >= 621) assert.ok(g.rs[0].w >= 24, `${w}px ring ${g.rs[0].w}px < 24px`);
       }
       await page.setViewportSize({width: 1366, height: 900});
       assert.equal(await page.locator('#themes').getAttribute('role'), 'radiogroup');
       assert.equal(await page.locator('#themes [role=radio]').count(), 5);
       const en = catalog('en');
+      const before = JSON.stringify((await geometry()).rs);
       for (const t of THEMES) {
-        const leaf = page.locator(`#themes [data-th="${t}"] .leaf`);
-        assert.equal(await page.locator(`#themes [data-th="${t}"]`).getAttribute('aria-label'), en['theme.' + t]);
-        await leaf.click();
+        const ring = page.locator(`#themes [data-th="${t}"]`);
+        assert.equal(await ring.getAttribute('aria-label'), en['theme.' + t]);
+        await ring.click();
         await page.waitForFunction(t => (document.documentElement.getAttribute('data-theme') || 'gray') === t, t);
         assert.equal(await page.locator('#themes [aria-checked=true]').getAttribute('data-th'), t);
         assert.equal(await page.evaluate(() => localStorage.getItem('t66.theme')), t);
         assert.equal(await page.locator('#themes [tabindex="0"]').getAttribute('data-th'), t);
-        // the chosen leaf is marked by a ring, never by a change of size
-        assert.notEqual(await page.locator(`#themes [data-th="${t}"] .halo`).evaluate(e => getComputedStyle(e).stroke), 'rgba(0, 0, 0, 0)');
+        // the chosen ring is filled in, never resized or moved
+        assert.notEqual(await ring.evaluate(e => getComputedStyle(e).backgroundColor), 'rgba(0, 0, 0, 0)');
+        assert.equal(JSON.stringify((await geometry()).rs), before, `${t}: rings moved or resized`);
       }
-      // five identical leaves, the same path turned in 72 degree steps
-      const leaves = await page.evaluate(() => [...document.querySelectorAll('#themes [data-th]')].map(b => ({d: b.querySelector('.leaf').getAttribute('d'), tr: b.querySelector('g').getAttribute('transform'), box: (r => [Math.round(r.width * 10), Math.round(r.height * 10)])(b.querySelector('.leaf').getBBox())})));
-      assert.equal(new Set(leaves.map(l => l.d)).size, 1);
-      assert.deepEqual(leaves.map(l => l.tr), [0, 72, 144, 216, 288].map(a => `rotate(${a} 50 50)`));
-      assert.equal(new Set(leaves.map(l => l.box.join())).size, 1);
       await page.reload(); await page.locator('#themes [aria-checked=true]').waitFor();
       assert.equal(await page.locator('#themes [aria-checked=true]').getAttribute('data-th'), 'black', 'theme not kept');
-      // keyboard: arrows move round the clover and switch at once
+      // keyboard: arrows move through the rings and switch at once
       await page.locator('#themes [aria-checked=true]').focus();
       await page.keyboard.press('ArrowRight');
       await page.waitForFunction(() => document.documentElement.getAttribute('data-theme') === 'light');
@@ -175,7 +184,7 @@ function payloads() {
       await page.keyboard.press('End');
       await page.waitForFunction(() => document.documentElement.getAttribute('data-theme') === 'black');
       await page.close();
-      console.log('ok   theme clover: 5 leaves, click and keyboard switch, kept after reload, height <= logo at 8 widths');
+      console.log('ok   theme rings: 5 identical, evenly spaced, click and keyboard switch, kept after reload, height <= logo at 8 widths');
     }
 
     // 5. the device card is the last section of the overview

@@ -305,7 +305,7 @@ header.nms .linkbtn:hover{color:var(--hdr-ink)}
 .pager{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px 0}
 .pager .btn[disabled]{opacity:.45;cursor:default}
 @media (max-width:620px){header.nms .tools{gap:8px;min-width:0}header.nms .linkbtn span{display:none}header.nms select{max-width:92px}header.nms .brand .logo{width:auto;height:40px}}
-@media (max-width:1500px){header.nms{gap:12px;padding:0 14px}header.nms nav.dash button{padding:0 10px}header.nms .linkbtn span{display:none}header.nms select{max-width:120px}}
+@media (max-width:1700px){header.nms{gap:12px;padding:0 14px}header.nms nav.dash button{padding:0 9px}header.nms .linkbtn span{display:none}header.nms select{max-width:120px}}
 @media (max-width:1365px){header.nms nav.dash button .ni{display:none}}
 
 /* navigation labels on two lines: the break points come from the catalogs
@@ -314,22 +314,20 @@ header.nms nav.dash button{line-height:1.2}
 .nl{display:flex;align-items:center;min-width:0}
 .nl2{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:2.4em}
 .nl2>span{display:block;white-space:nowrap}
-/* theme clover: five leaves, one per theme, never taller than the logo */
-.clover{position:relative;flex:none;width:60px;height:60px}
-.clover button{position:absolute;inset:0;margin:0;padding:0;border:0;border-radius:0;background:none;pointer-events:none;outline:none}
-.clover svg{display:block;width:100%;height:100%;overflow:visible}
-.clover path{vector-effect:non-scaling-stroke;stroke-linejoin:round}
-.clover .leaf{pointer-events:visiblePainted;cursor:pointer;stroke:rgba(255,255,255,.7);stroke-width:1px}
-.clover .halo{fill:none;stroke:transparent;stroke-width:4.5px;pointer-events:none}
-.clover button:hover .leaf{stroke:#fff}
-.clover button[aria-checked="true"] .leaf{stroke:#fff;stroke-width:2px}
-.clover button[aria-checked="true"] .halo{stroke:rgba(0,0,0,.6)}
-.clover button:focus-visible .leaf{stroke:#fff;stroke-width:2px;stroke-dasharray:3 2}
-.clover button:focus-visible .halo{stroke:rgba(0,0,0,.6)}
-.clover-c{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.clover-c circle{fill:rgba(255,255,255,.9)}
-/* the phone logo is 40px tall, and so is the clover */
-@media (max-width:620px){.clover{width:40px;height:40px}
+/* theme rings: three over two, separate and evenly spaced, one per theme.
+   --d ring size, --g gap; the lower row drops by sin 60deg x (--d + --g),
+   so every neighbouring pair has the same gap; the whole picker stays
+   within the logo's height (65px, 40px on phones) */
+.rings{--d:28px;--g:5px;--dy:calc(.8660254 * (var(--d) + var(--g)));--sw:3.5px;position:relative;flex:none;width:calc(3 * var(--d) + 2 * var(--g));height:calc(var(--d) + var(--dy))}
+.ring{position:absolute;top:0;width:var(--d);height:var(--d);margin:0;padding:0;border:var(--sw) solid var(--c);border-radius:50%;background:transparent;cursor:pointer;
+  box-shadow:0 0 0 1px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.5)}
+.ring.r0{inset-inline-start:0}.ring.r1{inset-inline-start:calc(var(--d) + var(--g))}.ring.r2{inset-inline-start:calc(2 * (var(--d) + var(--g)))}
+.ring.r3{top:var(--dy);inset-inline-start:calc((var(--d) + var(--g)) / 2)}.ring.r4{top:var(--dy);inset-inline-start:calc(1.5 * (var(--d) + var(--g)))}
+.ring:hover{box-shadow:0 0 0 1px #fff,inset 0 0 0 1px #fff}
+.ring[aria-checked="true"]{background:var(--c);box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 2px #fff,inset 0 0 0 3px rgba(0,0,0,.45)}
+.ring:focus-visible{outline:2px dashed #fff;outline-offset:2px;border-radius:50%}
+/* the phone logo is 40px tall, and so are the rings */
+@media (max-width:620px){.rings{--d:19px;--g:3px;--sw:2.5px}
   header.nms{position:static}header.nms .tools{gap:6px}header.nms select{max-width:92px}
   header.nms nav.dash button{height:44px;padding:0 8px;font-size:13px}header.nms nav.dash .sep{margin:10px 2px}
   .keep{white-space:normal;max-width:100%}.range button{padding:5px 8px}}
