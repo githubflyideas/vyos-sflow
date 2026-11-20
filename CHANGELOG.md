@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- Navigation labels are back on one line.
+- Themes are picked from five round buttons beside the page title, one per theme; a click or the arrow keys switches. The 48-hour retention note sits next to them as plain text.
+
 ## 1.3.0
 
 - The overview chart and the collection status list fit their cards at every width, from a 320px phone to an ultrawide screen; no page scrolls sideways.
