@@ -1,8 +1,8 @@
 'use strict';
 // Accessibility points that once regressed: icon buttons must keep a name
-// when narrow layouts hide their text, the theme rings stay within the
-// logo's height, navigation labels break between words, and the page has
-// one banner and a main landmark on every screen.
+// when narrow layouts hide their text, the theme buttons sit in the page
+// toolbar as a named radio group, navigation labels take one line, and
+// the page has one banner and a main landmark on every screen.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -18,35 +18,30 @@ test('account and sign-out buttons are named whatever the width', () => {
   assert.match(js, /\[data-il\][^\n]*aria-label/);
 });
 
-test('theme rings are a named radio group never taller than the logo', () => {
-  assert.match(html, /class="rings" id="themes" role="radiogroup"/);
+test('theme buttons are a named radio group in the page toolbar', () => {
+  assert.match(html, /class="tdots" id="themes" role="radiogroup"/);
+  // the picker lives in the page toolbar, not the header
+  assert.ok(html.indexOf('id="themes"') > html.indexOf('class="topbar"'));
   assert.match(js, /role="radio"[^`]*aria-checked=/);
   assert.match(js, /aria-label="\$\{esc\(t\('theme\.' \+ k\)\)\}"/);
-  // the header logo is 65px tall (40px on phones): ring + lower-row drop
-  // (sin 60deg x (ring + gap)) must stay within it
-  const sets = [...css.matchAll(/\.rings\{--d:(\d+)px;--g:(\d+)px;/g)].map(m => [Number(m[1]), Number(m[2])]);
-  assert.equal(sets.length, 2);
-  sets.forEach(([d, g], i) => assert.ok(d + 0.8660254 * (d + g) <= [65, 40][i], `rings ${d}/${g}`));
-  assert.match(html, /class="logo" src="\/logo\?wide=1"[^>]*height="65"/);
-  assert.match(css, /@media \(max-width:620px\)\{[^\n]*header\.nms \.brand \.logo\{width:auto;height:40px\}/);
+  // round buttons, filled with the theme colour
+  assert.match(css, /\.tdot\{[^}]*border-radius:50%/);
+  assert.match(css, /\.tdot\{[^}]*background:var\(--c\)/);
 });
 
-test('two-line navigation labels break only between words', () => {
+test('navigation labels are the full name on one line', () => {
   const dir = path.join(__dirname, 'static/i18n');
-  // written without spaces: the allowed breaks, word by word
-  const cjk = {zh: ['采集\n状态', '数据\n清理'], ja: ['フロー\nレコード', '収集の\n状態', 'データ\n削除']};
   for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
     const code = file.slice(0, -5), cat = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
     for (const k of ['overview', 'topn', 'records', 'sources', 'cleanup', 'help']) {
-      const two = cat['nav2.' + k], one = cat['nav.' + k];
-      const parts = two.split('\n');
-      assert.ok(parts.length <= 2 && parts.every(p => p && p === p.trim()), `${code} ${k}`);
-      if (parts.length === 1) { assert.equal(two, one, `${code} ${k}`); continue; }
-      const ok = parts.join(' ') === one || (parts[0].endsWith('-') && parts.join('') === one) || (cjk[code] || []).includes(two);
-      assert.ok(ok, `${code} ${k}: "${two}" is not "${one}" broken between words`);
+      const one = cat['nav.' + k];
+      assert.ok(typeof one === 'string' && one.length > 0 && !one.includes('\n'), `${code} ${k}`);
     }
   }
-  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'zh.json'), 'utf8'))['nav2.records'], '流记录');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'zh.json'), 'utf8'))['nav.records'], '流记录');
+  // the renderer writes the full name as plain text, on one line
+  assert.match(js, /textContent = t\('nav\.' \+ el\.dataset\.n\)/);
+  assert.match(css, /\.nl\{[^}]*white-space:nowrap/);
 });
 
 test('one banner; sign-in page is main content', () => {
