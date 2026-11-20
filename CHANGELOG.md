@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0
 
 - The overview chart and the collection status list fit their cards at every width, from a 320px phone to an ultrawide screen; no page scrolls sideways.
 - Themes are picked from five rings, one per theme, no taller than the logo; it works with a click or the arrow keys.
