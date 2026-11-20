@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Garis putus: kemarin di jam yang sama",
   "issue.agent_drops": "Perangkat sendiri membuang {p} sampelnya (dilaporkan di sFlow): ekspor sFlow-nya dibatasi laju. Total sudah dikompensasi; rincian per host tidak. Kurangi sampling (misalnya 1:2048 atau 1:4096) atau naikkan batas sFlow perangkat.",
   "theme.black": "Hitam",
-  "theme.next": "klik untuk tema berikutnya",
   "ov.dir_total": "Total",
   "ov.bw_all": "Bandwidth (masuk + keluar), per aplikasi",
   "ov.bw_in": "Bandwidth masuk menurut layanan port",
@@ -338,5 +337,11 @@
   "theme.navy": "Biru tua",
   "rec.prev": "Sebelumnya",
   "rec.next": "Berikutnya",
-  "rec.page": "Halaman {n}"
+  "rec.page": "Halaman {n}",
+  "nav2.overview": "Ringkasan",
+  "nav2.topn": "TOP",
+  "nav2.records": "Catatan\nflow",
+  "nav2.sources": "Status\npengumpulan",
+  "nav2.cleanup": "Pembersihan\ndata",
+  "nav2.help": "Bantuan"
 }

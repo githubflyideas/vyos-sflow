@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "점선은 어제 같은 시간",
   "issue.agent_drops": "장비가 스스로 샘플의 {p}를 버렸습니다(sFlow에 보고됨). 장비의 sFlow 내보내기에 속도 제한이 걸려 있습니다. 합계는 보정했지만 호스트별 상세는 되찾을 수 없습니다. 샘플링을 줄이거나(예: 1:2048, 1:4096) 장비의 sFlow 속도 제한을 올리세요.",
   "theme.black": "블랙",
-  "theme.next": "클릭하면 다음 테마",
   "ov.dir_total": "합계",
   "ov.bw_all": "대역폭(수신 + 송신), 애플리케이션별",
   "ov.bw_in": "수신 대역폭, 포트 서비스별",
@@ -338,5 +337,11 @@
   "theme.navy": "네이비",
   "rec.prev": "이전",
   "rec.next": "다음",
-  "rec.page": "{n}페이지"
+  "rec.page": "{n}페이지",
+  "nav2.overview": "개요",
+  "nav2.topn": "TOP",
+  "nav2.records": "플로\n레코드",
+  "nav2.sources": "수집\n상태",
+  "nav2.cleanup": "데이터\n정리",
+  "nav2.help": "도움말"
 }

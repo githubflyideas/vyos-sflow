@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Linha tracejada: ontem no mesmo horário",
   "issue.agent_drops": "O próprio equipamento descartou {p} das suas amostras (informa isso no sFlow): a exportação sFlow dele tem limite de taxa. Os totais são compensados; o detalhe por host, não. Amostre menos (por exemplo 1:2048 ou 1:4096) ou aumente o limite de sFlow do equipamento.",
   "theme.black": "Preto",
-  "theme.next": "clique para o próximo tema",
   "ov.dir_total": "Total",
   "ov.bw_all": "Largura de banda (entrada + saída), por aplicação",
   "ov.bw_in": "Largura de banda de entrada por serviço de porta",
@@ -338,5 +337,11 @@
   "theme.navy": "Marinho",
   "rec.prev": "Anterior",
   "rec.next": "Próxima",
-  "rec.page": "Página {n}"
+  "rec.page": "Página {n}",
+  "nav2.overview": "Visão\ngeral",
+  "nav2.topn": "TOP",
+  "nav2.records": "Registros\nde fluxo",
+  "nav2.sources": "Estado\nda coleta",
+  "nav2.cleanup": "Limpeza\nde dados",
+  "nav2.help": "Ajuda"
 }

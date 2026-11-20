@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "虚线是昨天同时段",
   "issue.agent_drops": "设备自己丢弃了 {p} 的样本（sFlow 报文里报告的）：设备的 sFlow 输出有限速。总量已按设备报告的丢弃数补偿，但每台主机的明细无法找回。请降低采样密度（例如 1:2048 或 1:4096），或调高设备的 sFlow 限速。",
   "theme.black": "黑色",
-  "theme.next": "点击换下一个主题",
   "ov.dir_total": "合计",
   "ov.bw_all": "带宽（入 + 出），按应用",
   "ov.bw_in": "按端口服务划分的入站带宽",
@@ -338,5 +337,11 @@
   "theme.navy": "深蓝",
   "rec.prev": "上一页",
   "rec.next": "下一页",
-  "rec.page": "第 {n} 页"
+  "rec.page": "第 {n} 页",
+  "nav2.overview": "概览",
+  "nav2.topn": "TOP",
+  "nav2.records": "流记录",
+  "nav2.sources": "采集\n状态",
+  "nav2.cleanup": "数据\n清理",
+  "nav2.help": "帮助"
 }

@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "ڈیش لکیر: کل اسی وقت",
   "issue.agent_drops": "آلے نے خود اپنے {p} samples چھوڑ دیے (یہ sFlow میں بتاتا ہے): اس کے sFlow export پر rate limit ہے۔ کل مقدار کی تلافی کر دی گئی ہے، مگر ہر host کی تفصیل نہیں۔ sampling کم کریں (مثلاً 1:2048 یا 1:4096) یا آلے کی sFlow rate limit بڑھائیں۔",
   "theme.black": "سیاہ",
-  "theme.next": "اگلی تھیم کے لیے کلک کریں",
   "ov.dir_total": "کل",
   "ov.bw_all": "بینڈوڈتھ (آنے + جانے والی)، ایپلیکیشن کے لحاظ سے",
   "ov.bw_in": "آنے والی بینڈوڈتھ، پورٹ سروس کے لحاظ سے",
@@ -338,5 +337,11 @@
   "theme.navy": "گہرا نیلا",
   "rec.prev": "پچھلا",
   "rec.next": "اگلا",
-  "rec.page": "صفحہ {n}"
+  "rec.page": "صفحہ {n}",
+  "nav2.overview": "جائزہ",
+  "nav2.topn": "ٹاپ",
+  "nav2.records": "فلو\nریکارڈ",
+  "nav2.sources": "جمع کرنے\nکی حالت",
+  "nav2.cleanup": "ڈیٹا کی\nصفائی",
+  "nav2.help": "مدد"
 }

@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Dashed line: same time yesterday",
   "issue.agent_drops": "The device itself dropped {p} of its samples (it reports this in sFlow): its sFlow export is rate-limited. Totals are compensated by the drops it reports; per-host detail cannot be. Sample less often (for example 1:2048 or 1:4096) or raise the device's sFlow rate limit.",
   "theme.black": "Black",
-  "theme.next": "click for the next theme",
   "ov.dir_total": "Total",
   "ov.bw_all": "Bandwidth (in + out), by application",
   "ov.bw_in": "Inbound bandwidth by port service",
@@ -338,5 +337,11 @@
   "theme.navy": "Navy",
   "rec.prev": "Previous",
   "rec.next": "Next",
-  "rec.page": "Page {n}"
+  "rec.page": "Page {n}",
+  "nav2.overview": "Overview",
+  "nav2.topn": "TOP",
+  "nav2.records": "Flow\nrecords",
+  "nav2.sources": "Collection\nstatus",
+  "nav2.cleanup": "Data\ncleanup",
+  "nav2.help": "Help"
 }
