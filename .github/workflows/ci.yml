@@ -109,16 +109,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-prev=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || true)
-if [ -z "$prev" ]; then
-  echo "no previous release, skip upgrade test"
-  exit 0
-fi
-mkdir -p "$RUNNER_TEMP/prev"
-if ! gh release download "$prev" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/prev" --pattern '*.tar.gz' --pattern SHA256SUMS; then
-  echo "::warning::previous release $prev has no assets, skip upgrade test"
-  exit 0
-fi
+              prev=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || true)
+              if [ -z "$prev" ]; then
+             echo "no previous release, skip upgrade test"
+           exit 0
+           fi
+         mkdir -p "$RUNNER_TEMP/prev"
+         if ! gh release download "$prev" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/prev" --pattern '*.tar.gz' --pattern SHA256SUMS; then
+         echo "::warning::previous release $prev has no assets, skip upgrade test"
+         exit 0
+         fi
           (cd "$RUNNER_TEMP/prev" && sha256sum --ignore-missing -c SHA256SUMS && tar -xzf ./*.tar.gz)
           node tests/upgrade-data.cjs "$RUNNER_TEMP"/prev/vyos-sflow-*-linux-amd64/vyos-sflow dist/vyos-sflow-1.3.0-linux-amd64/vyos-sflow
       - name: Packaged beginner quick start
