@@ -146,16 +146,21 @@ function payloads() {
       assert.equal(await page.locator('#themes [role=radio]').count(), 5);
       const en = catalog('en');
       for (const t of THEMES) {
-        const leaf = page.locator(`#themes [data-th="${t}"] path`);
+        const leaf = page.locator(`#themes [data-th="${t}"] .leaf`);
         assert.equal(await page.locator(`#themes [data-th="${t}"]`).getAttribute('aria-label'), en['theme.' + t]);
         await leaf.click();
         await page.waitForFunction(t => (document.documentElement.getAttribute('data-theme') || 'gray') === t, t);
         assert.equal(await page.locator('#themes [aria-checked=true]').getAttribute('data-th'), t);
         assert.equal(await page.evaluate(() => localStorage.getItem('t66.theme')), t);
         assert.equal(await page.locator('#themes [tabindex="0"]').getAttribute('data-th'), t);
-        // the chosen leaf is drawn larger, not only in another colour
-        assert.match(await page.locator(`#themes [data-th="${t}"] g`).getAttribute('transform'), /scale\(/);
+        // the chosen leaf is marked by a ring, never by a change of size
+        assert.notEqual(await page.locator(`#themes [data-th="${t}"] .halo`).evaluate(e => getComputedStyle(e).stroke), 'rgba(0, 0, 0, 0)');
       }
+      // five identical leaves, the same path turned in 72 degree steps
+      const leaves = await page.evaluate(() => [...document.querySelectorAll('#themes [data-th]')].map(b => ({d: b.querySelector('.leaf').getAttribute('d'), tr: b.querySelector('g').getAttribute('transform'), box: (r => [Math.round(r.width * 10), Math.round(r.height * 10)])(b.querySelector('.leaf').getBBox())})));
+      assert.equal(new Set(leaves.map(l => l.d)).size, 1);
+      assert.deepEqual(leaves.map(l => l.tr), [0, 72, 144, 216, 288].map(a => `rotate(${a} 50 50)`));
+      assert.equal(new Set(leaves.map(l => l.box.join())).size, 1);
       await page.reload(); await page.locator('#themes [aria-checked=true]').waitFor();
       assert.equal(await page.locator('#themes [aria-checked=true]').getAttribute('data-th'), 'black', 'theme not kept');
       // keyboard: arrows move round the clover and switch at once
