@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Línea discontinua: ayer a la misma hora",
   "issue.agent_drops": "El propio equipo descartó un {p} de sus muestras (lo informa en sFlow): su exportación sFlow está limitada. Los totales están compensados; el detalle por host no. Muestree menos (por ejemplo 1:2048 o 1:4096) o suba el límite de sFlow del equipo.",
   "theme.black": "Negro",
-  "theme.next": "clic para el siguiente tema",
   "ov.dir_total": "Total",
   "ov.bw_all": "Ancho de banda (entrada + salida), por aplicación",
   "ov.bw_in": "Ancho de banda entrante por servicio de puerto",
@@ -338,5 +337,11 @@
   "theme.navy": "Marino",
   "rec.prev": "Anterior",
   "rec.next": "Siguiente",
-  "rec.page": "Página {n}"
+  "rec.page": "Página {n}",
+  "nav2.overview": "Resumen",
+  "nav2.topn": "TOP",
+  "nav2.records": "Registros\nde flujo",
+  "nav2.sources": "Estado de la\nrecolección",
+  "nav2.cleanup": "Limpieza\nde datos",
+  "nav2.help": "Ayuda"
 }

@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "डैश रेखा: कल इसी समय",
   "issue.agent_drops": "डिवाइस ने खुद अपने {p} samples छोड़ दिए (यह sFlow में बताता है): उसके sFlow export पर rate limit है। कुल मात्रा की भरपाई कर दी गई है, पर हर host का विवरण नहीं। sampling कम करें (जैसे 1:2048 या 1:4096) या डिवाइस की sFlow rate limit बढ़ाएँ।",
   "theme.black": "काला",
-  "theme.next": "अगली थीम के लिए क्लिक करें",
   "ov.dir_total": "कुल",
   "ov.bw_all": "बैंडविड्थ (आने + जाने वाला), ऐप्लिकेशन के अनुसार",
   "ov.bw_in": "आने वाली बैंडविड्थ, पोर्ट सेवा के अनुसार",
@@ -338,5 +337,11 @@
   "theme.navy": "गहरा नीला",
   "rec.prev": "पिछला",
   "rec.next": "अगला",
-  "rec.page": "पृष्ठ {n}"
+  "rec.page": "पृष्ठ {n}",
+  "nav2.overview": "सारांश",
+  "nav2.topn": "शीर्ष",
+  "nav2.records": "फ़्लो\nरिकॉर्ड",
+  "nav2.sources": "संग्रह की\nस्थिति",
+  "nav2.cleanup": "डेटा\nसफ़ाई",
+  "nav2.help": "सहायता"
 }

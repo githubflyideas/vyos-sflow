@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Gestrichelt: gleiche Zeit gestern",
   "issue.agent_drops": "Das Gerät selbst hat {p} seiner Samples verworfen (es meldet dies in sFlow): Sein sFlow-Export ist ratenbegrenzt. Summen werden ausgeglichen, Details pro Host nicht. Sampeln Sie seltener (zum Beispiel 1:2048 oder 1:4096) oder erhöhen Sie das sFlow-Ratenlimit des Geräts.",
   "theme.black": "Schwarz",
-  "theme.next": "klicken für das nächste Design",
   "ov.dir_total": "Gesamt",
   "ov.bw_all": "Bandbreite (ein + aus) nach Anwendung",
   "ov.bw_in": "Eingehende Bandbreite nach Portdienst",
@@ -338,5 +337,11 @@
   "theme.navy": "Marine",
   "rec.prev": "Zurück",
   "rec.next": "Weiter",
-  "rec.page": "Seite {n}"
+  "rec.page": "Seite {n}",
+  "nav2.overview": "Übersicht",
+  "nav2.topn": "TOP",
+  "nav2.records": "Flow-\nDatensätze",
+  "nav2.sources": "Erfassungsstatus",
+  "nav2.cleanup": "Datenbereinigung",
+  "nav2.help": "Hilfe"
 }

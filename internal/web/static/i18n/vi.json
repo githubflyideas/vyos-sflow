@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Nét đứt: cùng giờ hôm qua",
   "issue.agent_drops": "Chính thiết bị đã bỏ {p} mẫu của nó (thiết bị báo điều này trong sFlow): export sFlow của nó bị giới hạn tốc độ. Tổng đã được bù; chi tiết theo từng máy thì không bù được. Hãy lấy mẫu thưa hơn (ví dụ 1:2048 hoặc 1:4096) hoặc nâng giới hạn tốc độ sFlow của thiết bị.",
   "theme.black": "Đen",
-  "theme.next": "bấm để đổi giao diện màu",
   "ov.dir_total": "Tổng",
   "ov.bw_all": "Băng thông (vào + ra), theo ứng dụng",
   "ov.bw_in": "Băng thông vào, theo dịch vụ cổng",
@@ -338,5 +337,11 @@
   "theme.navy": "Xanh đậm",
   "rec.prev": "Trước",
   "rec.next": "Sau",
-  "rec.page": "Trang {n}"
+  "rec.page": "Trang {n}",
+  "nav2.overview": "Tổng quan",
+  "nav2.topn": "TOP",
+  "nav2.records": "Bản ghi\nluồng",
+  "nav2.sources": "Tình trạng\nthu thập",
+  "nav2.cleanup": "Dọn\ndữ liệu",
+  "nav2.help": "Trợ giúp"
 }

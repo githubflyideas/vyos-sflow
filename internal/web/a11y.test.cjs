@@ -1,7 +1,8 @@
 'use strict';
 // Accessibility points that once regressed: icon buttons must keep a name
-// when narrow layouts hide their text, theme swatches meet the 24px target
-// size, and the page has one banner and a main landmark on every screen.
+// when narrow layouts hide their text, the theme clover stays within the
+// logo's height, navigation labels break between words, and the page has
+// one banner and a main landmark on every screen.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -17,10 +18,33 @@ test('account and sign-out buttons are named whatever the width', () => {
   assert.match(js, /\[data-il\][^\n]*aria-label/);
 });
 
-test('theme swatches are at least 24px everywhere', () => {
-  for (const m of css.matchAll(/\.themes button\{width:(\d+)px;height:(\d+)px/g)) {
-    assert.ok(Number(m[1]) >= 24 && Number(m[2]) >= 24, m[0]);
+test('theme clover is a named radio group never taller than the logo', () => {
+  assert.match(html, /class="clover" id="themes" role="radiogroup"/);
+  assert.match(js, /role="radio"[^`]*aria-checked=/);
+  assert.match(js, /aria-label="\$\{esc\(t\('theme\.' \+ k\)\)\}"/);
+  // the header logo is 65px tall (40px on phones); the clover stays within it
+  const sizes = [...css.matchAll(/\.clover\{(?:position:relative;flex:none;)?width:(\d+)px;height:(\d+)px\}/g)].map(m => Number(m[2]));
+  assert.deepEqual(sizes, [60, 40]);
+  assert.match(html, /class="logo" src="\/logo\?wide=1"[^>]*height="65"/);
+  assert.match(css, /@media \(max-width:620px\)\{[^\n]*header\.nms \.brand \.logo\{width:auto;height:40px\}/);
+});
+
+test('two-line navigation labels break only between words', () => {
+  const dir = path.join(__dirname, 'static/i18n');
+  // written without spaces: the allowed breaks, word by word
+  const cjk = {zh: ['采集\n状态', '数据\n清理'], ja: ['フロー\nレコード', '収集の\n状態', 'データ\n削除']};
+  for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
+    const code = file.slice(0, -5), cat = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+    for (const k of ['overview', 'topn', 'records', 'sources', 'cleanup', 'help']) {
+      const two = cat['nav2.' + k], one = cat['nav.' + k];
+      const parts = two.split('\n');
+      assert.ok(parts.length <= 2 && parts.every(p => p && p === p.trim()), `${code} ${k}`);
+      if (parts.length === 1) { assert.equal(two, one, `${code} ${k}`); continue; }
+      const ok = parts.join(' ') === one || (parts[0].endsWith('-') && parts.join('') === one) || (cjk[code] || []).includes(two);
+      assert.ok(ok, `${code} ${k}: "${two}" is not "${one}" broken between words`);
+    }
   }
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'zh.json'), 'utf8'))['nav2.records'], '流记录');
 });
 
 test('one banner; sign-in page is main content', () => {

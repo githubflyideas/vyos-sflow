@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "点線は昨日の同時刻",
   "issue.agent_drops": "機器自身がサンプルの {p} を破棄しました（sFlow で報告されています）。機器の sFlow 出力にレート制限があります。合計は補正済みですが、ホストごとの明細は戻りません。サンプリングを粗くする（例 1:2048、1:4096）か、機器の sFlow レート制限を上げてください。",
   "theme.black": "ブラック",
-  "theme.next": "クリックで次のテーマ",
   "ov.dir_total": "合計",
   "ov.bw_all": "帯域（受信 + 送信）、アプリ別",
   "ov.bw_in": "ポートサービス別の受信帯域幅",
@@ -338,5 +337,11 @@
   "theme.navy": "ネイビー",
   "rec.prev": "前へ",
   "rec.next": "次へ",
-  "rec.page": "{n} ページ"
+  "rec.page": "{n} ページ",
+  "nav2.overview": "概要",
+  "nav2.topn": "上位",
+  "nav2.records": "フロー\nレコード",
+  "nav2.sources": "収集の\n状態",
+  "nav2.cleanup": "データ\n削除",
+  "nav2.help": "ヘルプ"
 }

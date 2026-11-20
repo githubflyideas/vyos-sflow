@@ -186,7 +186,6 @@
   "ov.bw_sub_day": "Pointillés : hier à la même heure",
   "issue.agent_drops": "L'équipement lui-même a abandonné {p} de ses échantillons (il le signale dans sFlow) : son export sFlow est limité en débit. Les totaux sont compensés, pas le détail par hôte. Échantillonnez moins (par exemple 1:2048 ou 1:4096) ou relevez la limite sFlow de l'équipement.",
   "theme.black": "Noir",
-  "theme.next": "cliquer pour le thème suivant",
   "ov.dir_total": "Total",
   "ov.bw_all": "Bande passante (entrant + sortant), par application",
   "ov.bw_in": "Bande passante entrante par service de port",
@@ -338,5 +337,11 @@
   "theme.navy": "Marine",
   "rec.prev": "Précédent",
   "rec.next": "Suivant",
-  "rec.page": "Page {n}"
+  "rec.page": "Page {n}",
+  "nav2.overview": "Vue\nd'ensemble",
+  "nav2.topn": "TOP",
+  "nav2.records": "Enregistrements\nde flux",
+  "nav2.sources": "État de\nla collecte",
+  "nav2.cleanup": "Nettoyage\ndes données",
+  "nav2.help": "Aide"
 }

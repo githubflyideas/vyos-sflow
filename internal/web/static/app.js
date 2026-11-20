@@ -31,18 +31,37 @@ async function loadLang(code) {
   document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
   // names for buttons whose text narrow layouts hide
   document.querySelectorAll('[data-il]').forEach(el => el.setAttribute('aria-label', t(el.dataset.il)));
+  navLabels();
   refreshLabel();
   themeLabel();
 }
-// the theme button shows the current theme; a click goes to the next one
+// Navigation labels take two lines, so long languages keep the bar narrow.
+// Each catalog marks where its label may break with "\n" (nav2.*): between
+// words, never inside one, so a Chinese word such as "flow records" stays
+// whole. Screen readers get the full name in one piece.
+function navLabels() {
+  document.querySelectorAll('[data-n]').forEach(el => {
+    const k = el.dataset.n, lines = String(t('nav2.' + k)).split('\n');
+    el.innerHTML = `<span class="vh">${esc(t('nav.' + k))}</span><span class="nl2" aria-hidden="true">${lines.map(l => `<span>${esc(l)}</span>`).join('')}</span>`;
+  });
+}
+// The theme picker is a five-leaf clover: one leaf per theme, in that
+// theme's colour; a click (or arrow keys, as in any radio group) switches
+// at once. The chosen leaf is drawn larger with a heavier outline.
 const SWATCH = {light: '#ffffff', gray: '#cfe8d6', slate: '#4a5363', navy: '#16264a', black: '#000000'};
+const LEAF = 'M50 48C45 42 33.5 36 33.5 24.5C33.5 15 43 11 50 19.5C57 11 66.5 15 66.5 24.5C66.5 36 55 42 50 48Z';
 function themeLabel() {
-  const b = $('#theme'), cur = window.t66Theme ? t66Theme.get() : 'gray';
   const sw = $('#themes');
-  if (sw && window.t66Theme) sw.innerHTML = t66Theme.list.map(k => `<button type="button" data-th="${k}" style="background:${SWATCH[k]}" aria-pressed="${k === cur}" title="${esc(t('theme.label') + ': ' + t('theme.' + k))}" aria-label="${esc(t('theme.label') + ': ' + t('theme.' + k))}"></button>`).join('');
-  b.querySelector('span').textContent = t('theme.' + cur);
-  b.title = t('theme.label') + ': ' + t('theme.' + cur) + ' · ' + t('theme.next');
-  b.setAttribute('aria-label', b.title);
+  if (!sw || !window.t66Theme) return;
+  const cur = t66Theme.get(), list = t66Theme.list;
+  sw.setAttribute('aria-label', t('theme.label'));
+  sw.innerHTML = list.map((k, i) => `<button type="button" role="radio" data-th="${k}" aria-checked="${k === cur}" tabindex="${k === cur ? 0 : -1}" aria-label="${esc(t('theme.' + k))}"><svg viewBox="4 4 92 92" aria-hidden="true" focusable="false"><g transform="rotate(${i * 72} 50 50)${k === cur ? ' translate(50 50) scale(1.12) translate(-50 -50)' : ''}"><path d="${LEAF}" fill="${SWATCH[k]}"><title>${esc(t('theme.label') + ': ' + t('theme.' + k))}</title></path></g></svg></button>`).join('') +
+    '<svg class="clover-c" viewBox="4 4 92 92" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="4"/></svg>';
+}
+function pickTheme(k, focus) {
+  if (!window.t66Theme || !t66Theme.list.includes(k)) return;
+  t66Theme.set(k); themeLabel(); render();
+  if (focus) $('#themes [data-th="' + k + '"]')?.focus();
 }
 function pickLang() {
   let saved = null;
@@ -174,7 +193,7 @@ let clockSkew = 0, waiting = null, setup = null;
 const spanMs = () => ({'15m': 9e5, '30m': 18e5, '1h': 36e5, '6h': 216e5, '12h': 432e5, '24h': 864e5, '48h': 1728e5})[state.r];
 const rangeLabel = () => t('range.' + state.r);
 function renderRange() {
- $('#range').innerHTML = RANGES.map(r => `<button data-r="${r}" aria-pressed="${r === state.r}" title="${esc(t('range.' + r))}" aria-label="${esc(t('range.' + r))}">${RANGE_SHORT[r]}</button>`).join('');
+ $('#range').innerHTML = RANGES.map(r => `<button data-r="${r}" aria-pressed="${r === state.r}" title="${esc(t('range.' + r))}" aria-label="${esc(RANGE_SHORT[r] + ' (' + t('range.' + r) + ')')}">${RANGE_SHORT[r]}</button>`).join('');
 }
 function tickClock() {
   try { $('#clock').textContent = new Intl.DateTimeFormat(LANG, {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(new Date(Date.now() + clockSkew)); } catch (e) {}
@@ -497,14 +516,14 @@ views.overview = async el => {
   <span>${t('col.status')}</span><span class="st ${dv.status === 'ok' ? 'ok' : dv.status === 'bad' ? 'bad' : 'warn'}">● ${esc(t('st.' + dv.status))}</span>
   <span>${t('ov.if_count')}</span><span>${nf(ifs.length)}</span></div>` : `<div class="empty">${emptyText()}</div>`;
  el.innerHTML = `<div class="grid">
- ${panel('c4', t('ov.device'), '', `${devInfo}<div class="devnum"><div><div class="lab">${t('kpi.now')}</div><b>${fmtBps(d.now_bps)}</b></div><div><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><b>${fmtBytes(total.wire)}</b></div><div><div class="lab">${t('col.flows')}</div><b>${nf(total.flows || 0)}</b></div></div>
-  <p class="muted" style="font-size:12px"><span id="kpiScope">${esc(t('ov.kpi_scope'))}</span> · ${t('col.pkts')} ${nf(total.pkts || 0)}</p>`)}
- <div class="panel c8"><div class="ph"><h2 id="bwTitle">${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
+ <div class="panel c12"><div class="ph"><h2 id="bwTitle">${esc(title)}</h2><div class="tools" style="margin-inline-start:auto">${dirSeg()}</div></div>
  ${state.od ? `<p class="muted" id="directionScope">${esc(t('ov.direction_scope'))} · <span id="directionIface">${d.dir_iface ? esc(ifaceList(d.dir_iface)) : esc(t('ov.direction_empty'))}</span></p>` : ''}
  <div class="chart" id="chStack"></div></div>
  ${panel('c12', t('ov.ifaces'), esc(t('ov.ifaces_sub')), ifs.length ? `<div class="tablewrap"><table><thead><tr><th>${t('ic.iface')}</th><th>${t('ov.speed')}</th><th>${t('ov.util_in')}</th><th>${t('ov.util_out')}</th><th class="num">${t('if.in')}</th><th class="num">${t('if.out')}</th><th>${t('col.status')}</th></tr></thead><tbody>
   ${ifs.map(r => { const [k, txt] = icState(r); return `<tr><td class="nw"><span class="dot ${k}"></span>${esc(r.exporter)} / ${r.ifindex}</td><td>${r.speed ? fmtBps(r.speed) : '—'}</td><td class="nw">${utilBar(r.dev_in_bps, r.speed)}</td><td class="nw">${utilBar(r.dev_out_bps, r.speed)}</td><td class="num">${fmtBps(r.dev_in_bps)}</td><td class="num">${fmtBps(r.dev_out_bps)}</td><td>${esc(txt)}</td></tr>`; }).join('')}</tbody></table></div>` : `<div class="empty">${esc(t('ic.none'))}</div>`)}
- ${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}</div>`;
+ ${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}
+ ${panel('c12 devpanel', t('ov.device'), '', `<div class="devbody">${devInfo}<div class="devnum"><div><div class="lab">${t('kpi.now')}</div><b>${fmtBps(d.now_bps)}</b></div><div><div class="lab">${t('kpi.total', {r: rangeLabel()})}</div><b>${fmtBytes(total.wire)}</b></div><div><div class="lab">${t('col.flows')}</div><b>${nf(total.flows || 0)}</b></div></div></div>
+  <p class="muted" style="font-size:12px"><span id="kpiScope">${esc(t('ov.kpi_scope'))}</span> · ${t('col.pkts')} ${nf(total.pkts || 0)}</p>`)}</div>`;
  drawSeries($('#chStack'), state.od ? d.dir_series : d.series); fillSelf();
  el.querySelectorAll('[data-od]').forEach(b => b.onclick = () => { state.od = b.dataset.od; render(true); });
 };
@@ -559,8 +578,8 @@ function streamHint(s) {
 views.sources = async el => {
  const d = await api('sources'), rows = d.sources || [];
  el.innerHTML = `<div class="grid">${panel('c12', t('self.title'), '', '<div class="self" id="self"></div>')}
- ${panel('c12', t('src.title'), t('src.sub'), `${streamHint(d.stream)}<table><tr><th>${t('col.device')}</th><th>${t('col.proto')}</th><th>${t('col.rate')}</th><th>${t('col.sampling')}</th><th>${t('col.lost')}</th><th>${t('col.status')}</th></tr>
- ${rows.map(s => `<tr><td>${esc(s.exporter)}</td><td>${esc(s.proto)}</td><td>${nf(s.rec_per_sec || 0,1)}</td><td>${esc(s.sampling || s.sampling_state || '—')}${s.effective ? ' (1:' + nf(s.effective) + ')' : ''}</td><td>${nf(s.lost_pct || 0,2)}%</td><td>${esc(t('st.' + s.status))}${(s.issues || []).map(k => `<div class="issue">${esc(t('issue.' + k,{a:s.exporter,n:nf(s.pending||0),p:nf((k === 'agent_drops' ? s.drop_pct : k === 'loss' ? (s.transit_pct ?? s.lost_pct) : s.lost_pct) || 0,1)+'%',s:Math.round(Math.abs(s.clock_skew_ns||0)/1e9)+' s'}))}</div>`).join('')}</td></tr>`).join('') || `<tr><td colspan="6" class="empty">${emptyText()}</td></tr>`}</table>
+ ${panel('c12', t('src.title'), t('src.sub'), `${streamHint(d.stream)}<div class="tablewrap"><table><tr><th>${t('col.device')}</th><th>${t('col.proto')}</th><th>${t('col.rate')}</th><th>${t('col.sampling')}</th><th>${t('col.lost')}</th><th>${t('col.status')}</th></tr>
+ ${rows.map(s => `<tr><td>${esc(s.exporter)}</td><td>${esc(s.proto)}</td><td>${nf(s.rec_per_sec || 0,1)}</td><td>${esc(s.sampling || s.sampling_state || '—')}${s.effective ? ' (1:' + nf(s.effective) + ')' : ''}</td><td>${nf(s.lost_pct || 0,2)}%</td><td>${esc(t('st.' + s.status))}${(s.issues || []).map(k => `<div class="issue">${esc(t('issue.' + k,{a:s.exporter,n:nf(s.pending||0),p:nf((k === 'agent_drops' ? s.drop_pct : k === 'loss' ? (s.transit_pct ?? s.lost_pct) : s.lost_pct) || 0,1)+'%',s:Math.round(Math.abs(s.clock_skew_ns||0)/1e9)+' s'}))}</div>`).join('')}</td></tr>`).join('') || `<tr><td colspan="6" class="empty">${emptyText()}</td></tr>`}</table></div>
  <p>${t('src.listeners')} ${(d.listeners || []).map(l => `<span class="tag">UDP ${esc(l.addr)} · ${esc(l.proto)} · ${nf(l.packets || 0)}</span>`).join(' ')}</p>`)}
  ${panel('c12', t('ic.title'), t('ic.sub'), ifaceCheck(d.ifaces || []))}</div>`;
  fillSelf();
@@ -859,9 +878,17 @@ async function init() {
   const lang = pickLang();
   await loadLang(lang);
   $('#lang').value = lang;
-  $('#theme').onclick = () => { if (window.t66Theme) t66Theme.next(); themeLabel(); render(); };
   const sw = $('#themes');
-  if (sw) sw.onclick = e => { const b = e.target.closest('[data-th]'); if (!b || !window.t66Theme) return; t66Theme.set(b.dataset.th); themeLabel(); render(); };
+  if (sw) {
+    sw.onclick = e => { const b = e.target.closest('[data-th]'); if (b) pickTheme(b.dataset.th, true); };
+    sw.onkeydown = e => {
+      const list = window.t66Theme ? t66Theme.list : [], i = list.indexOf(t66Theme.get()), rtl = document.documentElement.dir === 'rtl';
+      const step = {ArrowDown: 1, ArrowUp: -1, ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1}[e.key];
+      const to = step ? list[(i + step + list.length) % list.length] : e.key === 'Home' ? list[0] : e.key === 'End' ? list[list.length - 1] : null;
+      if (!to) return;
+      e.preventDefault(); pickTheme(to, true);
+    };
+  }
   $('#lang').onchange = async () => {
     await loadLang($('#lang').value);
     loadStatus(); render();

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- The overview chart and the collection status list fit their cards at every width, from a 320px phone to an ultrawide screen; no page scrolls sideways.
+- Themes are picked from a five-leaf clover, one leaf per theme, no taller than the logo; it works with a click or the arrow keys.
+- Navigation labels take two lines, broken only between words, so the top bar fits on one row from 1280px in every language.
+- The device card moves to the bottom of the overview.
+- The time range buttons' screen reader names start with the label shown (WCAG 2.5.3).
+
 ## 1.2.23
 
 - Over HTTPS the account page shows the certificate in use: what it is valid for, its expiry and its SHA-256 fingerprint, with a download link.
