@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2
+
+- The API description is back: docs/openapi.json ships with the release again, and a test holds it equal to the routes the server registers and to the error code table.
+- A wrong method on an API route is answered 405 with an Allow header and the JSON error, for GET as for every other method.
+- /tls.crt with no certificate to download answers the JSON error, like the API routes.
+
 ## 1.3.1
 
 - Navigation labels are back on one line.
