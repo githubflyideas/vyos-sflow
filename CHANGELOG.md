@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3
+
+- An sFlow sample that declares a sampling rate of zero is dropped instead of being counted at face value: 1-in-0 is not a rate, and the sample carries no measurement.
+
 ## 1.3.2
 
 - The API description is back: docs/openapi.json ships with the release again, and a test holds it equal to the routes the server registers and to the error code table.
