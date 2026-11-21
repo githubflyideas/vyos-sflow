@@ -1,0 +1,26 @@
+<main>
+<header class="hero col landing">
+  <div class="kicker"><span>sFlow · VyOS / Linux</span><b>Web UI · TUI · 15 languages</b></div>
+  <h1>See your sFlow traffic, <span class="far">on your own machine</span></h1>
+  <p class="lede">vyos-sflow collects the sFlow your VyOS router already exports — most switches, other routers and servers can send theirs too — and turns it into bandwidth charts, top talkers and flow records — in a browser dashboard, or in a terminal over SSH. One binary, nothing else to install, deployed in 30 seconds.</p>
+  <div class="actions"><a class="btn primary" href="https://github.com/githubflyideas/vyos-sflow/releases">Download</a><a class="btn" href="https://github.com/githubflyideas/vyos-sflow#readme">Quick start</a><a class="btn" href="{root}blog/">Blog</a></div>
+</header>
+<div class="wide"><figure class="shot" style="margin-top:0"><img src="{root}assets/img/screenshots/vyos/web-overview.png" alt="Overview: bandwidth now and over the last hours, from the router's own sFlow" width="1360" height="820"></figure></div>
+<div class="col"><h2>What it does</h2></div>
+<div class="wide"><div class="feat">
+  <div class="card"><h4>Runs where the traffic is</h4><p>Install it on the VyOS router itself, or on any Linux box that receives sFlow. No separate monitoring server, no database to set up.</p></div>
+  <div class="card"><h4>Bandwidth and top talkers</h4><p>Live bandwidth, the clients and servers using it, and the recent flow records behind the numbers.</p></div>
+  <div class="card"><h4>Checked against the device</h4><p>Interface traffic comes from the device's own counters, shown next to the sampled estimate, so you can see whether the numbers line up.</p></div>
+  <div class="card"><h4>A terminal view over SSH</h4><p><code>./vyos-sflow tui</code> opens the same picture in your SSH session. No browser, no service install — look, then quit with <code>q</code>.</p></div>
+  <div class="card"><h4>48 hours of history</h4><p>Kept locally with an embedded database. Long enough to answer "when did this start?" — and nothing leaves the router.</p></div>
+  <div class="card"><h4>Read it your way</h4><p>Web UI in 15 languages and five themes, from light to dark. The terminal view speaks the same language.</p></div>
+</div></div>
+<div class="wide"><figure class="shot"><img src="{root}assets/img/screenshots/vyos/web-top.png" alt="Top: the clients and servers ranked by traffic" width="1360" height="820" loading="lazy"><figcaption>Top talkers: who is using the bandwidth, ranked.</figcaption></figure>
+<figure class="shot"><img src="{root}assets/img/screenshots/vyos/web-records.png" alt="Flow records: the sampled flows behind the charts" width="1360" height="820" loading="lazy"><figcaption>Flow records: the sampled traffic behind the charts.</figcaption></figure></div>
+<div class="col">
+<h2>Latest from the blog</h2>
+{posts}
+<h2>Licence</h2>
+<p>Open source under the Apache License 2.0. <a href="https://github.com/githubflyideas/vyos-sflow/blob/main/LICENSE">Read the terms</a>.</p>
+</div>
+</main>
