@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="docs/images/vyos-sflow-logo.png" alt="vyos-sflow logo" width="360">
+  <img src="docs/images/vyos-sflow-logo.png" alt="vyos-sflow logo" width="240">
 </p>
 
 # vyos-sflow
-<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/98987b3b-7262-4194-b150-03b9827e4066" />
+<img width="1280" height="720" alt="vyos-sflow web UI demo" src="docs/images/vyos-sflow-hero.gif" />
 
 Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and recent flow records in your browser or over SSH.
 
