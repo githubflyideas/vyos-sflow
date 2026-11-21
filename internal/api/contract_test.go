@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"slices"
+	"sort"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -59,21 +61,40 @@ func TestWrongMethodIs405WithAllow(t *testing.T) {
 	h := contractServer(t)
 	s := &Server{}
 	s.Handler()
+	byPath := map[string][]string{}
+	var paths []string
 	for _, pat := range s.routes {
 		method, path, _ := strings.Cut(pat, " ")
 		path = strings.Replace(path, "{name}", "x.png", 1)
-		wrong := "PUT"
-		if method == "PUT" {
-			wrong = "PATCH"
+		if _, ok := byPath[path]; !ok {
+			paths = append(paths, path)
 		}
-		for _, p := range []string{path} {
-			w := call(h, wrong, p, "")
-			if w.Code != http.StatusMethodNotAllowed || !strings.Contains(w.Header().Get("Allow"), method) {
-				t.Errorf("%s %s: %d, Allow %q; want 405 allowing %s", wrong, p, w.Code, w.Header().Get("Allow"), method)
+		byPath[path] = append(byPath[path], method)
+	}
+	for _, path := range paths {
+		methods := byPath[path]
+		wrongs := []string{"PUT"}
+		if slices.Contains(methods, "PUT") {
+			wrongs = []string{"PATCH"}
+		}
+		if !slices.Contains(methods, "GET") {
+			// GET is probed too: it is the one method the web catch-all
+			// would otherwise swallow and answer with a plain-text 404
+			wrongs = append(wrongs, "GET")
+		}
+		for _, wm := range wrongs {
+			w := call(h, wm, path, "")
+			if w.Code != http.StatusMethodNotAllowed {
+				t.Errorf("%s %s: %d; want 405", wm, path, w.Code)
 				continue
 			}
+			for _, m := range methods {
+				if !strings.Contains(w.Header().Get("Allow"), m) {
+					t.Errorf("%s %s: Allow %q does not list %s", wm, path, w.Header().Get("Allow"), m)
+				}
+			}
 			if code := errorOf(t, w); code != "method_not_allowed" {
-				t.Errorf("%s %s: code %q", wrong, p, code)
+				t.Errorf("%s %s: code %q", wm, path, code)
 			}
 		}
 	}
@@ -207,5 +228,61 @@ func TestCertificateDownload(t *testing.T) {
 	}
 	if strings.Contains(w.Body.String(), "PRIVATE KEY") || strings.Contains(w.Body.String(), "c2VjcmV0") {
 		t.Fatalf("the private key left with the certificate: %s", w.Body)
+	}
+	// With no certificate in use the answer is the JSON error, not a
+	// plain-text 404.
+	s2 := &Server{Static: fstest.MapFS{}}
+	w2 := httptest.NewRecorder()
+	s2.Handler().ServeHTTP(w2, httptest.NewRequest("GET", "/tls.crt", nil))
+	if w2.Code != http.StatusNotFound || errorOf(t, w2) != "not_found" {
+		t.Errorf("no certificate: %d %s", w2.Code, w2.Body)
+	}
+}
+
+// docs/openapi.json describes exactly the routes the server registers, and
+// its error codes are exactly the code table.
+func TestOpenAPIMatchesTheRoutes(t *testing.T) {
+	b, err := os.ReadFile("../../docs/openapi.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		Paths      map[string]map[string]json.RawMessage
+		Components struct {
+			Schemas struct {
+				Error struct {
+					Properties struct {
+						Error struct{ Enum []string }
+					}
+				}
+			}
+		}
+	}
+	if err := json.Unmarshal(b, &doc); err != nil {
+		t.Fatal(err)
+	}
+	var documented, registered []string
+	for p, ops := range doc.Paths {
+		for m := range ops {
+			documented = append(documented, strings.ToUpper(m)+" /api"+p)
+		}
+	}
+	s := &Server{}
+	s.Handler()
+	registered = append(registered, s.routes...)
+	sort.Strings(documented)
+	sort.Strings(registered)
+	if strings.Join(documented, "\n") != strings.Join(registered, "\n") {
+		t.Errorf("docs/openapi.json and the route table differ:\ndocumented:\n%s\nregistered:\n%s", strings.Join(documented, "\n"), strings.Join(registered, "\n"))
+	}
+	var codes []string
+	for c := range errorText {
+		codes = append(codes, c)
+	}
+	enum := doc.Components.Schemas.Error.Properties.Error.Enum
+	sort.Strings(codes)
+	sort.Strings(enum)
+	if strings.Join(codes, ",") != strings.Join(enum, ",") {
+		t.Errorf("error codes documented %v, in the code table %v", enum, codes)
 	}
 }

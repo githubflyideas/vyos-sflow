@@ -157,10 +157,38 @@ func (s *Server) Handler() http.Handler {
 	adminAPI("POST /api/cleanup", s.postCleanup)
 	adminAPI("POST /api/cleanup/exporter", s.postPurgeExporter)
 
+	// methodsByPath lists the methods each API path takes, so a request
+	// with a wrong one can be told which ones are allowed
+	paths := map[string]bool{}
+	methodsByPath := map[string][]string{}
+	for _, p := range s.routes {
+		m, path, _ := strings.Cut(p, " ")
+		path = strings.TrimSuffix(path, "{name}")
+		paths[path] = true
+		methodsByPath[path] = append(methodsByPath[path], m)
+	}
+	for _, ms := range methodsByPath {
+		sort.Strings(ms)
+	}
+
 	static := http.FileServer(http.FS(s.Static))
 	// GET only: a route that matched every method would answer for the API
 	// paths too, and the mux would never say 405 to a wrong method
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			// A known API path asked with GET, which is not one of its
+			// methods: this catch-all is the only pattern that matches,
+			// and the file server would answer a plain-text 404. Say
+			// 405 with Allow instead; the API wrapper turns it into
+			// the JSON error, as it does for the mux's own 405s.
+			ms := methodsByPath[r.URL.Path]
+			if ms == nil {
+				ms = methodsByPath["/api/manual/images/"]
+			}
+			w.Header().Set("Allow", strings.Join(ms, ", "))
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		// no-cache on every file: after an upgrade the browser must not keep
@@ -169,11 +197,6 @@ func (s *Server) Handler() http.Handler {
 		w.Header().Set("Cache-Control", "no-cache")
 		static.ServeHTTP(w, r)
 	})
-	paths := map[string]bool{}
-	for _, p := range s.routes {
-		_, path, _ := strings.Cut(p, " ")
-		paths[strings.TrimSuffix(path, "{name}")] = true
-	}
 	known := func(path string) bool {
 		return paths[path] || strings.HasPrefix(path, "/api/manual/images/") && len(path) > len("/api/manual/images/")
 	}
