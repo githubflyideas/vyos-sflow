@@ -49,6 +49,27 @@ func TestSFlowStillAccepted(t *testing.T) {
 	}
 }
 
+// A sample that declares a sampling rate of zero is dropped, not counted
+// at face value, and it leaves the source's rate state untouched: the
+// next sample at a real rate is delivered as usual.
+func TestSFlowRateZeroDropped(t *testing.T) {
+	sink := &countSink{}
+	c := New(sink)
+	a := netip.MustParseAddr("192.0.2.1")
+	hdr, size := encode.Frame(a, netip.MustParseAddr("192.0.2.2"), 1234, 443, 6, 0, 100, 0x10)
+	zero := encode.SFlow(a, 0, 1, 1000, []encode.SFlowSample{{Seq: 1, SourceID: 1, Rate: 0, Pool: 0, Header: hdr, FrameLen: size}}, nil)
+	if !c.Handle(zero, a, time.Now()) {
+		t.Fatal("datagram with a rate-0 sample was not handled")
+	}
+	if sink.records != 0 {
+		t.Fatalf("rate-0 sample delivered %d record(s), want 0", sink.records)
+	}
+	normal := encode.SFlow(a, 0, 2, 1000, []encode.SFlowSample{{Seq: 2, SourceID: 1, Rate: 100, Pool: 100, Header: hdr, FrameLen: size}}, nil)
+	if !c.Handle(normal, a, time.Now()) || sink.records != 1 {
+		t.Fatal("sample after a rate-0 sample was not delivered")
+	}
+}
+
 func TestUDPRejectsValidNonSFlow(t *testing.T) {
 	sink := &countSink{}
 	c := New(sink)

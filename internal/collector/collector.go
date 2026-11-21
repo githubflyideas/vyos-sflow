@@ -279,6 +279,13 @@ func (c *Collector) handleSFlow(b []byte, from netip.Addr, now time.Time) bool {
 	for i := range d.Flows {
 		s := &d.Flows[i]
 		ag.samples++
+		// A sample declaring a sampling rate of zero carries no
+		// measurement — 1-in-0 is not a rate. It is dropped, never
+		// counted at face value, and it must not touch the tracked
+		// rate state either.
+		if s.Rate == 0 {
+			continue
+		}
 		st := c.sf[sfKey{agentAddr, d.SubAgent, s.SourceID}]
 		if st == nil {
 			if len(c.sf) >= maxSources {
