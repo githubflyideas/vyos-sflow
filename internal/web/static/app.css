@@ -75,6 +75,7 @@ nav.dash button[aria-current="page"]::before{content:"";position:absolute;inset-
 nav.dash button[aria-current="page"] .ni{opacity:1}
 
 .ver{display:flex;justify-content:center;gap:14px;margin-top:4px;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.powered{margin-top:2px;font-size:11.5px;color:var(--ink-3)}
 .badge{min-width:18px;padding:0 5px;border-radius:9px;background:var(--warn);color:#1b2432;font-size:11px;line-height:18px;text-align:center;font-weight:700}
 
 .self{display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;font-size:13px;color:var(--ink-2)}

@@ -45,6 +45,8 @@ Usage:
 
 Only sFlow v5 is accepted. NetFlow/IPFIX, packet capture and PCAP import are not included.
 Use "vyos-sflow serve -h" for options. See packaging/ and docs/VYOS.md for installation.
+
+Powered by githubflyideas/traffic66
 `
 
 func main() {

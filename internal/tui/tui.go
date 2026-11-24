@@ -843,6 +843,7 @@ func (a *app) helpBox() []line {
 		box = append(box, line{{bold, fit(k.keys, 14)}, {"", " " + a.t(k.text)}})
 	}
 	box = append(box, line{}, line{{dim, a.t("tui.close")}})
+	box = append(box, line{{dim, "Powered by githubflyideas/traffic66"}})
 	return box
 }
 
