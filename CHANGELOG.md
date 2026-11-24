@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.4
+
+- The web page footer, the terminal help box and the --help text now carry a "Powered by githubflyideas/traffic66" line.
+
 ## 1.3.3
 
 - An sFlow sample that declares a sampling rate of zero is dropped instead of being counted at face value: 1-in-0 is not a rate, and the sample carries no measurement.
