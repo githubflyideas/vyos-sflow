@@ -4,8 +4,14 @@ const path = require('node:path');
 const {execFileSync} = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const files = [...new Set(execFileSync('git', ['ls-files', '-c', '-o', '--exclude-standard', '-z'], {cwd: root, encoding: 'utf8'}).split('\0').filter(f => f && fs.existsSync(path.join(root, f))))];
-assert.deepEqual(files.filter(f => /\.(py|pyc|pyo|pyw)$/i.test(f)), [], 'obsolete interpreter files remain');
-for (const f of files.filter(f => /^(packaging|scripts|\.github\/workflows)\//.test(f))) {
+// The project website is the one legitimate Python user in this repo:
+// site/build.py and site/mdlite.py build the GitHub Pages site and the
+// pages workflow runs them. They never ship in the release archive, so
+// the interpreter ban below exempts the website machinery (site/ and
+// .github/workflows/pages.yml) and covers everything else.
+const isWebsite = f => f.startsWith('site/') || f === '.github/workflows/pages.yml';
+assert.deepEqual(files.filter(f => !isWebsite(f) && /\.(py|pyc|pyo|pyw)$/i.test(f)), [], 'obsolete interpreter files remain');
+for (const f of files.filter(f => !isWebsite(f) && /^(packaging|scripts|\.github\/workflows)\//.test(f))) {
   if (!fs.statSync(path.join(root, f)).isFile()) continue;
   assert.doesNotMatch(fs.readFileSync(path.join(root, f), 'utf8'), /\bpython(?:2|3)?\b/i, `obsolete interpreter call in ${f}`);
 }
