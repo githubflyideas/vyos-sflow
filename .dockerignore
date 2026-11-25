@@ -1,0 +1,12 @@
+.git
+dist
+evidence
+node_modules
+data
+site
+tests
+docs/images
+*.duckdb
+*.duckdb.wal
+.env
+service.env

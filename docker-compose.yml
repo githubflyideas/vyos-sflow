@@ -1,0 +1,16 @@
+services:
+  vyos-sflow:
+    build: .
+    image: vyos-sflow:1.3.5
+    container_name: vyos-sflow
+    restart: unless-stopped
+    ports:
+      - "8066:8066/tcp"   # Web UI
+      - "6343:6343/udp"   # sFlow
+    volumes:
+      - vyos-sflow-data:/data
+    environment:
+      VYOS_SFLOW_MEMORY_FRACTION: "0.05"
+      VYOS_SFLOW_DB_THREADS: "1"
+volumes:
+  vyos-sflow-data:

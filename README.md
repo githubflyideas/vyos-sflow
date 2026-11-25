@@ -61,6 +61,19 @@ Open **`http://ROUTER_IP:8066`** in your browser, using the IP you typed. If you
 > [!WARNING]
 > The Web UI (TCP `8066`) listens on `127.0.0.1` unless you choose an address at the prompt or with `-addr`/`VYOS_SFLOW_ADDR`. sFlow UDP `6343` listens on all interfaces so exporters on other hosts can reach it; when the exporter is this router, use `-listen 127.0.0.1:6343`, otherwise restrict UDP with your firewall. Change the default password before exposing the Web UI anywhere. HTTP is unencrypted; [TLS is optional](docs/VYOS.md). Releases up to 1.2.5 bound the Web UI to all interfaces by default; see the [changelog](CHANGELOG.md).
 
+## Docker
+
+Build and run the collector and Web UI in a container:
+
+```sh
+docker build -t vyos-sflow .
+docker run -d --name vyos-sflow --restart unless-stopped \
+  -p 8066:8066/tcp -p 6343:6343/udp \
+  -v vyos-sflow-data:/data vyos-sflow
+```
+
+Or `docker compose up -d` with the included `docker-compose.yml`. Inside the container the Web UI listens on `0.0.0.0:8066`, sFlow on UDP `0.0.0.0:6343`, and data lives in the `/data` volume. Point the exporter at the Docker host's IP (`set system sflow server HOST_IP port 6343`). All `VYOS_SFLOW_*` variables work as `-e` options. Sign in with `admin` / `tryvyossflow66` and change the password. Publish port 8066 only on a trusted interface (for example `-p 192.168.1.10:8066:8066`).
+
 ## Temporary terminal view (TUI)
 
 For a quick look over SSH, run one command:
