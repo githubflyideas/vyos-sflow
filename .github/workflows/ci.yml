@@ -109,6 +109,7 @@ jobs:
         run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_TEMP node tests/installed-service.cjs --installer dist/vyos-sflow-1.3.5-linux-amd64.run --binary dist/vyos-sflow-1.3.5-linux-amd64/vyos-sflow
       - uses: actions/upload-artifact@v7
         with:
+          retention-days: 1
           name: vyos-sflow-1.3.5-linux-amd64
           path: |
             dist/*.tar.gz
@@ -119,6 +120,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
+          retention-days: 1
           name: acceptance-evidence
           path: evidence/
           if-no-files-found: ignore
@@ -154,6 +156,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
+          retention-days: 1
           name: vyos-native-vm-evidence
           path: evidence/vyos-vm/
           if-no-files-found: error

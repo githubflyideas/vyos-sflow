@@ -49,6 +49,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
+          retention-days: 1
           name: released-run-vyos-evidence
           path: evidence/released-run-vyos/
           if-no-files-found: error

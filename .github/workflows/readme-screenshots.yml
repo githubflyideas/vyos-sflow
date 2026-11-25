@@ -33,6 +33,7 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1600x1000x24' node tests/capture-readme.cjs dist/vyos-sflow-1.3.5-linux-amd64/vyos-sflow evidence/readme-screenshots
       - uses: actions/upload-artifact@v7
         with:
+          retention-days: 1
           name: readme-screenshots-v1.3.5
           path: evidence/readme-screenshots/
           if-no-files-found: error
