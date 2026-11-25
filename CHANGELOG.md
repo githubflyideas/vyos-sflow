@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.5
+
+- The README demo is a new full walkthrough GIF: download, unpack, point VyOS sFlow at the collector, then the terminal and web views.
+- vyos-sflow is now on Buy Me a Coffee — see the link at the top of the README or the Sponsor button if you want to support the project.
+- Docs: the validation notes now state plainly that ARM64 is out of scope — releases ship for Linux amd64 only — instead of listing it among things not yet validated.
+
 ## 1.3.4
 
 - The web page footer, the terminal help box and the --help text now carry a "Powered by githubflyideas/traffic66" line.

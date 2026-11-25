@@ -6,7 +6,7 @@ import (
 	"net/netip"
 )
 
-var version = "1.3.4"
+var version = "1.3.5"
 var commit = "unknown"
 
 func logStartup(scheme, addr, listen, data string) {
