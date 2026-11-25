@@ -3,11 +3,13 @@
 </p>
 
 # vyos-sflow
-<img width="1280" height="720" alt="vyos-sflow web UI demo" src="docs/images/vyos-sflow-hero.gif" />
+<img width="1280" height="720" alt="vyos-sflow web UI demo" src="docs/images/vyos-sflow-hero-v135.gif" />
 
 Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and recent flow records in your browser or over SSH.
 
 [Quick start](#get-started-in-3-steps) · [Terminal view](#temporary-terminal-view-tui) · [Screenshots](#screenshots) · [User manual](docs/MANUAL.md) · [Service installation](docs/VYOS.md)
+
+[Buy Me a Coffee](https://www.buymeacoffee.com/route66traffic66) — if vyos-sflow is useful to you, you can support the project here.
 
 | Feature | Details |
 | --- | --- |
