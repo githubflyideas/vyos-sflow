@@ -1,0 +1,106 @@
+# Container image → Docker Hub + GHCR.
+# 需要：仓库 Variables 里设 DOCKERHUB_USER；Secrets 里设 DOCKERHUB_TOKEN（Docker Hub Access Token, Read & Write）
+# PR 只构建不推送，用来验证 Dockerfile。手动运行（workflow_dispatch）会推 :dev 标签。
+name: docker
+
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - go.mod
+      - go.sum
+      - .github/workflows/docker.yml
+  workflow_dispatch:
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # 推 GHCR 用
+    env:
+      PUSH: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then v="${GITHUB_REF_NAME#v}"; else v=dev; fi
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: |
+            docker.io/${{ vars.DOCKERHUB_USER || 'githubflyideas' }}/vyos-sflow
+            ghcr.io/${{ github.repository_owner }}/vyos-sflow
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=dev,enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=ref,event=pr
+
+      # Smoke-test amd64 before publishing so a broken image is never pushed.
+      - name: Build image for smoke
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: vyos-sflow:smoke
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMMIT=${{ github.sha }}
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          trap 'docker logs vs || true; docker rm -f vs >/dev/null 2>&1 || true' EXIT
+          docker run --rm vyos-sflow:smoke version | tee /tmp/ver
+          grep -F "${VERSION}" /tmp/ver
+          docker run -d --name vs -p 8066:8066 -p 6343:6343/udp vyos-sflow:smoke
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8066/ || true)
+            [ "$code" = 200 ] && break
+            sleep 1
+          done
+          test "$code" = 200
+          docker logs vs 2>&1 | grep -F 'sFlow UDP 0.0.0.0:6343'
+
+      - if: env.PUSH == 'true'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          username: ${{ vars.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - if: env.PUSH == 'true'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # amd64 only: matches the release build (DuckDB static bindings).
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMMIT=${{ github.sha }}
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
