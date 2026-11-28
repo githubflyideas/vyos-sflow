@@ -1,0 +1,15 @@
+.git
+.github
+site
+tests
+packaging
+scripts
+dist
+vyso_sflow_data
+Dockerfile
+.dockerignore
+# docs/ is mostly images, but docs/embed.go compiles the operator manual
+# (docs/MANUAL.md) into the binary, so those two files stay in the context.
+docs/*
+!docs/embed.go
+!docs/MANUAL.md
