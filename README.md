@@ -7,7 +7,7 @@
 
 Local sFlow traffic analysis for VyOS and Linux. View bandwidth, top talkers and recent flow records in your browser or over SSH.
 
-[Quick start](#get-started-in-3-steps) · [Terminal view](#temporary-terminal-view-tui) · [Screenshots](#screenshots) · [User manual](docs/MANUAL.md) · [Service installation](docs/VYOS.md)
+[Quick start](#get-started-in-3-steps) · [Terminal view](#temporary-terminal-view-tui) · [Docker](#run-with-docker) · [Screenshots](#screenshots) · [User manual](docs/MANUAL.md) · [Service installation](docs/VYOS.md)
 
 [Buy Me a Coffee](https://www.buymeacoffee.com/route66traffic66) — if vyos-sflow is useful to you, you can support the project here.
 
@@ -76,6 +76,31 @@ For a quick look over SSH, run one command:
 Standalone TUI history lasts only for that session. Its temporary data is removed on exit; existing accounts and `./vyso_sflow_data` are not cleared. Keep using `serve` or the optional system service when you want continuous collection and persistent history.
 
 Press `?` for keyboard help. The terminal view runs on the router itself, over SSH, and attaches to the service there with the service's own token; `-data DIR` names the service's data directory when it is not the default. From another machine, use the web page. Explicit connection options never start a replacement collector if the connection fails.
+
+## Run with Docker
+
+The image is published to GHCR and Docker Hub as `githubflyideas/vyos-sflow` (Linux amd64). Host networking is the recommended way to run it: the collector then receives datagrams directly from each exporter, and the Web UI is reachable on the host's interfaces.
+
+```sh
+docker run -d --name vyos-sflow --restart unless-stopped --network host \
+  -v vyos-sflow-data:/data \
+  ghcr.io/githubflyideas/vyos-sflow:latest
+```
+
+Open `http://ROUTER_IP:8066` and sign in with **`admin` / `tryvyossflow66`**, then change the password right away: with host networking the Web UI listens on the host's interfaces, not only on loopback. Point any sFlow exporter at UDP `6343` of the host.
+
+Accounts and history live in the `/data` volume, stored with embedded DuckDB and Parquet files — there is no separate database server to install or run. The container can be removed and recreated freely; keep the volume.
+
+Without host networking, publish the two ports instead:
+
+```sh
+docker run -d --name vyos-sflow --restart unless-stopped \
+  -p 8066:8066 -p 6343:6343/udp \
+  -v vyos-sflow-data:/data \
+  ghcr.io/githubflyideas/vyos-sflow:latest
+```
+
+Note that with published ports the collector sees datagrams through Docker's NAT rather than directly from each exporter, which can blur the per-source view; host networking avoids that.
 
 ## Reading the numbers
 
